@@ -45,9 +45,9 @@ public class MainActivity extends ActionBarActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.act_main);
         ButterKnife.inject(this);
-        addAppInfoSection();
-        addMetaDataSection();
         addBuildConfigSection();
+        addMetaDataSection();
+        addAppInfoSection();
         addNetworkInfoSection();
         addDeviceInfoSection();
         addBuildPropsSection();

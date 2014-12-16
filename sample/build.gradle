@@ -1,9 +1,10 @@
 buildscript {
     repositories {
-        maven { url '/tmp/repo' }
-        // maven { url 'https://oss.sonatype.org/content/repositories/snapshots' }
+        // maven { url '/tmp/repo/' }
+        maven { url 'https://oss.sonatype.org/content/repositories/snapshots' }
         mavenCentral()
     }
+
     dependencies {
         classpath 'com.android.tools.build:gradle:1.0.0'
         classpath 'com.mcxiaoke.gradle:packer:0.9.0-SNAPSHOT'
@@ -19,7 +20,7 @@ apply plugin: 'packer'
 
 packer {
     // type:file
-    archiveOutput = file(new File(project.rootProject.buildDir.path, "apks"))
+    //archiveOutput = file(new File(project.rootProject.buildDir.path, "apks"))
     // type:String
     manifestMatcher = ['UMENG_CHANNEL','Promotion_Market']
     // type:groovy String template
@@ -56,12 +57,12 @@ android {
             minifyEnabled false
         }
 
-        //beta {
+        //someType {
         //    minifyEnabled false
         //    debuggable true
         //}
 
-        someType {
+        beta {
             signingConfig signingConfigs.release
             minifyEnabled false
             debuggable true
