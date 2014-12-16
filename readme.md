@@ -211,11 +211,15 @@ dependencies {
 
 ```
 
+## 感谢
+
+本项目参考了公司内部Android项目使用的多渠道打包工具，最初作者是 [googolmo](https://github.com/googolmo)，文件名模板自定义部分的代码修改自此项目 [android-appversion-gradle-plugin](https://github.com/hamsterksu/android-appversion-gradle-plugin)
+
 
 ## 项目许可
 
 
-    Copyright 2013 Chris Banes
+    Copyright 2014 Xiaoke Zhang
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
