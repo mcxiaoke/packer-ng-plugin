@@ -22,8 +22,8 @@ Android多渠道打包工具Gradle插件
 `plugin` 目录是插件的源代码，用 `Groovy` 语言编写，项目 `sample` 目录是一个完整的Andoid项目示例，在项目根目录有几个脚本可以用于测试：
 
 * **deploy-local.sh** 部署插件到本地的 `/tmp/repo/` 目录，方便即时测试
-* **test-build.sh** 部署并测试插件是否有错误，测试build版本号自动功能
-* **test-market** 部署并测试插件是否有错误，测试多渠道打包功能 
+* **test-build.sh** 部署并测试插件是否有错误，测试build版本号自增功能
+* **test-market.sh** 部署并测试插件是否有错误，测试多渠道打包功能 
 
 ## 使用方法
 
@@ -56,6 +56,10 @@ apply plugin: 'packer'
 ### 文件名格式
 
 可以使用 `archiveNameFormat` 自定义渠道打包输出的APK文件名格式，默认格式是 `${appPkg}-${flavorName}-${buildType}-v${versionName}-${versionCode}` 举例：假如你的App包名是  `com.your.company` ，渠道名是 `Google_Play` ，`buildType` 是 `release` ，`versionName` 是 `2.1.15` ，`versionCode` 是 `200115` ，那么生成的APK的文件名是 `com.your.company-Google_Player-release-2.1.15-20015.apk` 
+
+### 渠道列表格式
+
+渠道名列表文件是纯文本文件，每行一个渠道号，渠道名和注释之间用 `#` 号分割开，行示例： `Google_Play#play store market`，会自动忽略空白行，格式不规范会报错
 
 ### 版本号自增
 
@@ -105,7 +109,12 @@ packer {
 ```
 
 * 假设渠道列表文件位于项目根目录，文件名为 `markets.txt` ，在项目根目录打开shell运行命令：
-    `./gradlew -Pmarket=markets.txt clean archiveApkRelease`  如果没有错误，打包完成后你可以在 `${项目根目录}/build/archives/` 目录找到最终的渠道包。说明：渠道打包的 `gradle task` 名字是 `archiveApk${buildType}` buildType一般是release，也可以是你自己指定的beta或者someOtherType，使用时首字母需要大写
+
+```shell
+./gradlew -Pmarket=markets.txt clean archiveApkRelease
+``` 
+    
+    如果没有错误，打包完成后你可以在 `${项目根目录}/build/archives/` 目录找到最终的渠道包。说明：渠道打包的Gradle Task名字是 `archiveApk${buildType}` buildType一般是release，也可以是你自己指定的beta或者someOtherType，使用时首字母需要大写，例如release的渠道包任务名是 `archiveApkRelease`
 
 ### 版本号自增
 
