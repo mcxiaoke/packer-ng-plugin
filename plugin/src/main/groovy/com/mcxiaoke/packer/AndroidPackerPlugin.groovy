@@ -345,24 +345,25 @@ class AndroidPackerPlugin implements Plugin<Project> {
  */
     void processManifest(task, variant) {
         def File manifestFile = task.manifestOutputFile
+        def taskName = task.name
         def typeName = variant.buildType.name
         def flavorName = variant.productFlavors[0].name
         debug("processManifest() flavor: ${flavorName} type:${typeName}")
         def root = new XmlSlurper().parse(manifestFile)
                 .declareNamespace(android: "http://schemas.android.com/apk/res/android")
-        debug("${variant.name}: manifest matcher:${packerExt.manifestMatcher}")
+        debug("${taskName}: manifest matcher:${packerExt.manifestMatcher}")
         packerExt.manifestMatcher?.each { String pattern ->
 //            debug("processManifest() check pattern:${pattern}");
             def metadata = root.application.'meta-data'
             def found = metadata.find { mt -> pattern == mt.'@android:name'.toString() }
             if (found.size() > 0) {
-                debug("processManifest() ${variant.name}: meta-data ${pattern} found, modify it")
+                warn(":${taskName}:meta-data ${pattern} found, modify it")
                 found.replaceNode {
                     'meta-data'('android:name': found."@android:name", 'android:value': flavorName) {}
                 }
             } else {
-                warn("processManifest() ${variant.name}: meta-data ${pattern} not found, add it.")
-                debug.application.appendNode {
+                warn(":${taskName}:meta-data ${pattern} not found, add it.")
+                root.application.appendNode {
                     'meta-data'('android:name': pattern, 'android:value': flavorName) {}
                 }
             }
