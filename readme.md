@@ -4,7 +4,7 @@ Android多渠道打包工具Gradle插件
 
 ## 最新版本
 
-- [![Maven Central](http://img.shields.io/badge/2014.12.20-com.mcxiaoke.gradle:packer:1.0.+-brightgreen.svg)](http://search.maven.org/#artifactdetails%7Ccom.mcxiaoke.gradle%7Cpacker%7C1.2.0%7Cjar) 
+- [![Maven Central](http://img.shields.io/badge/2014.12.20-com.mcxiaoke.gradle:packer:1.0.+-brightgreen.svg)](http://search.maven.org/#artifactdetails%7Ccom.mcxiaoke.gradle%7Cpacker%7C1.0.0%7Cjar) 
 
 ## 项目介绍
 
@@ -14,11 +14,12 @@ Android多渠道打包工具Gradle插件
 * 支持自定义多渠道打包输出的存放目录和最终APK文件名
 * 支持自动修改versionName中的build版本号，实现版本号自动增长
 
-## 参与开发  
-
 **gradle-packer-plugin** 库路径： `com.mcxiaoke.gradle:packer:1.0.+` 简短名：`packer`，可以在项目的 `build.gradle` 中指定使用
 
-项目说明 `plugin` 目录是插件的源代码，用 `Groovy` 语言编写，项目 `sample` 目录是一个完整的Andoid项目示例，在项目根目录有几个脚本可以用于测试：
+
+## 参与开发  
+
+`plugin` 目录是插件的源代码，用 `Groovy` 语言编写，项目 `sample` 目录是一个完整的Andoid项目示例，在项目根目录有几个脚本可以用于测试：
 
 * **deploy-local.sh** 部署插件到本地的 `/tmp/repo/` 目录，方便即时测试
 * **test-build.sh** 部署并测试插件是否有错误，测试build版本号自动功能
