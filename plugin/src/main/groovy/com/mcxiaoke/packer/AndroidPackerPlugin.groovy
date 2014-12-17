@@ -13,12 +13,12 @@ import java.text.SimpleDateFormat
 
 // Android Multi Packer Plugin Source
 class AndroidPackerPlugin implements Plugin<Project> {
-    static final PLUGIN_NAME = "packer"
-    static final P_OUTPUT = "output"
-    static final P_MARKET = "market"
-    static final P_BUILD_NUM = "buildNum"
+    static final String PLUGIN_NAME = "packer"
+    static final String P_OUTPUT = "output"
+    static final String P_MARKET = "market"
+    static final String P_BUILD_NUM = "buildNum"
 
-    static final PROP_FILE = "packer.properties"
+    static final String PROP_FILE = "packer.properties"
 
     static final String[] SUPPORTED_ANDROID_VERSIONS = ['0.14.', '1.0.']
 
@@ -71,7 +71,7 @@ class AndroidPackerPlugin implements Plugin<Project> {
                         // modify manifest and add archive apk
                         // only when markets found and not debug
                         debug("markets found, add manifest and archive task.")
-                        addArchiveTask(variant)
+                        checkArchiveTask(variant)
                         checkManifest(variant)
                     } else {
                         debug("markets not found, check version name.")
@@ -247,7 +247,7 @@ class AndroidPackerPlugin implements Plugin<Project> {
  *  add archiveApk tasks
  * @param variant current Variant
  */
-    void addArchiveTask(variant) {
+    void checkArchiveTask(variant) {
         def buildTypeName = variant.buildType.name
         if (variant.buildType.signingConfig == null) {
             warn("${variant.name}: signingConfig is null, ignore archive task.")
@@ -257,33 +257,34 @@ class AndroidPackerPlugin implements Plugin<Project> {
             warn("${variant.name}: zipAlignEnabled==false, ignore archive task.")
             return
         }
-        debug("addArchiveTask() for ${variant.name}")
-        def apkName = buildApkName(variant)
-        def inputFile = variant.outputs[0].outputFile
-        def outputDir = packerExt.archiveOutput
-        debug("addArchiveTask() input: " + inputFile)
-        debug("addArchiveTask() output: " + outputDir)
-        def archiveTask = project.tasks.create(name: "archiveApk${variant.name.capitalize()}",
-                type: Copy) {
-            description = "copy apk and rename to ${apkName}"
+        debug("checkArchiveTask() for ${variant.name}")
+        def String apkName = buildApkName(variant)
+        def File inputFile = variant.outputs[0].outputFile
+        def File outputDir = packerExt.archiveOutput
+        debug("checkArchiveTask() input: ${inputFile}")
+        debug("checkArchiveTask() output: ${outputDir}")
+        def archiveTask = project.task("archiveApk${variant.name.capitalize()}", type: Copy) {
+            group PLUGIN_NAME
+            description "copy apk and rename to ${apkName}"
             from inputFile.absolutePath
             into outputDir.absolutePath
             rename { filename ->
                 filename.replace inputFile.name, apkName
             }
-
             dependsOn variant.assemble
         }
 
-        debug("addArchiveTask() new task:" + archiveTask.name)
+        debug("checkArchiveTask() new task:${archiveTask.name}")
 
-        if (!variant.name.equals(buildTypeName)) {
+        if (variant.name != buildTypeName) {
             def taskName = "archiveApk${buildTypeName.capitalize()}"
             def parentTask = project.tasks.findByName(taskName)
             if (parentTask == null) {
-                debug("addArchiveTask() create parent task  " + taskName)
-                parentTask = project.tasks.create(taskName)
-                parentTask.description = 'copy all apk archives to destination output dir'
+                debug("checkArchiveTask() create parent task  ${taskName}")
+                parentTask = project.task(taskName) {
+                    group PLUGIN_NAME
+                    description "copy all apk archives to destination output dir"
+                }
             }
             parentTask.dependsOn archiveTask
         }
@@ -333,19 +334,23 @@ class AndroidPackerPlugin implements Plugin<Project> {
             warn("${variant.name}: check manifest, no outputs found, ignore.")
             return
         }
+        if (!packerExt.manifestMatcher) {
+            warn("${variant.name}: check manifest, no manifest matcher found, ignore.")
+            return
+        }
         def Task processManifestTask = variant.outputs[0].processManifest
         def Task processResourcesTask = variant.outputs[0].processResources
         def processMetaTask = project.task("process${variant.name.capitalize()}MetaData",
                 type: ProcessMetaDataTask) {
+            group PLUGIN_NAME
             manifestFile = processManifestTask.manifestOutputFile
-            manifestMatcher=packerExt.manifestMatcher
+            manifestMatcher = packerExt.manifestMatcher
             flavorName = variant.productFlavors[0].name
             dependsOn processManifestTask
 //            mustRunAfter  processManifestTask
         }
         processResourcesTask.dependsOn processMetaTask
     }
-
 
 /**
  *  check android plugin applied
