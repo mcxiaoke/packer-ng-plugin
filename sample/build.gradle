@@ -1,12 +1,13 @@
 buildscript {
     repositories {
+        maven { url '/tmp/repo/' }
         mavenCentral()
         maven { url 'https://oss.sonatype.org/content/repositories/snapshots' }
     }
 
     dependencies {
         classpath 'com.android.tools.build:gradle:1.0.+'
-        classpath 'com.mcxiaoke.gradle:packer:1.0.+'
+        classpath 'com.mcxiaoke.gradle:packer:1.0.2-SNAPSHOT'
     }
 }
 

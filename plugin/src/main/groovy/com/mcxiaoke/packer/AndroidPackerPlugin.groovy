@@ -6,6 +6,7 @@ import groovy.xml.XmlUtil
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.ProjectConfigurationException
+import org.gradle.api.Task
 import org.gradle.api.tasks.Copy
 
 import java.text.SimpleDateFormat
@@ -332,46 +333,19 @@ class AndroidPackerPlugin implements Plugin<Project> {
             warn("${variant.name}: check manifest, no outputs found, ignore.")
             return
         }
-        def processManifestTask = variant.outputs[0].processManifest
-        processManifestTask.doLast { task ->
-            processManifest(task, variant)
+        def Task processManifestTask = variant.outputs[0].processManifest
+        def Task processResourcesTask = variant.outputs[0].processResources
+        def processMetaTask = project.task("process${variant.name.capitalize()}MetaData",
+                type: ProcessMetaDataTask) {
+            manifestFile = processManifestTask.manifestOutputFile
+            manifestMatcher=packerExt.manifestMatcher
+            flavorName = variant.productFlavors[0].name
+            dependsOn processManifestTask
+//            mustRunAfter  processManifestTask
         }
+        processResourcesTask.dependsOn processMetaTask
     }
 
-/**
- *  parse and modify manifest file
- * @param task process manifest task
- * @param variant Variant
- */
-    void processManifest(task, variant) {
-        def File manifestFile = task.manifestOutputFile
-        def taskName = task.name
-        def typeName = variant.buildType.name
-        def flavorName = variant.productFlavors[0].name
-        debug("processManifest() flavor: ${flavorName} type:${typeName}")
-        def root = new XmlSlurper().parse(manifestFile)
-                .declareNamespace(android: "http://schemas.android.com/apk/res/android")
-        debug("${taskName}: manifest matcher:${packerExt.manifestMatcher}")
-        packerExt.manifestMatcher?.each { String pattern ->
-//            debug("processManifest() check pattern:${pattern}");
-            def metadata = root.application.'meta-data'
-            def found = metadata.find { mt -> pattern == mt.'@android:name'.toString() }
-            if (found.size() > 0) {
-                warn(":${taskName}:meta-data ${pattern} found, modify it")
-                found.replaceNode {
-                    'meta-data'('android:name': found."@android:name", 'android:value': flavorName) {}
-                }
-            } else {
-                warn(":${taskName}:meta-data ${pattern} not found, add it.")
-                root.application.appendNode {
-                    'meta-data'('android:name': pattern, 'android:value': flavorName) {}
-                }
-            }
-        }
-
-        serializeXml(root, manifestFile)
-//        debug("processManifest() final manifest:${manifestFile.text}")
-    }
 
 /**
  *  check android plugin applied
