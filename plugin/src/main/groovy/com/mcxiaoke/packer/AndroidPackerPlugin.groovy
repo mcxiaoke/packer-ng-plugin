@@ -140,7 +140,7 @@ class AndroidPackerPlugin implements Plugin<Project> {
                 }
             }
         } else {
-            warn("release signingConfig not found ")
+            warn("signingConfig.release not found ")
         }
     }
 
@@ -151,7 +151,7 @@ class AndroidPackerPlugin implements Plugin<Project> {
  */
     boolean applyMarkets() {
         if (!project.hasProperty(P_MARKET)) {
-            debug("market property not found, ignore")
+            debug("applyMarkets() market property not found, ignore")
             return false
         }
 
@@ -160,7 +160,7 @@ class AndroidPackerPlugin implements Plugin<Project> {
 
         File markets = new File(marketsFilePath);
         if (!markets.exists()) {
-            debug("market file not exists, ignore")
+            debug("applyMarkets() market file not exists, ignore")
             return false
         }
 
@@ -170,12 +170,20 @@ class AndroidPackerPlugin implements Plugin<Project> {
         debug("applyMarkets() default flavors:" + flavors)
 
         // add all markets
-        markets.eachLine {
-            def market = it.split('#')[0]
-            if (!flavors.contains(market)) {
-                project.android.productFlavors.create(market, {})
-                debug("applyMarkets() new market: " + market)
+        markets.eachLine { line, number ->
+            debug("applyMarkets() ${number}:'${line}'")
+            def parts = line.split('#')
+            if (parts && parts[0]) {
+                def market = parts[0].trim()
+                if (market && !flavors.contains(market)) {
+                    debug("apply new market: " + market)
+                    project.android.productFlavors.create(market, {})
+                }
+            } else {
+                warn("invalid line found in market file --> ${number}:'${line}'")
+//                throw new IllegalArgumentException("invalid market: ${line} at line:${number} in your market file")
             }
+
         }
         return true
     }
@@ -317,11 +325,11 @@ class AndroidPackerPlugin implements Plugin<Project> {
  */
     void checkManifest(variant) {
         if (!variant.productFlavors) {
-            warn("${variant.name}: manifest task, no flavors found, ignore.")
+            warn("${variant.name}: check manifest, no flavors found, ignore.")
             return
         }
         if (!variant.outputs) {
-            warn("${variant.name}: manifest task, no outputs found, ignore.")
+            warn("${variant.name}: check manifest, no outputs found, ignore.")
             return
         }
         def processManifestTask = variant.outputs[0].processManifest
@@ -348,13 +356,13 @@ class AndroidPackerPlugin implements Plugin<Project> {
             def metadata = root.application.'meta-data'
             def found = metadata.find { mt -> pattern == mt.'@android:name'.toString() }
             if (found.size() > 0) {
-                warn("${variant.name}: manifest meta-data ${pattern} found, modify it")
+                debug("processManifest() ${variant.name}: meta-data ${pattern} found, modify it")
                 found.replaceNode {
                     'meta-data'('android:name': found."@android:name", 'android:value': flavorName) {}
                 }
             } else {
-                warn("${variant.name}: manifest meta-data ${pattern} not found, add it.")
-                root.application.appendNode {
+                warn("processManifest() ${variant.name}: meta-data ${pattern} not found, add it.")
+                debug.application.appendNode {
                     'meta-data'('android:name': pattern, 'android:value': flavorName) {}
                 }
             }
@@ -379,12 +387,15 @@ class AndroidPackerPlugin implements Plugin<Project> {
  * @param vars vars
  */
     void debug(String msg, Object... vars) {
-//        println msg
         project.logger.debug(msg, vars)
     }
 
     void warn(String msg, Object... vars) {
         project.logger.warn(msg, vars)
+    }
+
+    void error(String msg, Object... vars) {
+        project.logger.error(msg, vars)
     }
 
     static void saveProperties(Project project, Properties props, String fileName) {
