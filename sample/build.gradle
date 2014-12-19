@@ -20,11 +20,11 @@ apply plugin: 'packer'
 
 packer {
     // type:file
-    //archiveOutput = file(new File(project.rootProject.buildDir.path, "apks"))
+    archiveOutput = file(new File(project.rootProject.buildDir.path, "myapks"))
     // type:String
-    manifestMatcher = ['UMENG_CHANNEL','Promotion_Market']
+    manifestMatcher = ['UMENG_CHANNEL','Promotion_Market', 'Test_Value']
     // type:groovy String template
-    // archiveNameFormat = ''
+    archiveNameFormat = '${appName}-${appPkg}-v${versionName}-${versionCode}-${buildType}-${flavorName}-${buildTime}'
     buildNumberAuto = true
     buildNumberTypeMatcher = ['release']
 
