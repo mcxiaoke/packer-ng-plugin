@@ -4,7 +4,7 @@ Android多渠道打包工具Gradle插件
 
 ## 最新版本
 
-- [![Maven Central](http://img.shields.io/badge/2014.12.20-com.mcxiaoke.gradle:packer:1.0.1-brightgreen.svg)](http://search.maven.org/#artifactdetails%7Ccom.mcxiaoke.gradle%7Cpacker%7C1.0.1%7Cjar) 
+- [![Maven Central](http://img.shields.io/badge/2014.12.20-com.mcxiaoke.gradle:packer:1.0.0-brightgreen.svg)](http://search.maven.org/#artifactdetails%7Ccom.mcxiaoke.gradle%7Cpacker%7C1.0.0%7Cjar) 
 
 ## 项目介绍
 
