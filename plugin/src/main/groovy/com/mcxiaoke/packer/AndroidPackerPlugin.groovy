@@ -1,20 +1,14 @@
 package com.mcxiaoke.packer
-
 import groovy.text.SimpleTemplateEngine
-import groovy.xml.StreamingMarkupBuilder
-import groovy.xml.XmlUtil
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.ProjectConfigurationException
 import org.gradle.api.Task
-import org.gradle.api.tasks.Copy
 
 import java.text.SimpleDateFormat
-
 // Android Multi Packer Plugin Source
 class AndroidPackerPlugin implements Plugin<Project> {
     static final String PLUGIN_NAME = "packer"
-    static final String P_OUTPUT = "output"
     static final String P_MARKET = "market"
     static final String P_BUILD_NUM = "buildNum"
 
@@ -36,7 +30,7 @@ class AndroidPackerPlugin implements Plugin<Project> {
         this.props = loadProperties(project, PROP_FILE)
         checkAndroidPlugin()
         applyExtension()
-        applyConfigAndTasks()
+        applyPluginTasks()
     }
 
     private void checkAndroidPlugin() {
@@ -54,46 +48,31 @@ class AndroidPackerPlugin implements Plugin<Project> {
         this.packerExt = project.extensions.create(PLUGIN_NAME, AndroidPackerExtension, project)
     }
 
-    void applyConfigAndTasks() {
+    void applyPluginTasks() {
         // checkBuildType()
         // add markets must before evaluate
         def hasMarkets = applyMarkets()
         project.afterEvaluate {
             def buildTypes = project.android.buildTypes
-            debug("applyConfigAndTasks() build types: ${buildTypes.collect { it.name }}")
-//            applySigningConfigs()
-            applyProperties()
-            addCleanTask()
+            debug("applyPluginTasks() build types: ${buildTypes.collect { it.name }}")
+            checkProperties()
+            checkCleanTask()
+            //            applySigningConfigs()
             project.android.applicationVariants.all { variant ->
                 checkSigningConfig(variant)
                 if (variant.buildType.name != "debug") {
                     if (hasMarkets) {
                         // modify manifest and add archive apk
                         // only when markets found and not debug
-                        debug("markets found, add manifest and archive task.")
+                        debug("applyPluginTasks() markets found, add manifest and archive task.")
                         checkArchiveTask(variant)
                         checkManifest(variant)
                     } else {
-                        debug("markets not found, check version name.")
+                        debug("applyPluginTasks() markets not found, check version name.")
                         checkVersionName(variant)
                     }
                 }
             }
-        }
-    }
-
-/**
- *  add task for clean apk archives
- * @param project
- */
-    void addCleanTask() {
-        def cleanTask = project.tasks.create(name: 'cleanArchives') {
-            def output = packerExt.archiveOutput
-            debug("addCleanTask() ${output.absolutePath}")
-            cleanDir(output)
-        }
-        project.getTasksByName("clean", true)?.each {
-            it.dependsOn cleanTask
         }
     }
 
@@ -192,13 +171,9 @@ class AndroidPackerPlugin implements Plugin<Project> {
 /**
  *  check project properties and apply to extension
  */
-    void applyProperties() {
-        if (project.hasProperty(P_OUTPUT)) {
-            def dirName = project.property(P_OUTPUT) as String;
-            packerExt.archiveOutput = new File(project.rootProject.buildDir, dirName)
-        }
-        debug("applyProperties() output:" + packerExt.archiveOutput)
-        debug("applyProperties() manifest:" + packerExt.manifestMatcher)
+    void checkProperties() {
+        debug("checkProperties() output:" + packerExt.archiveOutput)
+        debug("checkProperties() manifest:" + packerExt.manifestMatcher)
     }
 
     void checkSigningConfig(variant) {
@@ -248,7 +223,7 @@ class AndroidPackerPlugin implements Plugin<Project> {
  * @param variant current Variant
  */
     void checkArchiveTask(variant) {
-        def buildTypeName = variant.buildType.name
+
         if (variant.buildType.signingConfig == null) {
             warn("${variant.name}: signingConfig is null, ignore archive task.")
             return
@@ -263,9 +238,10 @@ class AndroidPackerPlugin implements Plugin<Project> {
         def File outputDir = packerExt.archiveOutput
         debug("checkArchiveTask() input: ${inputFile}")
         debug("checkArchiveTask() output: ${outputDir}")
-        def archiveTask = project.task("archiveApk${variant.name.capitalize()}", type: Copy) {
-            group PLUGIN_NAME
-            description "copy apk and rename to ${apkName}"
+        def archiveTask = project.task("archiveApk${variant.name.capitalize()}",
+                type: ArchiveApkVariantTask) {
+
+            variantName = variant.name
             from inputFile.absolutePath
             into outputDir.absolutePath
             rename { filename ->
@@ -276,17 +252,43 @@ class AndroidPackerPlugin implements Plugin<Project> {
 
         debug("checkArchiveTask() new task:${archiveTask.name}")
 
+        def buildTypeName = variant.buildType.name
         if (variant.name != buildTypeName) {
-            def taskName = "archiveApk${buildTypeName.capitalize()}"
-            def parentTask = project.tasks.findByName(taskName)
-            if (parentTask == null) {
-                debug("checkArchiveTask() create parent task  ${taskName}")
-                parentTask = project.task(taskName) {
-                    group PLUGIN_NAME
-                    description "copy all apk archives to destination output dir"
-                }
+            def Task task = checkArchiveAllTask(buildTypeName)
+            task.dependsOn archiveTask
+        }
+    }
+
+    /**
+     * add archiveApkType task if not added
+     * @param buildTypeName buildTypeName
+     * @return task
+     */
+    Task checkArchiveAllTask(buildTypeName) {
+        def taskName = "archiveApk${buildTypeName.capitalize()}"
+        def task = project.tasks.findByName(taskName)
+        if (task == null) {
+            task = project.task(taskName, type: ArchiveApkBuildTypeTask) {
+                typeName = buildTypeName
             }
-            parentTask.dependsOn archiveTask
+        }
+        return task
+    }
+
+    /**
+     *  add cleanArchives task if not added
+     * @return task
+     */
+    void checkCleanTask() {
+        def output = packerExt.archiveOutput
+        debug("checkCleanTask() create clean archives task, path:${output}")
+        def task = project.task("cleanArchives",
+                type: CleanArchivesTask) {
+            target = output
+        }
+
+        project.getTasksByName("clean", true)?.each {
+            it.dependsOn task
         }
     }
 
@@ -340,14 +342,12 @@ class AndroidPackerPlugin implements Plugin<Project> {
         }
         def Task processManifestTask = variant.outputs[0].processManifest
         def Task processResourcesTask = variant.outputs[0].processResources
-        def processMetaTask = project.task("process${variant.name.capitalize()}MetaData",
-                type: ProcessMetaDataTask) {
-            group PLUGIN_NAME
+        def processMetaTask = project.task("modify${variant.name.capitalize()}MetaData",
+                type: ModifyManifestTask) {
             manifestFile = processManifestTask.manifestOutputFile
             manifestMatcher = packerExt.manifestMatcher
             flavorName = variant.productFlavors[0].name
             dependsOn processManifestTask
-//            mustRunAfter  processManifestTask
         }
         processResourcesTask.dependsOn processMetaTask
     }
@@ -372,10 +372,6 @@ class AndroidPackerPlugin implements Plugin<Project> {
 
     void warn(String msg, Object... vars) {
         project.logger.warn(msg, vars)
-    }
-
-    void error(String msg, Object... vars) {
-        project.logger.error(msg, vars)
     }
 
     static void saveProperties(Project project, Properties props, String fileName) {
@@ -407,30 +403,6 @@ class AndroidPackerPlugin implements Plugin<Project> {
         return false
     }
 
-/**
- *  write xml to file
- * @param xml xml
- * @param file file
- */
-    static void serializeXml(xml, file) {
-        XmlUtil.serialize(new StreamingMarkupBuilder().bind { mkp.yield xml },
-                new FileWriter(file))
-    }
 
-/**
- *  delete all files in dir
- * @param dir
- */
-    static void cleanDir(File dir) {
-        if (dir && dir.listFiles()) {
-            dir.listFiles().sort().each { File file ->
-                if (file.isFile()) {
-                    file.delete()
-                } else {
-                    file.deleteDir()
-                }
-            }
-        }
-    }
 
 }
