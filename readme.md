@@ -51,7 +51,7 @@ apply plugin: 'packer'
 
 ### 多渠道打包
 
-需要在命令行指定 -Pmarket=yourMarketFileName属性，market是你的渠道名列表文件名
+需要在命令行指定 -Pmarket=yourMarketFileName属性，market是你的渠道名列表文件名，market文件是基于**项目根目录**的 `相对路径` ，假设你的项目位于 `~/github/myapp` 你的market文件位于 `~/github/myapp/config/markets.txt` 那么参数应该是 `-Pmarket=config/markets.txt`，一般建议直接放在项目根目录，如果market文件参数错误或者文件不存在会抛出异常
 
 渠道名列表文件是纯文本文件，每行一个渠道号，渠道名和注释之间用 `#` 号分割开，行示例： `Google_Play#play store market`，会自动忽略空白行，格式不规范会报错
 
@@ -113,7 +113,7 @@ packer {
 ./gradlew -Pmarket=markets.txt clean archiveApkRelease
 ``` 
     
-    如果没有错误，打包完成后你可以在 `${项目根目录}/build/archives/` 目录找到最终的渠道包。说明：渠道打包的Gradle Task名字是 `archiveApk${buildType}` buildType一般是release，也可以是你自己指定的beta或者someOtherType，使用时首字母需要大写，例如release的渠道包任务名是 `archiveApkRelease`
+    如果没有错误，打包完成后你可以在 `${项目根目录}/build/archives/` 目录找到最终的渠道包。说明：渠道打包的Gradle Task名字是 `archiveApk${buildType}` buildType一般是release，也可以是你自己指定的beta或者someOtherType，使用时首字母需要大写，例如release的渠道包任务名是 `archiveApkRelease`，beta的渠道包任务名是 `archiveApkBeta`，其它的以此类推
 
 ### 版本号自增
 
