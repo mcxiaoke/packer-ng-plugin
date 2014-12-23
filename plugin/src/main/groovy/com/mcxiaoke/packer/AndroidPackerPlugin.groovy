@@ -1,11 +1,14 @@
 package com.mcxiaoke.packer
+
 import groovy.text.SimpleTemplateEngine
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.ProjectConfigurationException
 import org.gradle.api.Task
+import org.gradle.api.tasks.StopExecutionException
 
 import java.text.SimpleDateFormat
+
 // Android Multi Packer Plugin Source
 class AndroidPackerPlugin implements Plugin<Project> {
     static final String PLUGIN_NAME = "packer"
@@ -30,7 +33,10 @@ class AndroidPackerPlugin implements Plugin<Project> {
         this.props = loadProperties(project, PROP_FILE)
         checkAndroidPlugin()
         applyExtension()
-        applyPluginTasks()
+        // checkBuildType()
+        // add markets must before evaluate
+        def hasMarkets = applyMarkets()
+        applyPluginTasks(hasMarkets)
     }
 
     private void checkAndroidPlugin() {
@@ -48,16 +54,13 @@ class AndroidPackerPlugin implements Plugin<Project> {
         this.packerExt = project.extensions.create(PLUGIN_NAME, AndroidPackerExtension, project)
     }
 
-    void applyPluginTasks() {
-        // checkBuildType()
-        // add markets must before evaluate
-        def hasMarkets = applyMarkets()
+    void applyPluginTasks(hasMarkets) {
         project.afterEvaluate {
             def buildTypes = project.android.buildTypes
             debug("applyPluginTasks() build types: ${buildTypes.collect { it.name }}")
             checkProperties()
             checkCleanTask()
-            //            applySigningConfigs()
+            //applySigningConfigs()
             project.android.applicationVariants.all { variant ->
                 checkSigningConfig(variant)
                 if (variant.buildType.name != "debug") {
@@ -137,11 +140,25 @@ class AndroidPackerPlugin implements Plugin<Project> {
 
         // check markets file exists
         def marketsFilePath = project.property(P_MARKET).toString()
+        if (!marketsFilePath) {
+            debug("applyMarkets() invalid market file path, ignore")
+            throw new StopExecutionException("invalid market file path : '${marketsFilePath}'")
+        }
 
-        File markets = new File(marketsFilePath);
+        File markets = project.rootProject.file(marketsFilePath)
         if (!markets.exists()) {
-            debug("applyMarkets() market file not exists, ignore")
-            return false
+            debug("applyMarkets() market file not found, ignore")
+            throw new StopExecutionException("market file not found: '${markets.absolutePath}'")
+        }
+
+        if (!markets.isFile()) {
+            debug("applyMarkets() market file is not a file, ignore")
+            throw new StopExecutionException("market file is not a file: '${markets.absolutePath}'")
+        }
+
+        if (!markets.canRead()) {
+            debug("applyMarkets() market file not readable, ignore")
+            throw new StopExecutionException("market file not readable: '${markets.absolutePath}'")
         }
 
         debug("applyMarkets() file: ${marketsFilePath}")
@@ -402,7 +419,6 @@ class AndroidPackerPlugin implements Plugin<Project> {
 
         return false
     }
-
 
 
 }
