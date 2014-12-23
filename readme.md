@@ -51,15 +51,14 @@ apply plugin: 'packer'
 
 ### 多渠道打包
 
-需要在命令行指定 -Pmarket=yourMarketFileName属性，market是你的渠道名列表，一行一个渠道，名字和注释用#号分割，举例： `Google_Play#build for google play store` 
+需要在命令行指定 -Pmarket=yourMarketFileName属性，market是你的渠道名列表文件名
+
+渠道名列表文件是纯文本文件，每行一个渠道号，渠道名和注释之间用 `#` 号分割开，行示例： `Google_Play#play store market`，会自动忽略空白行，格式不规范会报错
+
 
 ### 文件名格式
 
 可以使用 `archiveNameFormat` 自定义渠道打包输出的APK文件名格式，默认格式是 `${appPkg}-${flavorName}-${buildType}-v${versionName}-${versionCode}` 举例：假如你的App包名是  `com.your.company` ，渠道名是 `Google_Play` ，`buildType` 是 `release` ，`versionName` 是 `2.1.15` ，`versionCode` 是 `200115` ，那么生成的APK的文件名是 `com.your.company-Google_Player-release-2.1.15-20015.apk` 
-
-### 渠道列表格式
-
-渠道名列表文件是纯文本文件，每行一个渠道号，渠道名和注释之间用 `#` 号分割开，行示例： `Google_Play#play store market`，会自动忽略空白行，格式不规范会报错
 
 ### 版本号自增
 
@@ -73,7 +72,7 @@ apply plugin: 'packer'
   
   * *projectName* - 项目名字
   * *appName* - App模块名字
-  * *appPkg* - App包名 (`applicationId`或`packageName`)
+  * *appPkg* - `applicationId` (App包名packageName)
   * *buildType* - `buildType` (release/debug/beta等)
   * *flavorName* - `flavorName` (对应渠道打包中的渠道名字)
   * *versionName* - `versionName` (显示用的版本号)
