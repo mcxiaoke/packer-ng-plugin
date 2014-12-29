@@ -20,14 +20,6 @@ Android多渠道打包工具Gradle插件
 **gradle-packer-plugin** 库路径： `com.mcxiaoke.gradle:packer:1.0.+` 简短名：`packer`，可以在项目的 `build.gradle` 中指定使用
 
 
-## 参与开发  
-
-`plugin` 目录是插件的源代码，用 `Groovy` 语言编写，项目 `sample` 目录是一个完整的Andoid项目示例，在项目根目录有几个脚本可以用于测试：
-
-* **deploy-local.sh** 部署插件到本地的 `/tmp/repo/` 目录，方便即时测试
-* **test-build.sh** 部署并测试插件是否有错误，测试build版本号自增功能
-* **test-market.sh** 部署并测试插件是否有错误，测试多渠道打包功能 
-
 ## 使用方法
 
 #### 修改项目根目录的 `build.gradle` ：
@@ -147,7 +139,7 @@ gradle.bat -Pmarket=markets.txt clean archiveApkRelease
 gradlew.bat -Pmarket=markets.txt clean archiveApkRelease
 ``` 
     
-    如果没有错误，打包完成后你可以在 `${项目根目录}/build/archives/` 目录找到最终的渠道包。说明：渠道打包的Gradle Task名字是 `archiveApk${buildType}` buildType一般是release，也可以是你自己指定的beta或者someOtherType，使用时首字母需要大写，例如release的渠道包任务名是 `archiveApkRelease`，beta的渠道包任务名是 `archiveApkBeta`，其它的以此类推
+如果没有错误，打包完成后你可以在 `${项目根目录}/build/archives/` 目录找到最终的渠道包。说明：渠道打包的Gradle Task名字是 `archiveApk${buildType}` buildType一般是release，也可以是你自己指定的beta或者someOtherType，使用时首字母需要大写，例如release的渠道包任务名是 `archiveApkRelease`，beta的渠道包任务名是 `archiveApkBeta`，其它的以此类推
 
 ### 版本号自增
 
@@ -253,6 +245,18 @@ dependencies {
 
 
 ```
+
+
+
+## 参与开发  
+
+`plugin` 目录是插件的源代码，用 `Groovy` 语言编写，项目 `sample` 目录是一个完整的Andoid项目示例，在项目根目录有几个脚本可以用于测试：
+
+* **deploy-local.sh** 部署插件到本地的 `/tmp/repo/` 目录，方便即时测试
+* **test-build.sh** 部署并测试插件是否有错误，测试build版本号自增功能
+* **test-market.sh** 部署并测试插件是否有错误，测试多渠道打包功能 
+
+
 
 ## 感谢
 
