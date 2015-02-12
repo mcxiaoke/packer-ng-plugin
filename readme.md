@@ -6,9 +6,9 @@ Android多渠道打包工具Gradle插件
 
 - [![Maven Central](http://img.shields.io/badge/2015.02.12-com.mcxiaoke.gradle:packer:1.0.2-brightgreen.svg)](http://search.maven.org/#artifactdetails%7Ccom.mcxiaoke.gradle%7Cpacker%7C1.0.2%7Cjar) 
 
-- 2014.12.20 发布1.0.0版，支持渠道打包和版本号自增等功能
-- 2014.12.24 发布1.0.1版，完善market文件异常处理  
-- 2015.02.12 发布1.0.2版，检查manifestMatcher配置
+- 2014.12.20 发布1.0.0版，支持渠道打包和版本号自增等功能  
+- 2014.12.24 发布1.0.1版，完善market文件异常处理   
+- 2015.02.12 发布1.0.2版，检查manifestMatcher配置   
 
 ## 项目介绍
 
@@ -102,7 +102,7 @@ apply plugin: 'packer'
   * *versionCode* - `versionCode` (内部版本号)
   * *buildTime* - `buildTime` (编译构建日期时间)
 
-* **manifestMatcher** 指定渠道打包需要修改的AndroidManifest.xml的meta-data的项名称，列表类型，举例： `['UMENG_CHANNEL', 'Promotion_Market']`，注意：需要同时在命令行使用 `-Pmarket=yourMarketFileName` 指定market属性多渠道打包才会生效 
+* **manifestMatcher** 指定渠道打包需要修改的AndroidManifest.xml的meta-data的项名称，列表类型，举例： `['UMENG_CHANNEL', 'Promotion_Market']`，注意：需要同时在命令行使用 `-Pmarket=yourMarketFileName` 指定market属性多渠道打包才会生效，如果没有配置就使用多渠道打包，将会抛出异常 
 
 * **buildNumberAuto** - 布尔值，是否使用自增版本号功能 设为 `true` 为使用插件提供的自增build版本号功能，该功能会在项目目录生成一个 `packer.properties` 文件，建议加入到 `.gitignore` 中，注意：该功能不会应用于多渠道打包生成的APK，不会影响渠道打包
 
