@@ -7,7 +7,7 @@ buildscript {
 
     dependencies {
         classpath 'com.android.tools.build:gradle:1.0.+'
-        classpath 'com.mcxiaoke.gradle:packer:1.0.2-SNAPSHOT'
+        classpath 'com.mcxiaoke.gradle:packer:1.0.3-SNAPSHOT'
     }
 }
 
