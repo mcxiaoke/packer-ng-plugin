@@ -354,7 +354,7 @@ class AndroidPackerPlugin implements Plugin<Project> {
             return
         }
         if (!packerExt.manifestMatcher) {
-            warn("${variant.name}: check manifest, no manifest matcher found, ignore.")
+            error("${variant.name}: check manifest, no manifest matcher found, quit.")
             return
         }
         def Task processManifestTask = variant.outputs[0].processManifest
@@ -389,6 +389,11 @@ class AndroidPackerPlugin implements Plugin<Project> {
 
     void warn(String msg, Object... vars) {
         project.logger.warn(msg, vars)
+    }
+
+    void error(String msg) {
+        project.logger.warn(msg)
+        throw new MissingPropertyException(msg)
     }
 
     static void saveProperties(Project project, Properties props, String fileName) {
