@@ -215,7 +215,7 @@ class AndroidPackerPlugin implements Plugin<Project> {
             def typeName = variant.buildType.name
             if (auto && (patterns == null || patterns.contains(typeName))) {
                 // or apply auto increment build number
-                def newBuildNo = increaseBuildNumber(variant)
+                def newBuildNo = checkBuildNumber()
                 variant.mergedFlavor.versionName += "." + newBuildNo.toString();
             }
         }
@@ -223,13 +223,10 @@ class AndroidPackerPlugin implements Plugin<Project> {
         debug("checkVersionName() versionName:${variant.mergedFlavor.versionName}")
     }
 
-    int increaseBuildNumber(variant) {
-        def typeName = variant.buildType.name
-        def versionName = variant.mergedFlavor.versionName
-        def key = "${versionName}.${typeName}.build"
-        def buildNo = props.getProperty(key, "0").toInteger() + 1
+    int checkBuildNumber() {
+        def buildNo = props.getProperty("version", "0").toInteger() + 1
         //put new build number to props
-        props[key] = buildNo.toString()
+        props["version"] = buildNo.toString()
         //store property file
         saveProperties(project, props, PROP_FILE)
         return buildNo
