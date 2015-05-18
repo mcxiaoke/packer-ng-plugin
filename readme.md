@@ -4,12 +4,13 @@ Android多渠道打包工具Gradle插件
 
 ## 最新版本
 
-[![Maven Central](http://img.shields.io/badge/2015.03.24-com.mcxiaoke.gradle:packer:1.0.3-brightgreen.svg)](http://search.maven.org/#artifactdetails%7Ccom.mcxiaoke.gradle%7Cpacker%7C1.0.3%7Cjar) 
+[![Maven Central](http://img.shields.io/badge/2015.05.18-com.mcxiaoke.gradle:packer:1.0.4-brightgreen.svg)](http://search.maven.org/#artifactdetails%7Ccom.mcxiaoke.gradle%7Cpacker%7C1.0.4%7Cjar) 
 
 - 2014.12.20 发布1.0.0版，支持渠道打包和版本号自增等功能
 - 2014.12.24 发布1.0.1版，完善market文件异常处理
 - 2015.02.12 发布1.0.2版，检查manifestMatcher配置
 - 2015.03.24 发布1.0.3版，版本号自增与versionName和buildType无关
+- 2015.05.18 发布1.0.4版，移除Android插件版本检查，支持最新版本
 
 ## 项目介绍
 
