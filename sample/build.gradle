@@ -6,13 +6,14 @@ buildscript {
     }
 
     dependencies {
-        classpath 'com.android.tools.build:gradle:1.0.+'
-        classpath 'com.mcxiaoke.gradle:packer:1.0.3-SNAPSHOT'
+        classpath 'com.android.tools.build:gradle:1.2.3'
+        classpath 'com.mcxiaoke.gradle:packer:1.0.4-SNAPSHOT'
     }
 }
 
 repositories {
     mavenCentral()
+    maven { url 'https://oss.sonatype.org/content/repositories/snapshots' }
 }
 
 apply plugin: 'com.android.application'
@@ -32,7 +33,7 @@ packer {
 
 android {
     compileSdkVersion 21
-    buildToolsVersion "21.1.1"
+    buildToolsVersion "22.0.1"
 
     defaultConfig {
         applicationId "com.mcxiaoke.packer.sample"
@@ -89,6 +90,7 @@ android {
     }
 }
 
+// https://code.google.com/p/android/issues/detail?id=171089
 dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
     compile 'com.android.support:support-v4:21.0.2'
@@ -97,8 +99,8 @@ dependencies {
     compile('com.mcxiaoke.next:core:1.0.4@aar') {
         exclude group: 'com.android.support', module: 'support-v4'
     }
-    compile('com.mcxiaoke.next:http:1.0.4@aar')
-    compile('com.mcxiaoke.next:ui:1.0.4@aar') {
+    compile('com.mcxiaoke.next:http:1.0.8-SNAPSHOT@aar')
+    compile('com.mcxiaoke.next:ui:1.0.8-SNAPSHOT@aar') {
         exclude group: 'com.android.support', module: 'support-v4'
     }
 }
