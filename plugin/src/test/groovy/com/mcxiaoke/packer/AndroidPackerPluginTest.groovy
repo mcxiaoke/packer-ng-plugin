@@ -17,16 +17,6 @@ class AndroidPackerPluginTest {
     public void setUp() {
     }
 
-    @Test
-    public void testSupportedAndroidVersion() {
-        Assert.assertFalse(AndroidPackerPlugin.isVersionSupported('0.11.+'))
-        Assert.assertFalse(AndroidPackerPlugin.isVersionSupported('0.13.1'))
-        Assert.assertTrue(AndroidPackerPlugin.isVersionSupported('0.14.+'))
-        Assert.assertTrue(AndroidPackerPlugin.isVersionSupported('0.14.2'))
-        Assert.assertTrue(AndroidPackerPlugin.isVersionSupported('1.0.0-rc1'))
-        Assert.assertTrue(AndroidPackerPlugin.isVersionSupported('1.0.0'))
-    }
-
     @Test(expected = ProjectConfigurationException.class)
     public void testWithoutAndroidPlugin() {
         Project project = ProjectBuilder.builder().build()
@@ -42,14 +32,6 @@ class AndroidPackerPluginTest {
         new AndroidPackerPlugin().apply(project)
     }
 
-    @Test(expected = IllegalStateException.class)
-    public void testUnSupportedAndroidPlugin() {
-        Project project = ProjectBuilder.builder().build()
-        configBuildScript(project, 'com.android.tools.build:gradle:0.13.1')
-        project.apply plugin: 'com.android.application'
-        new AndroidPackerPlugin().apply(project)
-        project.evaluate()
-    }
 
 //    @Test
 //    public void testVariantsAndBuildTypes() {
