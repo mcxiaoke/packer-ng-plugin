@@ -265,11 +265,31 @@ dependencies {
 
 本项目参考了公司内部Android项目使用的多渠道打包工具，最初作者是 [googolmo](https://github.com/googolmo)，文件名模板自定义部分的代码修改自此项目 [android-appversion-gradle-plugin](https://github.com/hamsterksu/android-appversion-gradle-plugin)
 
+------
 
-## 项目许可
+## 关于作者
 
+#### 联系方式
+* Blog: <http://blog.mcxiaoke.com>
+* Github: <https://github.com/mcxiaoke>
+* Email: [mail@mcxiaoke.com](mailto:mail@mcxiaoke.com)
 
-    Copyright 2014 Xiaoke Zhang
+#### 开源项目
+
+* Next公共组件库: <https://github.com/mcxiaoke/Android-Next>
+* Gradle渠道打包: <https://github.com/mcxiaoke/gradle-packer-plugin>
+* EventBus实现xBus: <https://github.com/mcxiaoke/xBus>
+* Rx文档中文翻译: <https://github.com/mcxiaoke/RxDocs>
+* MQTT协议中文版: <https://github.com/mcxiaoke/mqtt>
+* 蘑菇饭App: <https://github.com/mcxiaoke/minicat>
+* 饭否客户端: <https://github.com/mcxiaoke/fanfouapp-opensource>
+* Volley镜像: <https://github.com/mcxiaoke/android-volley>
+
+------
+
+## License
+
+    Copyright 2014 - 2015 Xiaoke Zhang
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -283,4 +303,3 @@ dependencies {
     See the License for the specific language governing permissions and
     limitations under the License.
 
-I
