@@ -1,17 +1,19 @@
 buildscript {
     repositories {
         maven { url '/tmp/repo/' }
-        mavenCentral()
+        jcenter()
         maven { url 'https://oss.sonatype.org/content/repositories/snapshots' }
     }
 
     dependencies {
-        classpath 'com.android.tools.build:gradle:1.2.3'
-        classpath 'com.mcxiaoke.gradle:packer:1.0.4-SNAPSHOT'
+        classpath 'com.android.tools.build:gradle:1.3.1'
+        classpath 'com.mcxiaoke.gradle:packer-ng:0.9.1-SNAPSHOT'
     }
 }
 
 repositories {
+    maven { url '/tmp/repo/' }
+    jcenter()
     mavenCentral()
     maven { url 'https://oss.sonatype.org/content/repositories/snapshots' }
 }
@@ -19,28 +21,38 @@ repositories {
 apply plugin: 'com.android.application'
 apply plugin: 'packer'
 
-packer {
-    // type:file
-    archiveOutput = file(new File(project.rootProject.buildDir.path, "myapks"))
-    // type:String
-    manifestMatcher = ['UMENG_CHANNEL','Promotion_Market', 'Test_Value']
-    // type:groovy String template
-    archiveNameFormat = '${appName}-${appPkg}-v${versionName}-${versionCode}-${buildType}-${flavorName}-${buildTime}'
-    buildNumberAuto = true
-    buildNumberTypeMatcher = ['release']
 
+// https://code.google.com/p/android/issues/detail?id=171089
+dependencies {
+    compile project(':helper')
+    compile fileTree(dir: 'libs', include: ['*.jar'])
+    compile 'com.android.support:support-v4:22.0.0'
+    compile 'com.android.support:appcompat-v7:22.0.0'
+    compile 'com.jakewharton:butterknife:6.0.0'
+    compile('com.mcxiaoke.next:core:1.2.0@aar') {
+        exclude group: 'com.android.support', module: 'support-v4'
+    }
+    compile('com.mcxiaoke.next:http:1.2.0@aar')
+    compile('com.mcxiaoke.next:ui:1.2.0@aar') {
+        exclude group: 'com.android.support', module: 'support-v4'
+    }
+}
+
+packer {
+    archiveOutput = file(new File(project.rootProject.buildDir.path, "myapks"))
 }
 
 android {
-    compileSdkVersion 21
-    buildToolsVersion "22.0.1"
+    compileSdkVersion Integer.parseInt(project.COMPILE_SDK_VERSION)
+    buildToolsVersion project.BUILD_TOOLS_VERSION
+
+    compileOptions.encoding = "UTF-8"
 
     defaultConfig {
-        applicationId "com.mcxiaoke.packer.sample"
-        minSdkVersion 15
-        targetSdkVersion 21
-        versionCode 12345
-        versionName "1.2.3"
+        versionName project.VERSION_NAME
+        versionCode Integer.parseInt(project.VERSION_CODE)
+        minSdkVersion Integer.parseInt(project.MIN_SDK_VERSION)
+        targetSdkVersion Integer.parseInt(project.TARGET_SDK_VERSION)
     }
 
     signingConfigs {
@@ -83,24 +95,11 @@ android {
 
     lintOptions {
         abortOnError false
+        htmlReport true
     }
 
-    tasks.withType(JavaCompile) {
-        options.encoding = 'UTF-8'
+    packagingOptions {
+        exclude 'LICENSE.txt'
     }
-}
 
-// https://code.google.com/p/android/issues/detail?id=171089
-dependencies {
-    compile fileTree(dir: 'libs', include: ['*.jar'])
-    compile 'com.android.support:support-v4:21.0.2'
-    compile 'com.android.support:appcompat-v7:21.0.2'
-    compile 'com.jakewharton:butterknife:6.0.0'
-    compile('com.mcxiaoke.next:core:1.0.4@aar') {
-        exclude group: 'com.android.support', module: 'support-v4'
-    }
-    compile('com.mcxiaoke.next:http:1.0.8-SNAPSHOT@aar')
-    compile('com.mcxiaoke.next:ui:1.0.8-SNAPSHOT@aar') {
-        exclude group: 'com.android.support', module: 'support-v4'
-    }
 }

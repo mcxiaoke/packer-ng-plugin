@@ -1,14 +1,17 @@
-package com.mcxiaoke.packer
+package com.mcxiaoke.packer.ng
 
 import org.gradle.api.Project
 
 // Android Packer Plugin Extension
-class AndroidPackerExtension {
+class PackerNgExtension {
+    static final String DEFAULT_NAME_TEMPLATE = '${appPkg}-${flavorName}-${buildType}-v${versionName}-${versionCode}'
 
     /**
      *  archive task output dir
      */
     File archiveOutput
+
+    File tempOutput
 
     /**
      * file name template string
@@ -27,25 +30,10 @@ class AndroidPackerExtension {
      */
     String archiveNameFormat
 
-    /**
-     *  manifest meta-data key list
-     */
-    List<String> manifestMatcher
-
-    /**
-     * support build number auto increment
-     *
-     * store in file: packer.properties
-     */
-    boolean buildNumberAuto
-    /**
-     *  auto build number build type list
-     */
-    List<String> buildNumberTypeMatcher
-
-
-    AndroidPackerExtension(Project project) {
+    PackerNgExtension(Project project) {
         archiveOutput = new File(project.rootProject.buildDir, "archives")
+        tempOutput = new File(project.rootProject.buildDir, "temp")
+        archiveNameFormat = DEFAULT_NAME_TEMPLATE
     }
 
 

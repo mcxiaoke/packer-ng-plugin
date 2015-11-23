@@ -1,6 +1,5 @@
-package com.mcxiaoke.packer
+package com.mcxiaoke.packer.ng
 
-import org.junit.Assert
 import org.gradle.api.Project
 import org.gradle.api.ProjectConfigurationException
 import org.gradle.testfixtures.ProjectBuilder
@@ -21,7 +20,7 @@ class AndroidPackerPluginTest {
     public void testWithoutAndroidPlugin() {
         Project project = ProjectBuilder.builder().build()
         configBuildScript(project, 'com.android.tools.build:gradle:1.0.0')
-        new AndroidPackerPlugin().apply(project)
+        new PackerNgPlugin().apply(project)
     }
 
     @Test
@@ -29,7 +28,7 @@ class AndroidPackerPluginTest {
         Project project = ProjectBuilder.builder().build()
         configBuildScript(project, 'com.android.tools.build:gradle:1.0.0')
         project.apply plugin: 'com.android.application'
-        new AndroidPackerPlugin().apply(project)
+        new PackerNgPlugin().apply(project)
     }
 
 
@@ -50,7 +49,7 @@ class AndroidPackerPluginTest {
         Project project = ProjectBuilder.builder().withName('plugin-test').build()
 //        configBuildScript(project, 'com.android.tools.build:gradle:1.0.0')
         project.apply plugin: 'com.android.application'
-        project.apply plugin: 'packer'
+        project.apply plugin: 'modifier'
         project.android {
             compileSdkVersion 21
             buildToolsVersion "21.1.1"
@@ -60,7 +59,7 @@ class AndroidPackerPluginTest {
                 targetSdkVersion 21
                 versionCode 1
                 versionName "1.0.0"
-                applicationId 'com.mcxiaoke.packer.test'
+                applicationId 'com.mcxiaoke.modifier.test'
             }
 
             signingConfigs {

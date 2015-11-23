@@ -1,4 +1,4 @@
-package com.mcxiaoke.packer
+package com.mcxiaoke.packer.ng
 import org.gradle.api.DefaultTask
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.TaskAction
@@ -18,12 +18,12 @@ class CleanArchivesTask extends DefaultTask {
 
     @TaskAction
     void showMessage() {
-        project.logger.info("${name}: ${description}")
+        logger.info("${name}: ${description}")
     }
 
     @TaskAction
     void deleteAll() {
-        project.logger.info("${name}: delete all files in ${target.absolutePath}")
+        logger.info("${name}: delete all files in ${target.absolutePath}")
         deleteDir(target)
     }
 

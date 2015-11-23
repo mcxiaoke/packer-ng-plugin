@@ -16,6 +16,7 @@ import android.os.Build.VERSION_CODES;
 import android.os.Bundle;
 import android.support.v7.app.ActionBarActivity;
 import android.util.DisplayMetrics;
+import android.util.Log;
 import android.view.Display;
 import android.view.ViewGroup;
 import android.view.ViewGroup.LayoutParams;
@@ -25,8 +26,9 @@ import butterknife.InjectView;
 import com.mcxiaoke.next.utils.AndroidUtils;
 import com.mcxiaoke.next.utils.LogUtils;
 import com.mcxiaoke.next.utils.StringUtils;
-import com.mcxiaoke.packer.sample.BuildConfig;
-import com.mcxiaoke.packer.sample.R;
+import com.mcxiaoke.packer.helper.PackerNg;
+import com.mcxiaoke.packer.ng.sample.BuildConfig;
+import com.mcxiaoke.packer.ng.sample.R;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
@@ -43,6 +45,7 @@ public class MainActivity extends ActionBarActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        loadMarket();
         setContentView(R.layout.act_main);
         ButterKnife.inject(this);
         addBuildConfigSection();
@@ -52,6 +55,15 @@ public class MainActivity extends ActionBarActivity {
         addDeviceInfoSection();
         addBuildPropsSection();
 
+    }
+
+    private void loadMarket() {
+        final PackerNg packer = new PackerNg(this);
+        final long start = System.nanoTime();
+        final String market = packer.getMarket();
+        final long end = System.nanoTime();
+        Log.e(TAG, "loadMarket() using " + (end - start) / 1000 + "ms, market is " + market);
+        packer.test(1000);
     }
 
     private void addAppInfoSection() {
