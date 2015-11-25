@@ -1,10 +1,12 @@
 package com.mcxiaoke.packer.ng
+
 import com.android.build.gradle.api.BaseVariant
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.ProjectConfigurationException
 import org.gradle.api.Task
 import org.gradle.api.tasks.StopExecutionException
+
 // Android Multi Packer Plugin Source
 class PackerNgPlugin implements Plugin<Project> {
     static final String PLUGIN_NAME = "packer"
@@ -97,7 +99,7 @@ class PackerNgPlugin implements Plugin<Project> {
                     markets.add(market)
                 }
             } else {
-                warn("invalid line found in market file --> ${number}:'${line}'")
+                warn("parseMarkets() skip invalid line: ${number}:[${line}]")
             }
         }
         return true
@@ -188,7 +190,7 @@ class PackerNgPlugin implements Plugin<Project> {
  * @param vars vars
  */
     void debug(String msg, Object... vars) {
-        project.logger.debug(msg, vars)
+        project.logger.info(msg, vars)
     }
 
     void warn(String msg, Object... vars) {

@@ -36,9 +36,11 @@ class ArchiveAllApkTask extends DefaultTask {
 
     @TaskAction
     void modify() {
+        logger.info("====================ARCHIVE APK TASK START====================")
         File target = theVariant.outputs[0].outputFile
         File output = theExtension.archiveOutput
-        logger.info("${name} File: ${target.absolutePath}")
+        BufferedWriter logfile = new File(output, "log.txt").newWriter("UTF-8");
+        logger.info(":${name} target: ${target.absolutePath}")
         File tempDir = new File(project.rootProject.buildDir, "apkTemp")
         if (!tempDir.exists()) {
             tempDir.mkdirs()
@@ -47,21 +49,26 @@ class ArchiveAllApkTask extends DefaultTask {
             output.mkdirs()
         }
         PackerNg.deleteDir(output)
+        logger.info(":${name} temp dir:${tempDir.absolutePath}")
         for (String market : theMarkets) {
             String apkName = buildApkName(theVariant, market)
-            logger.info("${name}: ${apkName}")
             File tempFile = new File(tempDir, apkName)
             File finalFile = new File(output, apkName)
             PackerNg.copyFile(target, tempFile)
             PackerNg.writeMarket(tempFile, market)
             if (PackerNg.verifyMarket(tempFile, market)) {
                 PackerNg.copyFile(tempFile, finalFile)
-                logger.info("${name} Success: ${apkName}")
+                logger.info(":${name} processed apk file for [${market}]!")
+                logfile.writeLine("processed: ${apkName}")
             } else {
-                logger.warn("${name} Failure: ${apkName}")
+                logger.warn(":${name} failed to process apk file for [${market}]!")
+                logfile.writeLine("aborted: ${apkName}")
             }
         }
+        logfile.close()
+        logger.info(":${name} ${theMarkets.size()} market apks are saved to ${output.absolutePath}")
         PackerNg.deleteDir(tempDir)
+        logger.info("====================ARCHIVE APK TASK END====================")
     }
 
     /**
@@ -86,8 +93,6 @@ class ArchiveAllApkTask extends DefaultTask {
         def engine = new SimpleTemplateEngine()
         def template = theExtension.archiveNameFormat == null ? defaultTemplate : theExtension.archiveNameFormat
         def fileName = engine.createTemplate(template).make(nameMap).toString()
-        def apkName = fileName + '.apk'
-        logger.debug "buildApkName() final $apkName"
-        return apkName
+        return fileName + '.apk'
     }
 }

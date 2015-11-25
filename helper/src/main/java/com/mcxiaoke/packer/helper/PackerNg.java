@@ -7,6 +7,9 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.RandomAccessFile;
+import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.MappedByteBuffer;
@@ -25,6 +28,31 @@ public final class PackerNg {
     private static final int SHORT_LENGTH = 2;
     private static final String PREFIX = "MARKET=";
     private static final byte[] MAGIC = new byte[]{0x21, 0x5a, 0x58, 0x4b, 0x21}; //!ZXK!
+
+    // for android code
+    public static String getMarket(final Object context) {
+        try {
+            final String sourceDir = getSourceDir(context);
+            return PackerNg.readMarket(new File(sourceDir));
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    // for android code
+    private static String getSourceDir(final Object context)
+            throws ClassNotFoundException,
+            InvocationTargetException,
+            IllegalAccessException,
+            NoSuchFieldException,
+            NoSuchMethodException {
+        final Class<?> contextClass = Class.forName("android.content.Context");
+        final Class<?> applicationInfoClass = Class.forName("android.content.pm.ApplicationInfo");
+        final Method getApplicationInfoMethod = contextClass.getMethod("getApplicationInfo");
+        final Object appInfo = getApplicationInfoMethod.invoke(context);
+        final Field sourceDirField = applicationInfoClass.getField("sourceDir");
+        return (String) sourceDirField.get(appInfo);
+    }
 
     private static boolean isMagicMatched(byte[] buffer) {
         if (buffer.length != MAGIC.length) {
