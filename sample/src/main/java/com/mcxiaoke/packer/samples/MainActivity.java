@@ -5,7 +5,6 @@ import android.app.ActivityManager;
 import android.app.ActivityManager.MemoryInfo;
 import android.content.Context;
 import android.content.pm.ApplicationInfo;
-import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.graphics.Point;
@@ -16,7 +15,6 @@ import android.os.Build.VERSION_CODES;
 import android.os.Bundle;
 import android.support.v7.app.ActionBarActivity;
 import android.util.DisplayMetrics;
-import android.util.Log;
 import android.view.Display;
 import android.view.ViewGroup;
 import android.view.ViewGroup.LayoutParams;
@@ -26,7 +24,7 @@ import butterknife.InjectView;
 import com.mcxiaoke.next.utils.AndroidUtils;
 import com.mcxiaoke.next.utils.LogUtils;
 import com.mcxiaoke.next.utils.StringUtils;
-import com.mcxiaoke.packer.helper.PackerNg;
+import com.mcxiaoke.packer.helper.MarketPacker;
 import com.mcxiaoke.packer.ng.sample.BuildConfig;
 import com.mcxiaoke.packer.ng.sample.R;
 
@@ -58,26 +56,23 @@ public class MainActivity extends ActionBarActivity {
     }
 
     private void loadMarket() {
-        final PackerNg packer = new PackerNg(this);
-        final long start = System.nanoTime();
-        final String market = packer.getMarket();
-        final long end = System.nanoTime();
-        Log.e(TAG, "loadMarket() using " + (end - start) / 1000 + "ms, market is " + market);
-        packer.test(1000);
+        MarketPacker.setDebug(this, true);
     }
 
     private void addAppInfoSection() {
         try {
-            final PackageInfo pi = getPackageManager().getPackageInfo(getPackageName(), 0);
-            final ApplicationInfo info = pi.applicationInfo;
+            final ApplicationInfo info = getApplicationInfo();
             StringBuilder builder = new StringBuilder();
             builder.append("[AppInfo]\n");
+            builder.append("Market: ").append(MarketPacker.getMarket(this)).append("\n");
             builder.append("Name: ").append(getString(info.labelRes)).append("\n");
             builder.append("Package: ").append(BuildConfig.APPLICATION_ID).append("\n");
             builder.append("VersionCode: ").append(BuildConfig.VERSION_CODE).append("\n");
             builder.append("VersionName: ").append(BuildConfig.VERSION_NAME).append("\n");
             builder.append("ProcessName: ").append(info.processName).append("\n");
+            builder.append("CodePath: ").append(getPackageCodePath()).append("\n");
             builder.append("SourceDir: ").append(info.sourceDir).append("\n");
+            builder.append("PubSourceDir: ").append(info.publicSourceDir).append("\n");
             builder.append("DataDir: ").append(info.dataDir).append("\n");
             builder.append("Signature:\n");
             builder.append(AndroidUtils.getSignatureInfo(this)).append("\n");

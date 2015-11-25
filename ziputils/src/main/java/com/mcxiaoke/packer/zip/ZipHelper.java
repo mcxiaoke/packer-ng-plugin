@@ -9,7 +9,9 @@ import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
+import java.nio.channels.FileChannel.MapMode;
 import java.util.zip.ZipFile;
 
 /**
@@ -19,6 +21,7 @@ import java.util.zip.ZipFile;
  */
 public final class ZipHelper {
     private static final String UTF_8 = "UTF-8";
+    private static final int ZIP_COMMENT_MAX_LENGTH = 65535;
     private static final int SHORT_LENGTH = 2;
     private static final String PREFIX = "MARKET=";
     private static final byte[] MAGIC = new byte[]{0x21, 0x5a, 0x58, 0x4b, 0x21}; //!ZXK!
@@ -76,9 +79,10 @@ public final class ZipHelper {
         raf.close();
     }
 
-    public static String readZipComment(File file) throws IOException {
-        final RandomAccessFile raf = new RandomAccessFile(file, "rw");
+    public static String readZipCommentRaf(File file) throws IOException {
+        RandomAccessFile raf = null;
         try {
+            raf = new RandomAccessFile(file, "r");
             long index = raf.length();
             byte[] buffer = new byte[MAGIC.length];
             index -= MAGIC.length;
@@ -101,10 +105,54 @@ public final class ZipHelper {
                 }
             }
         } finally {
-            raf.close();
+            if (raf != null) {
+                raf.close();
+            }
         }
         return null;
     }
+
+    public static String readZipCommentMmp(File file) throws IOException {
+        final int mappedSize = 10240;
+        final long fz = file.length();
+        RandomAccessFile raf = null;
+        MappedByteBuffer map = null;
+        try {
+            raf = new RandomAccessFile(file, "r");
+            map = raf.getChannel().map(MapMode.READ_ONLY, fz - mappedSize, mappedSize);
+            map.order(ByteOrder.LITTLE_ENDIAN);
+            int index = mappedSize;
+            byte[] buffer = new byte[MAGIC.length];
+            index -= MAGIC.length;
+            // read magic bytes
+            map.position(index);
+            map.get(buffer);
+            // if magic bytes matched
+            if (isMagicMatched(buffer)) {
+                index -= SHORT_LENGTH;
+                map.position(index);
+                // read content length field
+                int length = map.getShort();
+                if (length > 0) {
+                    index -= length;
+                    map.position(index);
+                    // read content bytes
+                    byte[] bytesComment = new byte[length];
+                    map.get(bytesComment);
+                    return new String(bytesComment, UTF_8);
+                }
+            }
+        } finally {
+            if (map != null) {
+                map.clear();
+            }
+            if (raf != null) {
+                raf.close();
+            }
+        }
+        return null;
+    }
+
 
     public static boolean writeMarket(final File file, final String market) throws IOException {
         if (market == null || market.length() == 0) {
@@ -115,7 +163,15 @@ public final class ZipHelper {
     }
 
     public static String readMarket(final File file) throws IOException {
-        final String comment = readZipComment(file);
+        final String comment = readZipCommentRaf(file);
+        if (comment == null) {
+            return null;
+        }
+        return comment.replace(PREFIX, "");
+    }
+
+    public static String readMarketMmp(final File file) throws IOException {
+        final String comment = readZipCommentMmp(file);
         if (comment == null) {
             return null;
         }
