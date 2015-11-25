@@ -1,8 +1,7 @@
 package com.mcxiaoke.packer.ng
 
 import com.android.build.gradle.api.BaseVariant
-import com.mcxiaoke.packer.ng.PackerNgExtension
-import com.mcxiaoke.packer.zip.ZipHelper
+import com.mcxiaoke.packer.helper.PackerNg
 import groovy.text.SimpleTemplateEngine
 import org.gradle.api.DefaultTask
 import org.gradle.api.tasks.Input
@@ -39,7 +38,7 @@ class ArchiveAllApkTask extends DefaultTask {
     void modify() {
         File target = theVariant.outputs[0].outputFile
         File output = theExtension.archiveOutput
-        project.logger.info("${name}: target: ${target.absolutePath}")
+        logger.info("${name} File: ${target.absolutePath}")
         File tempDir = new File(project.rootProject.buildDir, "apkTemp")
         if (!tempDir.exists()) {
             tempDir.mkdirs()
@@ -47,21 +46,22 @@ class ArchiveAllApkTask extends DefaultTask {
         if (!output.exists()) {
             output.mkdirs()
         }
+        PackerNg.deleteDir(output)
         for (String market : theMarkets) {
             String apkName = buildApkName(theVariant, market)
             logger.info("${name}: ${apkName}")
             File tempFile = new File(tempDir, apkName)
             File finalFile = new File(output, apkName)
-            ZipHelper.copyFile(target, tempFile)
-
-            ZipHelper.writeMarket(tempFile, market)
-            if (ZipHelper.verifyMarket(tempFile, market)) {
-                ZipHelper.copyFile(tempFile, finalFile)
+            PackerNg.copyFile(target, tempFile)
+            PackerNg.writeMarket(tempFile, market)
+            if (PackerNg.verifyMarket(tempFile, market)) {
+                PackerNg.copyFile(tempFile, finalFile)
+                logger.info("${name} Success: ${apkName}")
             } else {
-                logger.warn("${name}: failed to process file: ${apkName}")
+                logger.warn("${name} Failure: ${apkName}")
             }
         }
-        ZipHelper.deleteDir(tempDir)
+        PackerNg.deleteDir(tempDir)
     }
 
     /**

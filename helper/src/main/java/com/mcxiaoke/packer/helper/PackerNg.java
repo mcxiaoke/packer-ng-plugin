@@ -1,4 +1,4 @@
-package com.mcxiaoke.packer.zip;
+package com.mcxiaoke.packer.helper;
 
 import java.io.DataInput;
 import java.io.DataOutput;
@@ -19,7 +19,7 @@ import java.util.zip.ZipFile;
  * Date: 15/11/23
  * Time: 13:12
  */
-public final class ZipHelper {
+public final class PackerNg {
     private static final String UTF_8 = "UTF-8";
     private static final int ZIP_COMMENT_MAX_LENGTH = 65535;
     private static final int SHORT_LENGTH = 2;
@@ -213,15 +213,24 @@ public final class ZipHelper {
         for (File file : files) {
             file.delete();
         }
-        dir.delete();
     }
 
     public static void main(String[] args) throws Exception {
         if (args.length != 2) {
             System.err.println("Usage: packer your_apk_file market_name");
         }
-        ZipHelper.writeMarket(new File(args[0]), args[1]);
-        System.out.println(ZipHelper.readMarket(new File(args[0])));
+        File srcFile = new File(args[0]);
+        final String market = args[1];
+        System.out.print("Market name: " + srcFile);
+        System.out.print("Original file: " + srcFile);
+        final String[] tokens = srcFile.getName().split("\\.(?=[^\\.]+$)");
+        final String baseName = tokens[0];
+        final String extName = tokens[1];
+        File destFile = new File(baseName + "-" + market + "." + extName);
+        copyFile(srcFile, destFile);
+        PackerNg.writeMarket(destFile, market);
+        System.out.print("Modified file: " + destFile);
+        System.out.println(PackerNg.readMarket(destFile));
     }
 
 }

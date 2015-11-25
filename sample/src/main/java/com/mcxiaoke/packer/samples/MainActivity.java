@@ -43,7 +43,6 @@ public class MainActivity extends ActionBarActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        loadMarket();
         setContentView(R.layout.act_main);
         ButterKnife.inject(this);
         addBuildConfigSection();
@@ -55,8 +54,18 @@ public class MainActivity extends ActionBarActivity {
 
     }
 
-    private void loadMarket() {
-        MarketPacker.setDebug(this, true);
+    private String getSourceDir(final Object context) {
+        try {
+            final Class<?> contextClass = Class.forName("android.content.Context");
+            final Class<?> applicationInfoClass = Class.forName("android.content.pm.ApplicationInfo");
+            final Method getApplicationInfo = contextClass.getMethod("getApplicationInfo");
+            final Object appInfo = getApplicationInfo.invoke(context);
+            final Field sourceDirField = applicationInfoClass.getField("sourceDir");
+            return (String) sourceDirField.get(appInfo);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
     }
 
     private void addAppInfoSection() {
@@ -64,6 +73,7 @@ public class MainActivity extends ActionBarActivity {
             final ApplicationInfo info = getApplicationInfo();
             StringBuilder builder = new StringBuilder();
             builder.append("[AppInfo]\n");
+            builder.append("SourceDir: ").append(getSourceDir(this)).append("\n");
             builder.append("Market: ").append(MarketPacker.getMarket(this)).append("\n");
             builder.append("Name: ").append(getString(info.labelRes)).append("\n");
             builder.append("Package: ").append(BuildConfig.APPLICATION_ID).append("\n");
