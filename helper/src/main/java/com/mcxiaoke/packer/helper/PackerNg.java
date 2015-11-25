@@ -15,6 +15,7 @@ import java.nio.ByteOrder;
 import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.channels.FileChannel.MapMode;
+import java.util.Arrays;
 import java.util.zip.ZipFile;
 
 /**
@@ -243,22 +244,42 @@ public final class PackerNg {
         }
     }
 
-    public static void main(String[] args) throws Exception {
-        if (args.length != 2) {
-            System.err.println("Usage: packer your_apk_file market_name");
+    private static String getExtension(final String fileName) {
+        int dot = fileName.lastIndexOf(".");
+        if (dot > 0) {
+            return fileName.substring(dot + 1);
+        } else {
+            return null;
         }
+    }
+
+    private static String getBaseName(final String fileName) {
+        int dot = fileName.lastIndexOf(".");
+        if (dot > 0) {
+            return fileName.substring(0, dot);
+        } else {
+            return fileName;
+        }
+    }
+
+    public static void main(String[] args) throws Exception {
+        if (args.length < 2) {
+            System.err.println("Usage: packer-ng your_apk_file market_name");
+            System.exit(1);
+        }
+        System.out.println("packer ng arguments: " + Arrays.toString(args));
         File srcFile = new File(args[0]);
         final String market = args[1];
         System.out.print("Market name: " + srcFile);
         System.out.print("Original file: " + srcFile);
-        final String[] tokens = srcFile.getName().split("\\.(?=[^\\.]+$)");
-        final String baseName = tokens[0];
-        final String extName = tokens[1];
+        final String baseName = getBaseName(srcFile.getName());
+        final String extName = getExtension(srcFile.getName());
         File destFile = new File(baseName + "-" + market + "." + extName);
         copyFile(srcFile, destFile);
         PackerNg.writeMarket(destFile, market);
-        System.out.print("Modified file: " + destFile);
-        System.out.println(PackerNg.readMarket(destFile));
+        System.out.print("processed file: " + destFile
+                + " verified:" + PackerNg.verifyMarket(destFile, market)
+                + " market:" + PackerNg.readMarket(destFile));
     }
 
 }

@@ -1,13 +1,38 @@
+buildscript {
+    repositories {
+        jcenter()
+        maven {
+            url "https://plugins.gradle.org/m2/"
+        }
+    }
+    dependencies {
+        classpath "us.kirchmeier:gradle-capsule-plugin:1.0.1"
+    }
+}
+
 repositories {
     jcenter()
 }
 
 apply plugin: 'java'
+apply plugin: 'us.kirchmeier.capsule'
 
 sourceCompatibility = 1.6
 targetCompatibility = 1.6
 
 dependencies {
+}
+
+jar {
+    manifest {
+        attributes 'Main-Class': 'com.mcxiaoke.packer.helper.PackerNg'
+    }
+}
+
+task helperJar(type: FatCapsule) {
+    applicationClass 'com.mcxiaoke.packer.helper.PackerNg'
+    baseName 'PackerNg'
+    reallyExecutable
 }
 
 apply from: '../gradle-mvn-push.gradle'

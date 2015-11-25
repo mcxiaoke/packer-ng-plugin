@@ -38,35 +38,38 @@ class ArchiveAllApkTask extends DefaultTask {
     void modify() {
         logger.info("====================ARCHIVE APK TASK START====================")
         File target = theVariant.outputs[0].outputFile
-        File output = theExtension.archiveOutput
-        BufferedWriter logfile = new File(output, "log.txt").newWriter("UTF-8");
+        File outputDir = theExtension.archiveOutput
         logger.info(":${name} target: ${target.absolutePath}")
-        File tempDir = new File(project.rootProject.buildDir, "apkTemp")
+        File tempDir = new File(project.rootProject.buildDir, "temp")
         if (!tempDir.exists()) {
             tempDir.mkdirs()
         }
-        if (!output.exists()) {
-            output.mkdirs()
+        if (!outputDir.exists()) {
+            outputDir.mkdirs()
         }
-        PackerNg.deleteDir(output)
+        logger.info(":${name} delete old files in ${outputDir.absolutePath}")
+        PackerNg.deleteDir(outputDir)
         logger.info(":${name} temp dir:${tempDir.absolutePath}")
-        for (String market : theMarkets) {
+        BufferedWriter logfile = new File(outputDir, "log.txt").newWriter("UTF-8");
+        theMarkets.eachWithIndex { String market, int index ->
             String apkName = buildApkName(theVariant, market)
             File tempFile = new File(tempDir, apkName)
-            File finalFile = new File(output, apkName)
+            File finalFile = new File(outputDir, apkName)
             PackerNg.copyFile(target, tempFile)
             PackerNg.writeMarket(tempFile, market)
             if (PackerNg.verifyMarket(tempFile, market)) {
+                println(":${name} processed No.${index+1} apk file for ${market}")
                 PackerNg.copyFile(tempFile, finalFile)
-                logger.info(":${name} processed apk file for [${market}]!")
-                logfile.writeLine("processed: ${apkName}")
+                logfile.writeLine("${apkName}")
             } else {
-                logger.warn(":${name} failed to process apk file for [${market}]!")
+                logger.error(":${name} failed to process ${market} apk file!")
                 logfile.writeLine("aborted: ${apkName}")
             }
         }
+        logfile.flush()
         logfile.close()
-        logger.info(":${name} ${theMarkets.size()} market apks are saved to ${output.absolutePath}")
+        println(":${name} ${theMarkets.size()} apks saved to ${outputDir.path}")
+        logger.info(":${name} delete temp files in ${tempDir.absolutePath}")
         PackerNg.deleteDir(tempDir)
         logger.info("====================ARCHIVE APK TASK END====================")
     }
