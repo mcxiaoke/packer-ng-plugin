@@ -29,10 +29,18 @@ jar {
     }
 }
 
-task helperJar(type: FatCapsule) {
+task fatCapsule(type: FatCapsule) {
     applicationClass 'com.mcxiaoke.packer.helper.PackerNg'
-    baseName 'PackerNg'
+    baseName 'packer-ng'
     reallyExecutable
+}
+
+task helperJar(type: Copy) {
+    from fatCapsule.outputs
+    into new File(project.rootProject.rootDir, "tools")
+    exclude '*SNAPSHOT*'
+    dependsOn fatCapsule
+
 }
 
 apply from: '../gradle-mvn-push.gradle'

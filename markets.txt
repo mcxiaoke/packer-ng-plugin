@@ -35,3 +35,6 @@ sogou_market#搜狗市场
 sony_market#sony商城
 UC_Market#UC浏览器
 360SearchApp#360SearchApp
+HelloMarket
+OkMarket#
+#ErrorMarket

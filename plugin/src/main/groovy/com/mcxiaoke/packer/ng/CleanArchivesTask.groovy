@@ -1,7 +1,9 @@
 package com.mcxiaoke.packer.ng
+
 import org.gradle.api.DefaultTask
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.TaskAction
+
 /**
  * User: mcxiaoke
  * Date: 14/12/19
@@ -24,18 +26,7 @@ class CleanArchivesTask extends DefaultTask {
     @TaskAction
     void deleteAll() {
         logger.info("${name}: delete all files in ${target.absolutePath}")
-        deleteDir(target)
+        target.deleteDir()
     }
 
-    static void deleteDir(File dir) {
-        if (dir && dir.listFiles()) {
-            dir.listFiles().sort().each { File file ->
-                if (file.isFile()) {
-                    file.delete()
-                } else {
-                    file.deleteDir()
-                }
-            }
-        }
-    }
 }

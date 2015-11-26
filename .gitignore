@@ -1,7 +1,9 @@
 .idea/
 .gradle/
 build/
+apks/
 repo/
 *.iml
+*.apk
 .DS_Store
 packer.properties

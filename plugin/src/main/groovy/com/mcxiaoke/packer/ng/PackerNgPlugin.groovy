@@ -24,9 +24,8 @@ class PackerNgPlugin implements Plugin<Project> {
 
         this.project = project
         applyExtension()
-        // add markets must before evaluate
-        def hasMarkets = parseMarkets()
-        applyPluginTasks(hasMarkets)
+        parseMarkets()
+        applyPluginTasks()
     }
 
     void applyExtension() {
@@ -35,13 +34,13 @@ class PackerNgPlugin implements Plugin<Project> {
         this.modifierExtension = project.extensions.create(PLUGIN_NAME, PackerNgExtension, project)
     }
 
-    void applyPluginTasks(hasMarkets) {
+    void applyPluginTasks() {
         project.afterEvaluate {
             checkCleanTask()
             //applySigningConfigs()
             project.android.applicationVariants.all { BaseVariant variant ->
                 if (variant.buildType.name != "debug") {
-                    if (hasMarkets) {
+                    if (markets) {
                         // modify  archive apk
                         // only when markets found and not debug
                         debug("applyPluginTasks() archive task.")
@@ -68,40 +67,40 @@ class PackerNgPlugin implements Plugin<Project> {
         // check markets file exists
         def marketsFilePath = project.property(P_MARKET).toString()
         if (!marketsFilePath) {
-            warn("parseMarkets() invalid market file path, ignore")
-            throw new StopExecutionException("invalid market file path : '${marketsFilePath}'")
+            warn("parseMarkets()  markets file path property not found")
+            // if not set, use default ./markets.txt
+            marketsFilePath = "markets.txt"
         }
 
-        File marketsFile = project.rootProject.file(marketsFilePath)
-        if (!marketsFile.exists()) {
-            debug("parseMarkets() market file not found, ignore")
-            throw new StopExecutionException("market file not found: '${marketsFile.absolutePath}'")
+        File file = project.rootProject.file(marketsFilePath)
+        if (!file.exists()) {
+            debug("parseMarkets() markets file not found")
+            throw new StopExecutionException("market file not found: '${file.absolutePath}'")
         }
 
-        if (!marketsFile.isFile()) {
-            warn("parseMarkets() market file is not a file, ignore")
-            throw new StopExecutionException("market file is not a file: '${marketsFile.absolutePath}'")
+        if (!file.isFile()) {
+            warn("parseMarkets() markets file is not a file")
+            throw new StopExecutionException("market file is not a file: '${file.absolutePath}'")
         }
 
-        if (!marketsFile.canRead()) {
-            warn("parseMarkets() market file not readable, ignore")
-            throw new StopExecutionException("market file not readable: '${marketsFile.absolutePath}'")
+        if (!file.canRead()) {
+            warn("parseMarkets() markets file not readable")
+            throw new StopExecutionException("market file not readable: '${file.absolutePath}'")
         }
-        debug("parseMarkets() file: ${marketsFile}")
+        debug("parseMarkets() markets file: ${file.absolutePath}")
         // add all markets
-        marketsFile.eachLine { line, number ->
-            debug("parseMarkets() ${number}:'${line}'")
+        file.eachLine { line, number ->
             String[] parts = line.split('#')
             if (parts && parts[0]) {
                 def market = parts[0].trim()
                 if (market) {
-                    debug("apply new market: " + market)
                     markets.add(market)
                 }
             } else {
-                warn("parseMarkets() skip invalid line: ${number}:[${line}]")
+                warn("parseMarkets() skip invalid line ${number}:[${line}]")
             }
         }
+        debug("parseMarkets() markets:[${markets.join(', ')}]")
         return true
     }
 
@@ -125,7 +124,7 @@ class PackerNgPlugin implements Plugin<Project> {
         debug("checkArchiveTask() input: ${inputFile}")
         debug("checkArchiveTask() temp: ${tempDir}")
         debug("checkArchiveTask() output: ${outputDir}")
-        def archiveTask = project.task("archiveApk${variant.name.capitalize()}",
+        def archiveTask = project.task("apk${variant.name.capitalize()}",
                 type: ArchiveAllApkTask) {
             theVariant = variant
             theExtension = modifierExtension
@@ -137,25 +136,8 @@ class PackerNgPlugin implements Plugin<Project> {
 
         def buildTypeName = variant.buildType.name
         if (variant.name != buildTypeName) {
-            def Task task = checkArchiveAllTask(buildTypeName)
-            task.dependsOn archiveTask
+            def Task task = project.task("apk${buildTypeName.capitalize()}", dependsOn: archiveTask)
         }
-    }
-
-    /**
-     * add archiveApkType task if not added
-     * @param buildTypeName buildTypeName
-     * @return task
-     */
-    Task checkArchiveAllTask(buildTypeName) {
-        def taskName = "archiveApk${buildTypeName.capitalize()}"
-        def task = project.tasks.findByName(taskName)
-        if (task == null) {
-            task = project.task(taskName, type: ArchiveApkBuildTypeTask) {
-                typeName = buildTypeName
-            }
-        }
-        return task
     }
 
     /**
@@ -164,8 +146,8 @@ class PackerNgPlugin implements Plugin<Project> {
      */
     void checkCleanTask() {
         def output = modifierExtension.archiveOutput
-        debug("checkCleanTask() create clean archives task, path:${output}")
-        def task = project.task("cleanArchives",
+        debug("checkCleanTask() create clean archived apks task, path:${output}")
+        def task = project.task("cleanApks",
                 type: CleanArchivesTask) {
             target = output
         }
