@@ -44,7 +44,6 @@ public final class PackerNg {
         static final String UTF_8 = "UTF-8";
         static final int ZIP_COMMENT_MAX_LENGTH = 65535;
         static final int SHORT_LENGTH = 2;
-        static final String PREFIX = "MARKET=";
         static final byte[] MAGIC = new byte[]{0x21, 0x5a, 0x58, 0x4b, 0x21}; //!ZXK!
 
         // for android code
@@ -194,24 +193,16 @@ public final class PackerNg {
             if (market == null || market.length() == 0) {
                 return false;
             }
-            writeZipComment(file, PREFIX + market);
+            writeZipComment(file, market);
             return true;
         }
 
         public static String readMarket(final File file) throws IOException {
-            final String comment = readZipCommentRaf(file);
-            if (comment == null) {
-                return null;
-            }
-            return comment.replace(PREFIX, "");
+            return readZipCommentRaf(file);
         }
 
         public static String readMarketMmp(final File file) throws IOException {
-            final String comment = readZipCommentMmp(file);
-            if (comment == null) {
-                return null;
-            }
-            return comment.replace(PREFIX, "");
+            return readZipCommentMmp(file);
         }
 
         public static boolean verifyMarket(final File file, final String market) throws IOException {
