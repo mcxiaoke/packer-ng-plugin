@@ -67,41 +67,49 @@ class PackerNgPlugin implements Plugin<Project> {
         // check markets file exists
         def marketsFilePath = project.property(P_MARKET).toString()
         if (!marketsFilePath) {
-            warn("parseMarkets()  markets file path property not found")
+            println("parseMarkets()  markets file path property not found")
             // if not set, use default ./markets.txt
             marketsFilePath = "markets.txt"
         }
 
         File file = project.rootProject.file(marketsFilePath)
-        if (!file.exists()) {
-            debug("parseMarkets() markets file not found")
-            throw new StopExecutionException("market file not found: '${file.absolutePath}'")
-        }
-
-        if (!file.isFile()) {
-            warn("parseMarkets() markets file is not a file")
-            throw new StopExecutionException("market file is not a file: '${file.absolutePath}'")
-        }
-
-        if (!file.canRead()) {
-            warn("parseMarkets() markets file not readable")
-            throw new StopExecutionException("market file not readable: '${file.absolutePath}'")
+        if (!file.exists() || !file.isFile() || !file.canRead()) {
+            println("parseMarkets() invalid market file: ${file.absolutePath}")
+            throw new StopExecutionException("invalid market file: ${file.absolutePath}")
         }
         debug("parseMarkets() markets file: ${file.absolutePath}")
+        markets = readMarkets(file)
+        debug("parseMarkets() markets:$markets")
+        return true
+    }
+
+    static List<String> readMarkets(File file) {
         // add all markets
+        List<String> allMarkets = []
         file.eachLine { line, number ->
             String[] parts = line.split('#')
             if (parts && parts[0]) {
                 def market = parts[0].trim()
                 if (market) {
-                    markets.add(market)
+                    allMarkets.add(market)
                 }
             } else {
-                warn("parseMarkets() skip invalid line ${number}:[${line}]")
+                println("readMarkets() skip invalid line ${number}:'${line}'")
             }
         }
-        debug("parseMarkets() markets:[${markets.join(', ')}]")
-        return true
+        return allMarkets
+    }
+
+    static List<String> readMarkets2(File file) {
+        return file.readLines().collect {
+            String[] parts = it.split('#')
+            if (parts && parts[0]) {
+                return parts[0].trim()
+            } else {
+                println("readMarkets() skip invalid line: $it")
+                return null
+            }
+        }.grep({ it })
     }
 
 /**
@@ -110,11 +118,11 @@ class PackerNgPlugin implements Plugin<Project> {
  */
     void checkArchiveTask(BaseVariant variant) {
         if (variant.buildType.signingConfig == null) {
-            warn("${variant.name}: signingConfig is null, ignore archive task.")
+            println("${variant.name}: signingConfig is null, ignore archive task.")
             return
         }
         if (!variant.buildType.zipAlignEnabled) {
-            warn("${variant.name}: zipAlignEnabled==false, ignore archive task.")
+            println("${variant.name}: zipAlignEnabled==false, ignore archive task.")
             return
         }
         debug("checkArchiveTask() for ${variant.name}")
@@ -171,12 +179,8 @@ class PackerNgPlugin implements Plugin<Project> {
  * @param msg msg
  * @param vars vars
  */
-    void debug(String msg, Object... vars) {
-        project.logger.info(msg, vars)
-    }
-
-    void warn(String msg, Object... vars) {
-        project.logger.warn(msg, vars)
+    void debug(String msg) {
+        project.logger.info(msg)
     }
 
 }
