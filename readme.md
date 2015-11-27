@@ -3,7 +3,8 @@
 
 ## 最新版本
 
-- 2015.11.26 发布0.9.9版，使用全新的极速打包方式，只需要编译一次 
+- 2015.11.26 - 发布0.9.9版，发布Gradle插件，支持全新的极速打包方式 
+- 2015.11.27 - 发布0.9.11版，微调文件修改参数，增加Java和Python脚本
 
 ## 项目介绍
 
@@ -67,7 +68,7 @@ AnalyticsConfig.setChannel(market)
  
 ```
 
-渠道打包的命令行参数格式示例（在项目根目录执行）：  
+渠道打包的Gradle命令行参数格式示例（在项目根目录执行）：  
 
 ```shell
 ./gradlew -Pmarket=markets.txt clean apkRelease
@@ -102,6 +103,24 @@ gradlew.bat -Pmarket=markets.txt clean apkRelease
 ``` 
     
 如果没有错误，打包完成后你可以在 `${项目根目录}/build/archives/` 目录找到最终的渠道包。说明：渠道打包的Gradle Task名字是 `apk${buildType}` buildType一般是release，也可以是你自己指定的beta或者someOtherType，使用时首字母需要大写，例如release的渠道包任务名是 `apkRelease`，beta的渠道包任务名是 `apkBeta`，其它的以此类推
+
+### 命令行打包脚本
+
+如果不想使用Gradle插件，这里还有两个命令行打包脚本，在项目的 `tools` 目录里，分别是 `packer-ng-x.x.x-capsule.jar` 和 `packer-ng.py`，使用命令行打包工具，在Java代码里还是需要使用`packer-helper`包里的 `PackerNg.getMarket(Context)` 读取渠道
+
+#### Java
+
+```shell
+java -jar packer-ng-x.x.x-capsule.jar release_apk_file market_file
+// help: java -jar packer-ng-x.x.x-capsule.jar
+```
+
+#### Python
+
+```shell
+python packer-ng.py [file] [market] [output] [-h] [-i] [-t TEST]
+// help: python packer-ng.py -h
+```
 
 ### 文件名格式
 
