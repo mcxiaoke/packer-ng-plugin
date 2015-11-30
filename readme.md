@@ -3,8 +3,8 @@
 
 ## 最新版本
 
-- 2015.11.27 - 发布0.9.11版，微调文件修改参数，增加Java和Python脚本
-- 2015.11.26 - 发布0.9.9版，发布Gradle插件，支持全新的极速打包方式 
+- **v1.0.0 - 2015.11.30** - 增加Java和Python打包脚本，增加文档
+- **v0.9.0 - 2015.11.26** - 测试版发布，支持全新的极速打包方式 
 
 ## 项目介绍
 
@@ -12,7 +12,7 @@
 
 ## 使用指南
 
-[`Maven Central`](http://search.maven.org/#artifactdetails%7Ccom.mcxiaoke.gradle%7Cpacker-ng%7C1.0.0%7Cjar)
+[`Maven Central`](http://search.maven.org/#search%7Cga%7C1%7Ca%3A%22packer-ng%22)
 
 ### 修改项目根目录的 `build.gradle`
 
@@ -155,13 +155,14 @@ python packer-ng.py [file] [market] [output] [-h] [-i] [-t TEST]
 
 #### 优点
 
-- 使用APK注释保存渠道信息和MAGIC字节，从文件末尾读取渠道信息，速度飞快
+- 使用APK注释字段保存渠道信息和MAGIC字节，从文件末尾读取渠道信息，速度快
 - 实现为一个Gradle Plugin，支持定制输出APK的文件名等信息，方便CI集成
 - 提供Java版和Python的独立命令行脚本，不依赖Gradle插件，支持独立使用
+- 由于打包速度极快，单个包只需要5毫秒左右，可用于网站后台动态生成渠道包
 
 #### 缺点
 
-- 没有使用Android的productFlavors实现，无法利用flavors条件编译的功能
+- 没有使用Android的productFlavors，无法利用flavors条件编译的功能
 
 ### 文件格式
 
@@ -214,7 +215,7 @@ static final byte[] MAGIC = new byte[]{0x21, 0x5a, 0x58, 0x4b, 0x21}; //!ZXK!
 
 ```
 
-#### 读写注释实现
+#### 读写注释
 
 Java版详细的实现见 [PackerNg.java](helper/src/main/java/com/mcxiaoke/packer/helper/PackerNg.java)，Python版的实现见 [packer-ng.py](tools/packer-ng.py) 。
 
@@ -224,13 +225,6 @@ Java版详细的实现见 [PackerNg.java](helper/src/main/java/com/mcxiaoke/pack
 
 public static void writeZipComment(File file, String comment) 
 throws IOException {
-    final ZipFile zipFile = new ZipFile(file);
-    boolean hasComment = (zipFile.getComment() != null);
-    zipFile.close();
-    if (hasComment) {
-        throw new IllegalStateException("comment already exists, ignore.");
-    }
-    // {@see java.util.zip.ZipOutputStream.writeEND}
     byte[] data = comment.getBytes(UTF_8);
     final RandomAccessFile raf = new RandomAccessFile(file, "rw");
     raf.seek(file.length() - SHORT_LENGTH);
@@ -287,7 +281,7 @@ public static String readZipComment(File file) throws IOException {
 
 ```
 
-读取APK文件，由于这个库 `packer-helper` 需要同时给Gradle插件和Android项目使用，所以不能添加Android相关的依赖，但是又需要读取自身APK文件的路径，所以使用反射实现：
+读取APK文件，由于这个库 `packer-helper` 需要同时给Gradle插件和Android项目使用，所以不能添加Android相关的依赖，但是又需要读取自身APK文件的路径，使用反射实现：
 
 ```java
 
@@ -308,7 +302,7 @@ private static String getSourceDir(final Object context)
 
 ```
 
-#### Gradle Plugin实现
+#### Gradle Plugin
 
 这个和旧版插件基本一致，首先是读取渠道列表文件，保存起来，打包的时候遍历列表，复制生成的APK文件到临时文件，给临时文件写入渠道信息，然后复制到输出目录，文件名可以使用模板定制。主要代码如下：
 
@@ -328,7 +322,7 @@ def archiveTask = project.task("apk${variant.name.capitalize()}",
 
 
 // 遍历列表修改APK文件
-theMarkets.eachWithIndex { String market, index ->
+theMarkets.each { String market ->
             String apkName = buildApkName(theVariant, market)
             File tempFile = new File(tempDir, apkName)
             File finalFile = new File(outputDir, apkName)
@@ -346,7 +340,7 @@ theMarkets.eachWithIndex { String market, index ->
 
 ### 同类工具
 
-- [**gradle-packer-plugin**](https://github.com/mcxiaoke/gradle-packer-plugin) - 我去年写的渠道打包工具，完全使用Gradle系统实现，能利用Android提供的productFlavors系统的条件编译功能，无任何兼容性问题，方便集成，但是由于每次都要重新打包，速度比较慢，不适合需要大量打包的情况。（性能：300个渠道包需要一到两小事）
+- [**gradle-packer-plugin**](https://github.com/mcxiaoke/gradle-packer-plugin) - 旧版渠道打包工具，完全使用Gradle系统实现，能利用Android提供的productFlavors系统的条件编译功能，无任何兼容性问题，方便集成，但是由于每次都要重新打包，速度比较慢，不适合需要大量打包的情况。（性能：200个渠道包需要一到两小时）
 - [**Meituan-MultiChannelTool**](https://github.com/GavinCT/AndroidMultiChannelBuildTool) - 使用美团方案的实现，在APK文件的`META-INF`目里增加渠道文件，打包速度也非常快，但读取时需要遍历APK文件的数据项，比较慢，而且以后可能遇到兼容性问题
 - [**MultiChannelPackageTool**](https://github.com/seven456/MultiChannelPackageTool) - 将渠道写入APK文件的注释，这个项目没有提供Gradle插件，只有命令行工具，不方便CI集成，使用ZIP文件注释的思路就是来自此项目
 
