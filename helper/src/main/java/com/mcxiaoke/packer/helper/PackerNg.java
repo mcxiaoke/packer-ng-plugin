@@ -28,15 +28,21 @@ import java.util.List;
  */
 public final class PackerNg {
     private static final String TAG = PackerNg.class.getSimpleName();
+    private static final String EMPTY_STRING = "";
 
-    // for android code
     public static String getMarket(final Object context) {
+        return getMarket(context, EMPTY_STRING);
+    }
+
+    public static String getMarket(final Object context, final String defaultValue) {
+        String market;
         try {
             final String sourceDir = Helper.getSourceDir(context);
-            return Helper.readMarket(new File(sourceDir));
+            market = Helper.readMarket(new File(sourceDir));
         } catch (Exception e) {
-            return null;
+            market = null;
         }
+        return (market == null) ? defaultValue : market;
     }
 
     public static class Helper {
@@ -204,12 +210,8 @@ public final class PackerNg {
         }
 
 
-        public static boolean writeMarket(final File file, final String market) throws IOException {
-            if (market == null || market.length() == 0) {
-                return false;
-            }
+        public static void writeMarket(final File file, final String market) throws IOException {
             writeZipComment(file, market);
-            return true;
         }
 
         public static String readMarket(final File file) throws IOException {
