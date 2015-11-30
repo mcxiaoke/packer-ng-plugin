@@ -3,8 +3,9 @@
 
 ## 最新版本
 
+- **v1.0.1 - 2015.12.01** - 如果没有读取到渠道，默认返回空字符串
 - **v1.0.0 - 2015.11.30** - 增加Java和Python打包脚本，增加文档
-- **v0.9.0 - 2015.11.26** - 测试版发布，支持全新的极速打包方式 
+- **v0.9.9 - 2015.11.26** - 测试版发布，支持全新的极速打包方式 
 
 ## 项目介绍
 
@@ -48,6 +49,7 @@ dependencies {
 // 如果没有使用PackerNg打包添加渠道，返回的是`null`
 // com.mcxiaoke.packer.helper.PackerNg
 final String market = PackerNg.getMarket(Context)
+// 或者使用 PackerNg.getMarket(Context,defaultValue)
 // 之后就可以使用了，比如友盟可以这样设置
 AnalyticsConfig.setChannel(market)
 
