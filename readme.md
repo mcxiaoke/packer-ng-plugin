@@ -25,7 +25,7 @@ buildscript {
 	}
 	// 在buildscript里加入packer-ng依赖
 	dependencies{
-		classpath 'com.mcxiaoke.gradle:packer-ng:1.0.+'
+		classpath 'com.mcxiaoke.gradle:packer-ng:1.0.1'
 	}
 }  
 ```
@@ -38,9 +38,11 @@ apply plugin: 'packer'
 
 dependencies {
 	// 加入packer-helper依赖
-	compile 'com.mcxiaoke.gradle:packer-helper:1.0.+'
+	compile 'com.mcxiaoke.gradle:packer-helper:1.0.1'
 } 
 ```
+
+**注意：`packer-ng` 和 `packer-helper` 的版本号需要保持一致**
 
 ### Java代码中获取当前渠道
 
