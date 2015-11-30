@@ -56,7 +56,6 @@ class ArchiveAllApkTask extends DefaultTask {
             String apkName = buildApkName(theVariant, market)
             File tempFile = new File(tempDir, apkName)
             File finalFile = new File(outputDir, apkName)
-            tempFile << originalFile.bytes
             copyTo(originalFile, tempFile)
             PackerNg.Helper.writeMarket(tempFile, market)
             if (PackerNg.Helper.verifyMarket(tempFile, market)) {

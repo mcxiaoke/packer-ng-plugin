@@ -20,7 +20,6 @@ import java.nio.channels.FileChannel.MapMode;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.zip.ZipFile;
 
 /**
  * User: mcxiaoke
@@ -92,11 +91,8 @@ public final class PackerNg {
 
 
         public static void writeZipComment(File file, String comment) throws IOException {
-            final ZipFile zipFile = new ZipFile(file);
-            boolean hasComment = (zipFile.getComment() != null);
-            zipFile.close();
-            if (hasComment) {
-                throw new IllegalStateException("comment already exists, ignore.");
+            if (hasZipCommentMagic(file)) {
+                throw new IllegalStateException("zip comment already exists, ignore.");
             }
             // {@see java.util.zip.ZipOutputStream.writeEND}
             byte[] data = comment.getBytes(UTF_8);
@@ -114,7 +110,26 @@ public final class PackerNg {
             raf.close();
         }
 
-        public static String readZipCommentRaf(File file) throws IOException {
+        public static boolean hasZipCommentMagic(File file) throws IOException {
+            RandomAccessFile raf = null;
+            try {
+                raf = new RandomAccessFile(file, "r");
+                long index = raf.length();
+                byte[] buffer = new byte[MAGIC.length];
+                index -= MAGIC.length;
+                // read magic bytes
+                raf.seek(index);
+                raf.readFully(buffer);
+                // check magic bytes matched
+                return isMagicMatched(buffer);
+            } finally {
+                if (raf != null) {
+                    raf.close();
+                }
+            }
+        }
+
+        public static String readZipComment(File file) throws IOException {
             RandomAccessFile raf = null;
             try {
                 raf = new RandomAccessFile(file, "r");
@@ -147,7 +162,7 @@ public final class PackerNg {
             return null;
         }
 
-        public static String readZipCommentMmp(File file) throws IOException {
+        private static String readZipCommentMmp(File file) throws IOException {
             final int mappedSize = 10240;
             final long fz = file.length();
             RandomAccessFile raf = null;
@@ -198,22 +213,16 @@ public final class PackerNg {
         }
 
         public static String readMarket(final File file) throws IOException {
-            return readZipCommentRaf(file);
-        }
-
-        public static String readMarketMmp(final File file) throws IOException {
-            return readZipCommentMmp(file);
+            return readZipComment(file);
         }
 
         public static boolean verifyMarket(final File file, final String market) throws IOException {
             return market.equals(readMarket(file));
         }
 
-
         public static void println(String msg) {
             System.out.println(TAG + ": " + msg);
         }
-
 
         public static List<String> parseMarkets(final File file) throws IOException {
             final List<String> markets = new ArrayList<String>();
