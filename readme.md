@@ -114,15 +114,16 @@ gradlew.bat -Pmarket=markets.txt clean apkRelease
 #### Java脚本
 
 ```shell
-java -jar packer-ng-x.x.x-capsule.jar release_apk_file market_file
+java -jar ngpacker-x.x.x-capsule.jar release_apk_file market_file
 // help: java -jar packer-ng-x.x.x-capsule.jar
 ```
 
 #### Python脚本
 
 ```shell
-python packer-ng.py [file] [market] [output] [-h] [-i] [-t TEST]
+python ngpacker.py [file] [market] [output] [-h] [-i] [-t TEST]
 // help: python packer-ng.py -h
+// python; import ngpacker; help(ngpacker)
 ```
 
 #### 不使用Gradle
@@ -221,7 +222,7 @@ static final byte[] MAGIC = new byte[]{0x21, 0x5a, 0x58, 0x4b, 0x21}; //!ZXK!
 
 #### 读写注释
 
-Java版详细的实现见 [PackerNg.java](helper/src/main/java/com/mcxiaoke/packer/helper/PackerNg.java)，Python版的实现见 [packer-ng.py](tools/packer-ng.py) 。
+Java版详细的实现见 [PackerNg.java](helper/src/main/java/com/mcxiaoke/packer/helper/PackerNg.java)，Python版的实现见 [ngpacker.py](tools/ngpacker.py) 。
 
 写入ZIP文件注释：
 
