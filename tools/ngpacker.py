@@ -19,6 +19,10 @@ OUTPUT_PATH = 'archives'
 MAGIC = '!ZXK!'
 
 def write_market(path, market, output):
+    '''
+    write market info to apk file
+    write_market(apk-file-path, market-name, output-path)
+    '''
     path = os.path.abspath(path)
     if not output:
         output = os.path.dirname(path)
@@ -44,6 +48,10 @@ def write_market(path, market, output):
 
 
 def read_market(path):
+    '''
+    read market info from apk file
+    read_market(apk-file-path)
+    '''
     index = os.stat(path).st_size
     # print('path:',path,'length:',index)
     index -= len(MAGIC)
@@ -69,13 +77,33 @@ def read_market(path):
         return None
 
 def verify_market(file,market):
+    '''
+    verify apk market info
+    verify_market(apk-file-path,market-name)
+    '''
     return read_market(file) == market
 
+
+def show_market(file):
+    '''
+    show market info for apk file
+    show_market(apk-file-path)
+    '''
+    print('market of',file,'is',read_market(file))
+
 def parse_markets(path):
+    '''
+    parse file lines to market name list
+    parse_markets(market-file-path) 
+    '''
     with open(path) as f:
         return filter(None,map(lambda x: x.split('#')[0].strip(), f.readlines()))
 
 def process(file, market = MARKET_PATH,output = OUTPUT_PATH):
+    '''
+    process apk file to create market apk archives
+    process(apk-file-path, market = MARKET_PATH, output = OUTPUT_PATH)
+    '''
     markets = parse_markets(market)
     counter = 0
     for market in markets:
@@ -89,10 +117,10 @@ def process(file, market = MARKET_PATH,output = OUTPUT_PATH):
             ++counter
     print('all',counter,'apks saved to',os.path.abspath(output)) 
 
-def show_market(file):
-    print('market of',file,'is',read_market(file))
-
 def run_test(file,times):
+    '''
+    run market packer performance test
+    '''
     print('start to run market packaging testing...')
     t0 = time.time()
     for i in xrange(1,times):
@@ -101,6 +129,9 @@ def run_test(file,times):
     pass
 
 def check(file, market = MARKET_PATH,output = OUTPUT_PATH, show=False, test = 0):
+    '''
+    check apk file exists, check arguments, check market file exists
+    '''
     if not os.path.exists(file):
         print('apk file',file,'not exists or not readable')
         return
@@ -121,6 +152,9 @@ def check(file, market = MARKET_PATH,output = OUTPUT_PATH, show=False, test = 0)
     process(file,market,output)
 
 def parse_args():
+    '''
+    parse command line arguments
+    '''
     parser = argparse.ArgumentParser(
         formatter_class=argparse.RawDescriptionHelpFormatter,
         description='PackerNg v{0} created by mcxiaoke. \nNext Generation Android Market Packaging Tool'.format(__version__),
