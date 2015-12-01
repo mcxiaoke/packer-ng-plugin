@@ -31,14 +31,14 @@ jar {
 
 task fatCapsule(type: FatCapsule) {
     applicationClass 'com.mcxiaoke.packer.helper.PackerNg'
-    baseName 'packer-ng'
+    baseName 'ngpacker'
     reallyExecutable
 }
 
 task helperJar(type: Copy) {
     from fatCapsule.outputs
     into new File(project.rootProject.rootDir, "tools")
-    exclude '*SNAPSHOT*'
+    // exclude '*SNAPSHOT*'
     dependsOn fatCapsule
 
 }

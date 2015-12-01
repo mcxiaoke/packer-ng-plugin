@@ -11,7 +11,7 @@ import argparse
 import time
 from multiprocessing import Pool
 
-__version__ = '0.9.12-SNAPSHOT'
+__version__ = '1.0.1.20151201'
 
 ZIP_SHORT = 2
 MARKET_PATH = 'markets.txt'
@@ -19,9 +19,11 @@ OUTPUT_PATH = 'archives'
 MAGIC = '!ZXK!'
 
 def write_market(path, market, output):
+    path = os.path.abspath(path)
+    if not output:
+        output = os.path.dirname(path)
     if not os.path.exists(output):
         os.makedirs(output)
-    path = os.path.abspath(path)
     name,ext = os.path.splitext(os.path.basename(path))
     apk_name = name + "-" + market + ext
     apk_file = os.path.join(output,apk_name)
@@ -87,8 +89,8 @@ def process(file, market = MARKET_PATH,output = OUTPUT_PATH):
             ++counter
     print('all',counter,'apks saved to',os.path.abspath(output)) 
 
-def show_info(file):
-    print('the market of file',file,'is',read_market(file))
+def show_market(file):
+    print('market of',file,'is',read_market(file))
 
 def run_test(file,times):
     print('start to run market packaging testing...')
@@ -98,12 +100,12 @@ def run_test(file,times):
     print('run',times,'using',(time.time() - t0), 'seconds')
     pass
 
-def check(file, market = MARKET_PATH,output = OUTPUT_PATH, info=False, test = 0):
+def check(file, market = MARKET_PATH,output = OUTPUT_PATH, show=False, test = 0):
     if not os.path.exists(file):
         print('apk file',file,'not exists or not readable')
         return
-    if info:
-        show_info(file)
+    if show:
+        show_market(file)
         return
     if test > 0:
         run_test(file,test)
@@ -130,7 +132,7 @@ def parse_args():
                         help='markets file path [default: ./markets.txt]')
     parser.add_argument('output', nargs='?',default = OUTPUT_PATH, 
                         help='archives output path [default: ./archives]')
-    parser.add_argument('-i', '--info', action='store_const', const=True, 
+    parser.add_argument('-s', '--show', action='store_const', const=True, 
                         help='show apk file market info')
     parser.add_argument('-t', '--test', default = 0, type = int,  
                         help='perform market packaging test')
