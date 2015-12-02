@@ -20,24 +20,21 @@
 ```groovy
 
 buildscript {
-    repositories {
-		mavenCentral()
-	}
-	// 在buildscript里加入packer-ng依赖
+	......
 	dependencies{
+	// add packer-ng
 		classpath 'com.mcxiaoke.gradle:packer-ng:1.0.1'
 	}
 }  
 ```
 
-### 修改Android项目的 `build.gradle`
+### 修改Android模块的 `build.gradle`
 
 ```groovy
-
 apply plugin: 'packer' 
 
 dependencies {
-	// 加入packer-helper依赖
+	// add packer-helper
 	compile 'com.mcxiaoke.gradle:packer-helper:1.0.1'
 } 
 ```
@@ -48,7 +45,7 @@ dependencies {
 
 ```java
 
-// 如果没有使用PackerNg打包添加渠道，返回的是`null`
+// 如果没有使用PackerNg打包添加渠道，默认返回的是""
 // com.mcxiaoke.packer.helper.PackerNg
 final String market = PackerNg.getMarket(Context)
 // 或者使用 PackerNg.getMarket(Context,defaultValue)
@@ -59,7 +56,7 @@ AnalyticsConfig.setChannel(market)
 
 ### 渠道打包脚本
 
-需要在命令行指定 **-Pmarket=yourMarketFileName**属性，market是你的渠道名列表文件，market文件是基于**项目根目录**的 `相对路径` ，假设你的项目位于 `~/github/myapp` 你的market文件位于 `~/github/myapp/config/markets.txt` 那么参数应该是 `-Pmarket=config/markets.txt`，一般建议直接放在项目根目录，如果market文件参数错误或者文件不存在会抛出异常
+需要在命令行指定 **-Pmarket=yourMarketFileName**属性，market是你的渠道名列表文件，market文件是基于**项目根目录**的 `相对路径` ，假设你的项目位于 `~/github/myapp` 你的market文件位于 `~/github/myapp/config/markets.txt` 那么参数应该是 `-Pmarket=config/markets.txt`，一般建议直接放在项目根目录，如果market文件参数错误或者文件不存在会抛出异常。
 
 渠道名列表文件是纯文本文件，每行一个渠道号，列表解析的时候会自动忽略空白行和格式不规范的行，请注意看命令行输出，渠道名和注释之间用 `#` 号分割开，可以没有注释，示例：
 
@@ -68,7 +65,6 @@ AnalyticsConfig.setChannel(market)
  Gradle_Test#test
  SomeMarket#some market
  HelloWorld
- 
 ```
 
 渠道打包的Gradle命令行参数格式示例（在项目根目录执行）：  
@@ -77,39 +73,40 @@ AnalyticsConfig.setChannel(market)
 ./gradlew -Pmarket=markets.txt clean apkRelease
 ``` 
 
-### 插件配置说明
+打包完成后你可以在 `${项目根目录}/build/archives/` 目录找到最终的渠道包。
 
-* 修改项目根目录的 `build.gradle` 在 `buildscript.dependencies` 部分加入 `classpath 'com.mcxiaoke.gradle:packer-ng:1.0.+'`  
-* 修改Android项目的 `build.gradle` 在 `apply plugin: 'com.android.application'` 下面加入 `apply plugin: 'packer'`  
-* 修改Android项目的 `build.gradle` 加入如下配置项，不指定的话使用默认值：  
+说明：渠道打包的Gradle Task名字是 `apk${buildType}` buildType一般是release，也可以是你自己指定的beta或者someOtherType，使用时首字母需要大写，例如release的渠道包任务名是 `apkRelease`，beta的渠道包任务名是 `apkBeta`，其它的以此类推。
+
+### 插件配置说明（可选） 
 
 ```groovy 
- 
 packer {
     // 指定渠道打包输出目录
     // archiveOutput = file(new File(project.rootProject.buildDir.path, "archives"))
     // 指定渠道打包输出文件名格式
+    // 默认是 `${appPkg}-${flavorName}-${buildType}-v${versionName}-${versionCode}`
     // archiveNameFormat = ''
-
 }
-
 ```
 
-* 假设渠道列表文件位于项目根目录，文件名为 `markets.txt` ，在项目根目录打开shell运行命令：
+举例：假如你的App包名是  `com.your.company` ，渠道名是 `Google_Play` ，`buildType` 是 `release` ，`versionName` 是 `2.1.15` ，`versionCode` 是 `200115` ，那么生成的APK的文件名是 `com.your.company-Google_Player-release-2.1.15-20015.apk`   
 
-```shell
-./gradlew -Pmarket=markets.txt clean apkRelease
-// Windows系统下替换为：
-gradle.bat -Pmarket=markets.txt clean apkRelease
-// 或
-gradlew.bat -Pmarket=markets.txt clean apkRelease
-``` 
-    
-如果没有错误，打包完成后你可以在 `${项目根目录}/build/archives/` 目录找到最终的渠道包。说明：渠道打包的Gradle Task名字是 `apk${buildType}` buildType一般是release，也可以是你自己指定的beta或者someOtherType，使用时首字母需要大写，例如release的渠道包任务名是 `apkRelease`，beta的渠道包任务名是 `apkBeta`，其它的以此类推
+* **archiveOutput**  指定渠道打包输出的APK存放目录，默认位于`${项目根目录}/build/archives`   
+
+* **archiveNameFormat** - `Groovy格式字符串`， 指定渠道打包输出的APK文件名格式，默认文件名格式是： `${appPkg}-${flavorName}-${buildType}-v${versionName}-${versionCode}`，可使用以下变量:  
+  
+  * *projectName* - 项目名字
+  * *appName* - App模块名字
+  * *appPkg* - `applicationId` (App包名packageName)
+  * *buildType* - `buildType` (release/debug/beta等)
+  * *flavorName* - `flavorName` (对应渠道打包中的渠道名字)
+  * *versionName* - `versionName` (显示用的版本号)
+  * *versionCode* - `versionCode` (内部版本号)
+  * *buildTime* - `buildTime` (编译构建日期时间)  
 
 ### 命令行打包脚本
 
-如果不想使用Gradle插件，这里还有两个命令行打包脚本，在项目的 `tools` 目录里，分别是 `packer-ng-x.x.x-capsule.jar` 和 `packer-ng.py`，使用命令行打包工具，在Java代码里还是需要使用`packer-helper`包里的 `PackerNg.getMarket(Context)` 读取渠道
+如果不想使用Gradle插件，这里还有两个命令行打包脚本，在项目的 `tools` 目录里，分别是 `ngpacker-x.x.x-capsule.jar` 和 `ngpacker.py`，使用命令行打包工具，在Java代码里仍然是使用`packer-helper`包里的 `PackerNg.getMarket(Context)` 读取渠道
 
 #### Java脚本
 
@@ -128,31 +125,6 @@ python ngpacker.py [file] [market] [output] [-h] [-i] [-t TEST]
 
 #### 不使用Gradle
 使用命令行打包脚本，不想添加Gradle依赖的，可以完全忽略Gradle的配置，直接复制 [PackerNg.java](helper/src/main/java/com/mcxiaoke/packer/helper/PackerNg.java) 到项目中使用即可
-
-### 文件名格式
-
-可以使用 `archiveNameFormat` 自定义渠道打包输出的APK文件名格式，默认格式是 
-
-`${appPkg}-${flavorName}-${buildType}-v${versionName}-${versionCode}` 
-
-举例：假如你的App包名是  `com.your.company` ，渠道名是 `Google_Play` ，`buildType` 是 `release` ，`versionName` 是 `2.1.15` ，`versionCode` 是 `200115` ，那么生成的APK的文件名是 
-
-`com.your.company-Google_Player-release-2.1.15-20015.apk` 
-
-### 格式模板 
-
-* **archiveOutput**  指定渠道打包输出的APK存放目录，默认位于`${项目根目录}/build/archives`   
-
-* **archiveNameFormat** - `Groovy格式字符串`， 指定渠道打包输出的APK文件名格式，默认文件名格式是： `${appPkg}-${flavorName}-${buildType}-v${versionName}-${versionCode}`，可使用以下变量:  
-  
-  * *projectName* - 项目名字
-  * *appName* - App模块名字
-  * *appPkg* - `applicationId` (App包名packageName)
-  * *buildType* - `buildType` (release/debug/beta等)
-  * *flavorName* - `flavorName` (对应渠道打包中的渠道名字)
-  * *versionName* - `versionName` (显示用的版本号)
-  * *versionCode* - `versionCode` (内部版本号)
-  * *buildTime* - `buildTime` (编译构建日期时间)
 
 ## 实现原理
 
