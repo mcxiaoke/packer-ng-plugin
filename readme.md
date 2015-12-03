@@ -134,7 +134,7 @@ java -jar ngpacker-x.x.x-capsule.jar release_apk_file market_file
 #### Python脚本
 
 ```shell
-python ngpacker.py [file] [market] [output] [-h] [-i] [-t TEST]
+python ngpacker.py [file] [market] [output] [-h] [-s] [-t TEST]
 // help: python packer-ng.py -h
 // python; import ngpacker; help(ngpacker)
 ```
