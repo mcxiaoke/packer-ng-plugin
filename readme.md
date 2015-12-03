@@ -3,6 +3,7 @@
 
 ## 最新版本
 
+- **v1.0.2 - 2015.12.04** - 兼容productFlavors，完善异常处理
 - **v1.0.1 - 2015.12.01** - 如果没有读取到渠道，默认返回空字符串
 - **v1.0.0 - 2015.11.30** - 增加Java和Python打包脚本，增加文档
 - **v0.9.9 - 2015.11.26** - 测试版发布，支持全新的极速打包方式 
@@ -23,7 +24,7 @@ buildscript {
 	......
 	dependencies{
 	// add packer-ng
-		classpath 'com.mcxiaoke.gradle:packer-ng:1.0.1'
+		classpath 'com.mcxiaoke.gradle:packer-ng:1.0.2'
 	}
 }  
 ```
@@ -35,7 +36,7 @@ apply plugin: 'packer'
 
 dependencies {
 	// add packer-helper
-	compile 'com.mcxiaoke.gradle:packer-helper:1.0.1'
+	compile 'com.mcxiaoke.gradle:packer-helper:1.0.2'
 } 
 ```
 
@@ -56,7 +57,12 @@ AnalyticsConfig.setChannel(market)
 
 ### 渠道打包脚本
 
-需要在命令行指定 **-Pmarket=yourMarketFileName**属性，market是你的渠道名列表文件，market文件是基于**项目根目录**的 `相对路径` ，假设你的项目位于 `~/github/myapp` 你的market文件位于 `~/github/myapp/config/markets.txt` 那么参数应该是 `-Pmarket=config/markets.txt`，一般建议直接放在项目根目录，如果market文件参数错误或者文件不存在会抛出异常。
+可以通过两种方式指定 `market` 属性，根据需要选用：
+
+- 打包时命令行使用 `-Pmarket= yourMarketFilePath` 指定属性
+- 在 `gradle.properties` 里加入 `market=yourMarketFilePath`
+
+market是你的渠道名列表文件，market文件是基于**项目根目录**的 `相对路径` ，假设你的项目位于 `~/github/myapp` 你的market文件位于 `~/github/myapp/config/markets.txt` 那么参数应该是 `-Pmarket=config/markets.txt`，一般建议直接放在项目根目录，如果market文件参数错误或者文件不存在会抛出异常。
 
 渠道名列表文件是纯文本文件，每行一个渠道号，列表解析的时候会自动忽略空白行和格式不规范的行，请注意看命令行输出，渠道名和注释之间用 `#` 号分割开，可以没有注释，示例：
 
@@ -75,7 +81,17 @@ AnalyticsConfig.setChannel(market)
 
 打包完成后你可以在 `${项目根目录}/build/archives/` 目录找到最终的渠道包。
 
-说明：渠道打包的Gradle Task名字是 `apk${buildType}` buildType一般是release，也可以是你自己指定的beta或者someOtherType，使用时首字母需要大写，例如release的渠道包任务名是 `apkRelease`，beta的渠道包任务名是 `apkBeta`，其它的以此类推。
+#### 任务说明
+
+渠道打包的Gradle Task名字是 `apk${buildType}` buildType一般是release，也可以是你自己指定的beta或者someOtherType，使用时首字母需要大写，例如release的渠道包任务名是 `apkRelease`，beta的渠道包任务名是 `apkBeta`，其它的以此类推。
+
+#### 注意事项
+
+如果你的项目有多个`productFlavors`，默认只会用第一个`flavor`生成的APK文件作为打包工具的输入参数，忽略其它`flavor`生成的apk，代码里用的是 `ariant.outputs[0].outputFile`。如果你想指定使用某个flavor来生成渠道包，可以用 `apkFlavor1Release`，`apkFlavor2Beta`这样的名字，示例（假设flavor名字是Intel）：
+
+```shell
+./gradlew -Pmarket=markets.txt clean apkIntelRelease
+``` 
 
 ### 插件配置说明（可选） 
 
@@ -118,7 +134,7 @@ java -jar ngpacker-x.x.x-capsule.jar release_apk_file market_file
 #### Python脚本
 
 ```shell
-python ngpacker.py [file] [market] [output] [-h] [-i] [-t TEST]
+python ngpacker.py [file] [market] [output] [-h] [-s] [-t TEST]
 // help: python packer-ng.py -h
 // python; import ngpacker; help(ngpacker)
 ```
