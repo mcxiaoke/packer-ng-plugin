@@ -4,6 +4,7 @@ import com.android.build.gradle.api.BaseVariant
 import com.mcxiaoke.packer.helper.PackerNg
 import groovy.text.SimpleTemplateEngine
 import org.gradle.api.DefaultTask
+import org.gradle.api.InvalidUserDataException
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.TaskAction
 
@@ -37,10 +38,13 @@ class ArchiveAllApkTask extends DefaultTask {
     @TaskAction
     void modify() {
         logger.info("====================ARCHIVE APK TASK START====================")
+        if (theMarkets == null || theMarkets.isEmpty()) {
+            throw new InvalidUserDataException(":${name} no markets found, task aborted!")
+        }
         File originalFile = theVariant.outputs[0].outputFile
         File tempDir = new File(project.rootProject.buildDir, "temp")
         File outputDir = theExtension.archiveOutput
-        logger.info(":${name} apk file: ${originalFile.absolutePath}")
+        println(":${name} apk: ${originalFile.absolutePath}")
         logger.info(":${name} temp dir:${tempDir.absolutePath}")
         logger.info(":${name} output dir:${outputDir.absolutePath}")
         logger.info(":${name} delete old files in ${outputDir.absolutePath}")
@@ -51,7 +55,7 @@ class ArchiveAllApkTask extends DefaultTask {
         if (!outputDir.exists()) {
             outputDir.mkdirs()
         }
-        logger.info(":${name} all markets:[${theMarkets.join(', ')}]")
+        logger.info(":${project.name}:${name} markets:[${theMarkets.join(', ')}]")
         theMarkets.eachWithIndex { String market, index ->
             String apkName = buildApkName(theVariant, market)
             File tempFile = new File(tempDir, apkName)
@@ -59,14 +63,14 @@ class ArchiveAllApkTask extends DefaultTask {
             copyTo(originalFile, tempFile)
             PackerNg.Helper.writeMarket(tempFile, market)
             if (PackerNg.Helper.verifyMarket(tempFile, market)) {
-                println(":${name} processed No.${index + 1} apk file for ${market}")
+                println(":${project.name}:${name} processed apk for ${market} (${index + 1})")
                 copyTo(tempFile, finalFile)
-
             } else {
-                logger.error(":${name} failed to process ${market} apk file!")
+                println(":${project.name}:${name} apk failed for ${market} (${index + 1})")
             }
         }
-        println(":${name} ${theMarkets.size()} apks saved to ${outputDir.path}")
+        println(":${project.name}:${name} all ${theMarkets.size()} apks saved to ${outputDir.path}")
+        println(":${project.name} PackerNg: Market Packaging Successful!")
         logger.info(":${name} delete temp files in ${tempDir.absolutePath}")
         tempDir.deleteDir()
         logger.info("====================ARCHIVE APK TASK END====================")
