@@ -9,9 +9,9 @@ import struct
 import shutil
 import argparse
 import time
-from multiprocessing import Pool
+from apkinfo import APK
 
-__version__ = '1.0.1.20151201'
+__version__ = '1.0.2.20151204'
 
 ZIP_SHORT = 2
 MARKET_PATH = 'markets.txt'
@@ -24,15 +24,26 @@ def write_market(path, market, output):
     write_market(apk-file-path, market-name, output-path)
     '''
     path = os.path.abspath(path)
+    output = unicode(output)
+    if not os.path.exists(path):
+        print('apk file',path,'not exists')
+        return
+    if read_market(path):
+        print('apk file',path,'had market already')
+        return
     if not output:
         output = os.path.dirname(path)
     if not os.path.exists(output):
         os.makedirs(output)
     name,ext = os.path.splitext(os.path.basename(path))
-    apk_name = name + "-" + market + ext
+    # name,package,vname,vcode
+    app = parse_apk(path)
+    apk_name = '%s-%s-%s-%s%s' % (app['app_package'],
+        market.decode('utf8'), app['version_name'], app['version_code'], ext)
+    # apk_name = name + "-" + market + ext
     apk_file = os.path.join(output,apk_name)
     shutil.copy(path,apk_file)
-    # print('apkfile:',apkfile)
+    # print('apk file:',apk_file)
     index = os.stat(apk_file).st_size
     index -= ZIP_SHORT
     with open(apk_file,"r+b") as f:
@@ -76,20 +87,26 @@ def read_market(path):
         # print('magic not matched')
         return None
 
-def verify_market(file,market):
+def verify_market(path,market):
     '''
     verify apk market info
     verify_market(apk-file-path,market-name)
     '''
-    return read_market(file) == market
+    return read_market(path) == market
 
 
-def show_market(file):
+def show_market(path):
     '''
     show market info for apk file
     show_market(apk-file-path)
     '''
-    print('market of',file,'is',read_market(file))
+    app = parse_apk(path)
+    market = read_market(path)
+    if market:
+        market = market.decode('utf8')
+    print(u'Name: %s\nMarket: %s\nPackage:%s\nVersionName: %s\nVersionCode: %s' % (
+        app['app_name'], market, app['app_package'], 
+        app['version_name'], app['version_code']))
 
 def parse_markets(path):
     '''
@@ -99,25 +116,41 @@ def parse_markets(path):
     with open(path) as f:
         return filter(None,map(lambda x: x.split('#')[0].strip(), f.readlines()))
 
-def process(file, market = MARKET_PATH,output = OUTPUT_PATH):
+def parse_apk(path):
+    '''
+    parse apk file, get name, package, version
+    '''
+    apk = APK(path)
+    if not apk.is_valid_APK():
+        return None
+    return {
+        'app_file': path.decode('utf8'),
+        'app_name': apk.get_app_name(),
+        'app_package': apk.get_package(),
+        'version_name': apk.get_version_name(),
+        'version_code': apk.get_version_code()
+    }
+
+def process(path, market = MARKET_PATH,output = OUTPUT_PATH):
     '''
     process apk file to create market apk archives
     process(apk-file-path, market = MARKET_PATH, output = OUTPUT_PATH)
     '''
+    print('start to write market info to apk files ...')
     markets = parse_markets(market)
     counter = 0
     for market in markets:
-        apk_file = write_market(file, market, output)
+        apk_file = write_market(path, market, output)
         verified = verify_market(apk_file, market)
         if not verified:
             print('apk',apk_file,'for market',market,'verify failed')
             # break
         else:
             print('processed apk',apk_file)
-            ++counter
+            counter += 1
     print('all',counter,'apks saved to',os.path.abspath(output)) 
 
-def run_test(file,times):
+def run_test(path,times):
     '''
     run market packer performance test
     '''
@@ -128,30 +161,33 @@ def run_test(file,times):
     print('run',times,'using',(time.time() - t0), 'seconds')
     pass
 
-def check(file, market = MARKET_PATH,output = OUTPUT_PATH, show=False, test = 0):
+def _check(path, market = MARKET_PATH,output = OUTPUT_PATH, show=False, test = 0):
     '''
-    check apk file exists, check arguments, check market file exists
+    check apk file exists, check apk valid, check arguments, check market file exists
     '''
-    if not os.path.exists(file):
-        print('apk file',file,'not exists or not readable')
+    if not os.path.exists(path):
+        print('apk file',path,'not exists or not readable')
+        return
+    if not parse_apk(path):
+        print('apk file',path,'is not valid apk')
         return
     if show:
-        show_market(file)
+        show_market(path)
         return
     if test > 0:
-        run_test(file,test)
+        run_test(path,test)
         return
     if not os.path.exists(market):
         print('market file',market,'not exists or not readable')
         return
-    old_market = read_market(file)
+    old_market = read_market(path)
     if old_market:
-        print('apk file',file,'already had market:',old_market,
+        print('apk file',path,'already had market:',old_market,
             'please using original release apk file')
         return
-    process(file,market,output)
+    process(path,market,output)
 
-def parse_args():
+def _parse_args():
     '''
     parse command line arguments
     '''
@@ -160,22 +196,23 @@ def parse_args():
         description='PackerNg v{0} created by mcxiaoke. \nNext Generation Android Market Packaging Tool'.format(__version__),
         epilog='''Project Home: https://github.com/mcxiaoke/packer-ng-plugin
         ''')
-    parser.add_argument('file', nargs='?',
+    parser.add_argument('path', nargs='?',
                         help='original release apk file path (required)')
     parser.add_argument('market', nargs='?',default = MARKET_PATH, 
                         help='markets file path [default: ./markets.txt]')
     parser.add_argument('output', nargs='?',default = OUTPUT_PATH, 
                         help='archives output path [default: ./archives]')
     parser.add_argument('-s', '--show', action='store_const', const=True, 
-                        help='show apk file market info')
+                        help='show apk file info (pkg/market/version)')
     parser.add_argument('-t', '--test', default = 0, type = int,  
-                        help='perform market packaging test')
+                        help='perform serval times packer-ng test')
     args = parser.parse_args()
     if len(sys.argv) == 1:
-        parser.print_help()
-        sys.exit(1)
-    # print(args)
+        print('use ./%s -h/--help to show help messages' % sys.argv[0])
+        return None
     return args
 
 if __name__ == '__main__':
-    check(**vars(parse_args()))
+    args = _parse_args()
+    if args:
+        _check(**vars(args))
