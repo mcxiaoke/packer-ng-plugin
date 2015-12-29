@@ -157,7 +157,7 @@ def run_test(path,times):
     print('start to run market packaging testing...')
     t0 = time.time()
     for i in xrange(1,times):
-        write_market(file,'%i Test Market' % i, 'temp')
+        write_market(path,'%s Test Market' % i, 'temp')
     print('run',times,'using',(time.time() - t0), 'seconds')
     pass
 
