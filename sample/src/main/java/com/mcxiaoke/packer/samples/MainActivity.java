@@ -55,17 +55,7 @@ public class MainActivity extends ActionBarActivity {
     }
 
     private String getSourceDir(final Object context) {
-        try {
-            final Class<?> contextClass = Class.forName("android.content.Context");
-            final Class<?> applicationInfoClass = Class.forName("android.content.pm.ApplicationInfo");
-            final Method getApplicationInfo = contextClass.getMethod("getApplicationInfo");
-            final Object appInfo = getApplicationInfo.invoke(context);
-            final Field sourceDirField = applicationInfoClass.getField("sourceDir");
-            return (String) sourceDirField.get(appInfo);
-        } catch (Exception e) {
-            e.printStackTrace();
-            return null;
-        }
+        return getApplicationInfo().sourceDir;
     }
 
     private void addAppInfoSection() {
@@ -85,7 +75,7 @@ public class MainActivity extends ActionBarActivity {
             builder.append("PubSourceDir: ").append(info.publicSourceDir).append("\n");
             builder.append("DataDir: ").append(info.dataDir).append("\n");
             builder.append("Signature:\n");
-            builder.append(AndroidUtils.getSignatureInfo(this)).append("\n");
+            builder.append(AndroidUtils.getSignature(this)).append("\n");
             builder.append("\n");
             addSection(builder.toString());
         } catch (Exception e) {
