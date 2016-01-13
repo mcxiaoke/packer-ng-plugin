@@ -4,6 +4,7 @@ import com.android.build.gradle.api.BaseVariant
 import com.mcxiaoke.packer.helper.PackerNg
 import groovy.text.SimpleTemplateEngine
 import org.gradle.api.DefaultTask
+import org.gradle.api.GradleException
 import org.gradle.api.InvalidUserDataException
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.TaskAction
@@ -16,6 +17,7 @@ import java.text.SimpleDateFormat
  * Time: 14:40
  */
 class ArchiveAllApkTask extends DefaultTask {
+    static final TAG = PackerNgPlugin.TAG
 
     @Input
     BaseVariant theVariant
@@ -39,12 +41,21 @@ class ArchiveAllApkTask extends DefaultTask {
     void modify() {
         logger.info("====================ARCHIVE APK TASK START====================")
         if (theMarkets == null || theMarkets.isEmpty()) {
-            throw new InvalidUserDataException(":${name} no markets found, task aborted!")
+            throw new InvalidUserDataException(":${name} ERROR: no markets found, task aborted!")
+        }
+        if (theVariant.buildType.signingConfig == null) {
+            throw new GradleException(":${project.name}:${name} ERROR: android.buildTypes." +
+                    "${theVariant.buildType.name}.signingConfig is null, task aborted!")
+        }
+        if (!theVariant.buildType.zipAlignEnabled) {
+
+            throw new GradleException(":${project.name}:${name} ERROR: android.buildTypes." +
+                    "${theVariant.buildType.name}.zipAlignEnabled is false, task aborted!")
         }
         File originalFile = theVariant.outputs[0].outputFile
         File tempDir = new File(project.rootProject.buildDir, "temp")
         File outputDir = theExtension.archiveOutput
-        println(":${name} apk: ${originalFile.absolutePath}")
+        println(":${project.name}:${name} apk: ${originalFile.absolutePath}")
         logger.info(":${name} temp dir:${tempDir.absolutePath}")
         logger.info(":${name} output dir:${outputDir.absolutePath}")
         logger.info(":${name} delete old files in ${outputDir.absolutePath}")
@@ -70,7 +81,7 @@ class ArchiveAllApkTask extends DefaultTask {
             }
         }
         println(":${project.name}:${name} all ${theMarkets.size()} apks saved to ${outputDir.path}")
-        println(":${project.name} PackerNg: Market Packaging Successful!")
+        println(":${project.name}:${name} PackerNg: Market Packaging Successful!")
         logger.info(":${name} delete temp files in ${tempDir.absolutePath}")
         tempDir.deleteDir()
         logger.info("====================ARCHIVE APK TASK END====================")

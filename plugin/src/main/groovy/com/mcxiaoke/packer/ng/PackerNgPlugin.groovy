@@ -40,7 +40,7 @@ class PackerNgPlugin implements Plugin<Project> {
             //applySigningConfigs()
             project.android.applicationVariants.all { BaseVariant variant ->
                 if (variant.buildType.name != "debug") {
-                    checkArchiveTask(variant)
+                    checkPackerNgTask(variant)
                 }
             }
         }
@@ -94,38 +94,26 @@ class PackerNgPlugin implements Plugin<Project> {
         return allMarkets
     }
 
-    List<String> readMarkets2(File file) {
-        return file.readLines().collect {
-            String[] parts = it.split('#')
-            if (parts && parts[0]) {
-                return parts[0].trim()
-            } else {
-                debug(":${project.name} skip invalid market line: $it")
-                return null
-            }
-        }.grep({ it })
-    }
-
 /**
  *  add archiveApk tasks
  * @param variant current Variant
  */
-    void checkArchiveTask(BaseVariant variant) {
+    void checkPackerNgTask(BaseVariant variant) {
         if (variant.buildType.signingConfig == null) {
-            println(":${project.name}${variant.name}: signingConfig is null, ignore archive task.")
-            return
+            println("WARNING:${project.name}:${variant.name}: signingConfig is null, " +
+                    "task apk${variant.name.capitalize()} will fail.")
         }
         if (!variant.buildType.zipAlignEnabled) {
-            println(":${project.name}${variant.name}: zipAlignEnabled==false, ignore archive task.")
-            return
+            println("WARNING:${project.name}:${variant.name}: zipAlignEnabled is false, " +
+                    "task apk${variant.name.capitalize()} will fail.")
         }
-        debug("checkArchiveTask() for ${variant.name}")
+        debug("checkPackerNgTask() for ${variant.name}")
         def File inputFile = variant.outputs[0].outputFile
         def File tempDir = modifierExtension.tempOutput
         def File outputDir = modifierExtension.archiveOutput
-        debug("checkArchiveTask() input: ${inputFile}")
-        debug("checkArchiveTask() temp: ${tempDir}")
-        debug("checkArchiveTask() output: ${outputDir}")
+        debug("checkPackerNgTask() input: ${inputFile}")
+        debug("checkPackerNgTask() temp: ${tempDir}")
+        debug("checkPackerNgTask() output: ${outputDir}")
         def archiveTask = project.task("apk${variant.name.capitalize()}",
                 type: ArchiveAllApkTask) {
             theVariant = variant
@@ -134,14 +122,14 @@ class PackerNgPlugin implements Plugin<Project> {
             dependsOn variant.assemble
         }
 
-        debug("checkArchiveTask() new variant task:${archiveTask.name}")
+        debug("checkPackerNgTask() new variant task:${archiveTask.name}")
 
         def buildTypeName = variant.buildType.name
         if (variant.name != buildTypeName) {
             def taskName = "apk${buildTypeName.capitalize()}"
             def task = project.tasks.findByName(taskName)
             if (task == null) {
-                debug("checkArchiveTask() new build type task:${taskName}")
+                debug("checkPackerNgTask() new build type task:${taskName}")
                 task = project.task(taskName, dependsOn: archiveTask)
             }
         }
