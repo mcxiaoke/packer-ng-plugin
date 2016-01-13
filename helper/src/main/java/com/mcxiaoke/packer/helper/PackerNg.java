@@ -29,12 +29,20 @@ import java.util.List;
 public final class PackerNg {
     private static final String TAG = PackerNg.class.getSimpleName();
     private static final String EMPTY_STRING = "";
+    private static String sCachedMarket;
 
     public static String getMarket(final Object context) {
         return getMarket(context, EMPTY_STRING);
     }
 
-    public static String getMarket(final Object context, final String defaultValue) {
+    public static synchronized String getMarket(final Object context, final String defaultValue) {
+        if (sCachedMarket == null) {
+            sCachedMarket = getMarketInternal(context, defaultValue);
+        }
+        return sCachedMarket;
+    }
+
+    private static String getMarketInternal(final Object context, final String defaultValue) {
         String market;
         try {
             final String sourceDir = Helper.getSourceDir(context);
