@@ -3,6 +3,7 @@
 
 ## 最新版本
 
+- **v1.0.3 - 2016.01.14** - 增加缓存，新增ResUtils，更有好的错误提示
 - **v1.0.2 - 2015.12.04** - 兼容productFlavors，完善异常处理
 - **v1.0.1 - 2015.12.01** - 如果没有读取到渠道，默认返回空字符串
 - **v1.0.0 - 2015.11.30** - 增加Java和Python打包脚本，增加文档
@@ -24,7 +25,7 @@ buildscript {
 	......
 	dependencies{
 	// add packer-ng
-		classpath 'com.mcxiaoke.gradle:packer-ng:1.0.2'
+		classpath 'com.mcxiaoke.gradle:packer-ng:1.0.3'
 	}
 }  
 ```
@@ -36,13 +37,15 @@ apply plugin: 'packer'
 
 dependencies {
 	// add packer-helper
-	compile 'com.mcxiaoke.gradle:packer-helper:1.0.2'
+	compile 'com.mcxiaoke.gradle:packer-helper:1.0.3'
 } 
 ```
 
 **注意：`packer-ng` 和 `packer-helper` 的版本号需要保持一致**
 
 ### Java代码中获取当前渠道
+
+提示：`PackerNg.getMarket(Context)`内部缓存了结果，不会重复解析APK文件
 
 ```java
 
@@ -86,6 +89,8 @@ market是你的渠道名列表文件，market文件是基于**项目根目录**�
 渠道打包的Gradle Task名字是 `apk${buildType}` buildType一般是release，也可以是你自己指定的beta或者someOtherType，使用时首字母需要大写，例如release的渠道包任务名是 `apkRelease`，beta的渠道包任务名是 `apkBeta`，其它的以此类推。
 
 #### 注意事项
+
+**不支持`productFlavors`中定义的条件编译变量，不支持修改AndroidManifest**
 
 如果你的项目有多个`productFlavors`，默认只会用第一个`flavor`生成的APK文件作为打包工具的输入参数，忽略其它`flavor`生成的apk，代码里用的是 `ariant.outputs[0].outputFile`。如果你想指定使用某个flavor来生成渠道包，可以用 `apkFlavor1Release`，`apkFlavor2Beta`这样的名字，示例（假设flavor名字是Intel）：
 
@@ -362,7 +367,7 @@ theMarkets.each { String market ->
 
 ## License
 
-    Copyright 2014 - 2015 Xiaoke Zhang
+    Copyright 2014, 2015, 2016 Xiaoke Zhang
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
