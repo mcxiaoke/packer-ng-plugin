@@ -3,6 +3,7 @@
 
 ## 最新版本
 
+- **v1.0.4 - 2016.01.19** - 完善获取APK路径的方法,增加MarketInfo
 - **v1.0.3 - 2016.01.14** - 增加缓存，新增ResUtils，更有好的错误提示
 - **v1.0.2 - 2015.12.04** - 兼容productFlavors，完善异常处理
 - **v1.0.1 - 2015.12.01** - 如果没有读取到渠道，默认返回空字符串
@@ -25,7 +26,7 @@ buildscript {
 	......
 	dependencies{
 	// add packer-ng
-		classpath 'com.mcxiaoke.gradle:packer-ng:1.0.3'
+		classpath 'com.mcxiaoke.gradle:packer-ng:1.0.4'
 	}
 }  
 ```
@@ -37,7 +38,7 @@ apply plugin: 'packer'
 
 dependencies {
 	// add packer-helper
-	compile 'com.mcxiaoke.gradle:packer-helper:1.0.3'
+	compile 'com.mcxiaoke.gradle:packer-helper:1.0.4'
 } 
 ```
 
