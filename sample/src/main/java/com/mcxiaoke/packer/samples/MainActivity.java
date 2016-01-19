@@ -65,6 +65,7 @@ public class MainActivity extends ActionBarActivity {
             builder.append("[AppInfo]\n");
             builder.append("SourceDir: ").append(getSourceDir(this)).append("\n");
             builder.append("Market: ").append(PackerNg.getMarket(this)).append("\n");
+            builder.append("MarketInfo: ").append(PackerNg.getMarketInfo(this)).append("\n");
             builder.append("Name: ").append(getString(info.labelRes)).append("\n");
             builder.append("Package: ").append(BuildConfig.APPLICATION_ID).append("\n");
             builder.append("VersionCode: ").append(BuildConfig.VERSION_CODE).append("\n");
