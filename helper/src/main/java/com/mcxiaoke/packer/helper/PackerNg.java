@@ -37,20 +37,49 @@ public final class PackerNg {
 
     public static synchronized String getMarket(final Object context, final String defaultValue) {
         if (sCachedMarket == null) {
-            sCachedMarket = getMarketInternal(context, defaultValue);
+            sCachedMarket = getMarketInternal(context, defaultValue).market;
         }
         return sCachedMarket;
     }
 
-    private static String getMarketInternal(final Object context, final String defaultValue) {
+    public static MarketInfo getMarketInfo(final Object context) {
+        return getMarketInfo(context, EMPTY_STRING);
+    }
+
+    public static synchronized MarketInfo getMarketInfo(final Object context, final String defaultValue) {
+        return getMarketInternal(context, defaultValue);
+    }
+
+    private static MarketInfo getMarketInternal(final Object context, final String defaultValue) {
         String market;
+        Exception error;
         try {
             final String sourceDir = Helper.getSourceDir(context);
             market = Helper.readMarket(new File(sourceDir));
+            error = null;
         } catch (Exception e) {
             market = null;
+            error = e;
         }
-        return (market == null) ? defaultValue : market;
+        return new MarketInfo(market == null ? defaultValue : market, error);
+    }
+
+    public static class MarketInfo {
+        public final String market;
+        public final Exception error;
+
+        public MarketInfo(final String market, final Exception error) {
+            this.market = market;
+            this.error = error;
+        }
+
+        @Override
+        public String toString() {
+            return "MarketInfo{" +
+                    "market='" + market + '\'' +
+                    ", error=" + error +
+                    '}';
+        }
     }
 
     public static class Helper {
@@ -70,8 +99,21 @@ public final class PackerNg {
             final Class<?> applicationInfoClass = Class.forName("android.content.pm.ApplicationInfo");
             final Method getApplicationInfoMethod = contextClass.getMethod("getApplicationInfo");
             final Object appInfo = getApplicationInfoMethod.invoke(context);
-            final Field sourceDirField = applicationInfoClass.getField("sourceDir");
-            return (String) sourceDirField.get(appInfo);
+            // try ApplicationInfo.publicSourceDir
+            final Field publicSourceDirField = applicationInfoClass.getField("publicSourceDir");
+            String sourceDir = (String) publicSourceDirField.get(appInfo);
+            if (sourceDir == null) {
+                // try ApplicationInfo.sourceDir
+                final Field sourceDirField = applicationInfoClass.getField("sourceDir");
+                sourceDir = (String) sourceDirField.get(appInfo);
+            }
+            if (sourceDir == null) {
+                // try Context.getPackageCodePath()
+                final Method getPackageCodePathMethod = contextClass.getMethod("getPackageCodePath");
+                sourceDir = (String) getPackageCodePathMethod.invoke(context);
+            }
+            return sourceDir;
+
         }
 
         private static boolean isMagicMatched(byte[] buffer) {
@@ -166,14 +208,17 @@ public final class PackerNg {
                         byte[] bytesComment = new byte[length];
                         raf.readFully(bytesComment);
                         return new String(bytesComment, UTF_8);
+                    } else {
+                        throw new IOException("zip comment content not found");
                     }
+                } else {
+                    throw new IOException("zip comment magic bytes not found");
                 }
             } finally {
                 if (raf != null) {
                     raf.close();
                 }
             }
-            return null;
         }
 
         private static String readZipCommentMmp(File file) throws IOException {
