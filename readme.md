@@ -357,8 +357,8 @@ theMarkets.each { String market ->
 
 * Rx文档中文翻译: <https://github.com/mcxiaoke/RxDocs>
 * MQTT协议中文版: <https://github.com/mcxiaoke/mqtt>
-* Awesome-Kotlin:<https://github.com/mcxiaoke/awesome-kotlin>
-* Kotlin-Koi:<https://github.com/mcxiaoke/kotlin-koi>
+* Awesome-Kotlin: <https://github.com/mcxiaoke/awesome-kotlin>
+* Kotlin-Koi: <https://github.com/mcxiaoke/kotlin-koi>
 * Next公共组件库: <https://github.com/mcxiaoke/Android-Next>
 * Gradle渠道打包: <https://github.com/mcxiaoke/gradle-packer-plugin>
 * EventBus实现xBus: <https://github.com/mcxiaoke/xBus>
