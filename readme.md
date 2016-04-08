@@ -355,11 +355,13 @@ theMarkets.each { String market ->
 
 #### 开源项目
 
+* Rx文档中文翻译: <https://github.com/mcxiaoke/RxDocs>
+* MQTT协议中文版: <https://github.com/mcxiaoke/mqtt>
+* Awesome-Kotlin: <https://github.com/mcxiaoke/awesome-kotlin>
+* Kotlin-Koi: <https://github.com/mcxiaoke/kotlin-koi>
 * Next公共组件库: <https://github.com/mcxiaoke/Android-Next>
 * Gradle渠道打包: <https://github.com/mcxiaoke/gradle-packer-plugin>
 * EventBus实现xBus: <https://github.com/mcxiaoke/xBus>
-* Rx文档中文翻译: <https://github.com/mcxiaoke/RxDocs>
-* MQTT协议中文版: <https://github.com/mcxiaoke/mqtt>
 * 蘑菇饭App: <https://github.com/mcxiaoke/minicat>
 * 饭否客户端: <https://github.com/mcxiaoke/fanfouapp-opensource>
 * Volley镜像: <https://github.com/mcxiaoke/android-volley>
