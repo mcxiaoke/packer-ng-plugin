@@ -43,9 +43,9 @@ class ArchiveAllApkTask extends DefaultTask {
         if (theMarkets == null || theMarkets.isEmpty()) {
             throw new InvalidUserDataException(":${name} ERROR: no markets found, task aborted!")
         }
-        if (theVariant.buildType.signingConfig == null) {
-            throw new GradleException(":${project.name}:${name} ERROR: android.buildTypes." +
-                    "${theVariant.buildType.name}.signingConfig is null, task aborted!")
+    //  if (theVariant.buildType.signingConfig == null) {
+    //      throw new GradleException(":${project.name}:${name} ERROR: android.buildTypes." +
+    //              "${theVariant.buildType.name}.signingConfig is null, task aborted!")
         }
         if (!theVariant.buildType.zipAlignEnabled) {
 
