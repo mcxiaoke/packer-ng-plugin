@@ -29,6 +29,8 @@ class PackerNgExtension {
      * 6. versionName
      * 7. versionCode
      * 8. buildTime
+     * 9. fileMD5
+     * 10. fileSHA1
      *
      * default value: '${appPkg}-${flavorName}-${buildType}-v${versionName}-${versionCode}'
      */

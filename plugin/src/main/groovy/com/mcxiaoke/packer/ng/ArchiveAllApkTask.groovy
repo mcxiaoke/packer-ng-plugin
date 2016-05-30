@@ -69,11 +69,11 @@ class ArchiveAllApkTask extends DefaultTask {
         }
         logger.info(":${project.name}:${name} markets:[${theMarkets.join(', ')}]")
         theMarkets.eachWithIndex { String market, index ->
-            String apkName = buildApkName(theVariant, market)
-            File tempFile = new File(tempDir, apkName)
-            File finalFile = new File(outputDir, apkName)
+            File tempFile = new File(tempDir, market+".apk")
             copyTo(originalFile, tempFile)
             PackerNg.Helper.writeMarket(tempFile, market)
+            String apkName = buildApkName(theVariant, market, tempFile)
+            File finalFile = new File(outputDir, apkName)
             if (PackerNg.Helper.verifyMarket(tempFile, market)) {
                 println(":${project.name}:${name} processed apk for ${market} (${index + 1})")
                 copyTo(tempFile, finalFile)
@@ -93,11 +93,16 @@ class ArchiveAllApkTask extends DefaultTask {
      * @param variant Variant
      * @return final apk name
      */
-    String buildApkName(variant, market) {
+    String buildApkName(variant, market, apkFile) {
         def buildTime = new SimpleDateFormat('yyyyMMdd-HHmmss').format(new Date())
+        File file = apkFile
+        def fileMD5 = HASH.md5(file)
+        def fileSHA1 = HASH.sha1(file)
         def nameMap = [
                 'appName'    : project.name,
                 'projectName': project.rootProject.name,
+                'fileMD5'    : fileMD5,
+                'fileSHA1'   : fileSHA1,
                 'flavorName' : market,
                 'buildType'  : variant.buildType.name,
                 'versionName': variant.versionName,
