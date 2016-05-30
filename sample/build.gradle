@@ -6,7 +6,7 @@ buildscript {
     }
 
     dependencies {
-        classpath 'com.android.tools.build:gradle:1.5.0'
+        classpath 'com.android.tools.build:gradle:2.1.0'
         classpath 'com.mcxiaoke.gradle:packer-ng:1.0.5-SNAPSHOT'
     }
 }
@@ -41,6 +41,7 @@ dependencies {
 packer {
     checkSigningConfig = true
     checkZipAlign = true
+    archiveNameFormat = '${appPkg}-${flavorName}-${buildType}-v${versionName}-${versionCode}-${fileMD5}'
     archiveOutput = file(new File(project.rootProject.buildDir.path, "myapks"))
 }
 
