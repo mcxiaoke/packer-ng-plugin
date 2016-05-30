@@ -3,6 +3,7 @@
 
 ## 最新版本
 
+- **v1.0.5 - 2016.05.30** - 签名检查调整为可选，文件名模板支持MD5和SHA1
 - **v1.0.4 - 2016.01.19** - 完善获取APK路径的方法,增加MarketInfo
 - **v1.0.3 - 2016.01.14** - 增加缓存，新增ResUtils，更有好的错误提示
 - **v1.0.2 - 2015.12.04** - 兼容productFlavors，完善异常处理
@@ -12,7 +13,7 @@
 
 ## 项目介绍
 
-[**packer-ng-plugin**](https://github.com/mcxiaoke/packer-ng-plugin) 是下一代Android渠道打包工具Gradle插件，支持极速打包，**1000**个渠道包只需要**5**秒钟，速度是 [**gradle-packer-plugin**](https://github.com/mcxiaoke/gradle-packer-plugin) 的**1000**倍以上，可方便的用于CI系统集成，支持自定义输出目录和最终APK文件名，依赖包： `com.mcxiaoke.gradle:packer-ng:1.0.+` 简短名：`packer`，可以在项目的 `build.gradle` 中指定使用，还提供了命令行独立使用的Java和Python脚本。实现原理见本文末尾。
+[**packer-ng-plugin**](https://github.com/mcxiaoke/packer-ng-plugin) 是下一代Android渠道打包工具Gradle插件，支持极速打包，**1000**个渠道包只需要**5**秒钟，速度是 [**gradle-packer-plugin**](https://github.com/mcxiaoke/gradle-packer-plugin) 的**1000**倍以上，可方便的用于CI系统集成，支持自定义输出目录和最终APK文件名，依赖包： `com.mcxiaoke.gradle:packer-ng:1.0.5` 简短名：`packer`，可以在项目的 `build.gradle` 中指定使用，还提供了命令行独立使用的Java和Python脚本。实现原理见本文末尾。
 
 ## 使用指南
 
@@ -26,7 +27,7 @@ buildscript {
 	......
 	dependencies{
 	// add packer-ng
-		classpath 'com.mcxiaoke.gradle:packer-ng:1.0.4'
+		classpath 'com.mcxiaoke.gradle:packer-ng:1.0.5'
 	}
 }  
 ```
@@ -38,7 +39,7 @@ apply plugin: 'packer'
 
 dependencies {
 	// add packer-helper
-	compile 'com.mcxiaoke.gradle:packer-helper:1.0.4'
+	compile 'com.mcxiaoke.gradle:packer-helper:1.0.5'
 } 
 ```
 
@@ -124,7 +125,9 @@ packer {
   * *flavorName* - `flavorName` (对应渠道打包中的渠道名字)
   * *versionName* - `versionName` (显示用的版本号)
   * *versionCode* - `versionCode` (内部版本号)
-  * *buildTime* - `buildTime` (编译构建日期时间)  
+  * *buildTime* - `buildTime` (编译构建日期时间) 
+  * *fileMD5* - `fileMD5 ` (最终APK文件的MD5哈希值) (**v1.0.5新增**)
+  * *fileSHA1* - `fileSHA1 ` (最终APK文件的SHA1哈希值) (**v1.0.5新增**)
 
 ### 命令行打包脚本
 
