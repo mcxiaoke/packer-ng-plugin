@@ -109,6 +109,10 @@ packer {
     // 指定渠道打包输出文件名格式
     // 默认是 `${appPkg}-${flavorName}-${buildType}-v${versionName}-${versionCode}`
     // archiveNameFormat = ''
+    // 是否检查Gradle配置中的signingConfig，默认不检查
+    // checkSigningConfig = false
+    // 是否检查Gradle配置中的zipAlignEnabled，默认不检查
+    // checkZipAlign = false
 }
 ```
 
