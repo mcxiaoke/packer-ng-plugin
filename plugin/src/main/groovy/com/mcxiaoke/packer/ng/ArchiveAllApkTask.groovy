@@ -43,13 +43,14 @@ class ArchiveAllApkTask extends DefaultTask {
         if (theMarkets == null || theMarkets.isEmpty()) {
             throw new InvalidUserDataException(":${name} ERROR: no markets found, task aborted!")
         }
-        if (theVariant.buildType.signingConfig == null) {
-            throw new GradleException(":${project.name}:${name} ERROR: android.buildTypes." +
+        if (theExtension.checkSigningConfig
+                && theVariant.buildType.signingConfig == null) {
+            throw new GradleException(":${project.name}:${name} ERROR: android." +
                     "${theVariant.buildType.name}.signingConfig is null, task aborted!")
         }
-        if (!theVariant.buildType.zipAlignEnabled) {
-
-            throw new GradleException(":${project.name}:${name} ERROR: android.buildTypes." +
+        if (theExtension.checkZipAlign
+                && !theVariant.buildType.zipAlignEnabled) {
+            throw new GradleException(":${project.name}:${name} ERROR: android." +
                     "${theVariant.buildType.name}.zipAlignEnabled is false, task aborted!")
         }
         File originalFile = theVariant.outputs[0].outputFile

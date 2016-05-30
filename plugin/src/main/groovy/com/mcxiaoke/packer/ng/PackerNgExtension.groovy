@@ -13,6 +13,10 @@ class PackerNgExtension {
 
     File tempOutput
 
+    boolean checkSigningConfig
+
+    boolean checkZipAlign
+
     /**
      * file name template string
      *
@@ -41,6 +45,8 @@ class PackerNgExtension {
         archiveOutput = new File(project.rootProject.buildDir, "archives")
         tempOutput = new File(project.rootProject.buildDir, "temp")
         archiveNameFormat = DEFAULT_NAME_TEMPLATE
+        checkSigningConfig = false
+        checkZipAlign = false
     }
 
 

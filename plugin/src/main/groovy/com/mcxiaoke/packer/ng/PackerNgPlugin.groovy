@@ -101,11 +101,11 @@ class PackerNgPlugin implements Plugin<Project> {
     void checkPackerNgTask(BaseVariant variant) {
         if (variant.buildType.signingConfig == null) {
             println("WARNING:${project.name}:${variant.name}: signingConfig is null, " +
-                    "task apk${variant.name.capitalize()} will fail.")
+                    "task apk${variant.name.capitalize()} may fail.")
         }
         if (!variant.buildType.zipAlignEnabled) {
             println("WARNING:${project.name}:${variant.name}: zipAlignEnabled is false, " +
-                    "task apk${variant.name.capitalize()} will fail.")
+                    "task apk${variant.name.capitalize()} may fail.")
         }
         debug("checkPackerNgTask() for ${variant.name}")
         def File inputFile = variant.outputs[0].outputFile
