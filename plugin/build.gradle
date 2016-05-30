@@ -20,5 +20,5 @@ dependencies {
     compile 'com.android.tools.build:gradle:2.1.0'
 }
 
-apply from: 'https://github.com/mcxiaoke/gradle-mvn-push/raw/master/gradle-mvn-push.gradle'
+apply from: '../gradle-mvn-push.gradle'
 
