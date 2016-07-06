@@ -347,9 +347,6 @@ theMarkets.each { String market ->
 ### 同类工具
 
 - [**gradle-packer-plugin**](https://github.com/mcxiaoke/gradle-packer-plugin) - 旧版渠道打包工具，完全使用Gradle系统实现，能利用Android提供的productFlavors系统的条件编译功能，无任何兼容性问题，方便集成，但是由于每次都要重新打包，速度比较慢，不适合需要大量打包的情况。（性能：200个渠道包需要一到两小时）
-- [**Meituan-MultiChannelTool**](https://github.com/GavinCT/AndroidMultiChannelBuildTool) - 使用美团方案的实现，在APK文件的`META-INF`目里增加渠道文件，打包速度也非常快，但读取时需要遍历APK文件的数据项，比较慢，而且以后可能遇到兼容性问题
-- [**MultiChannelPackageTool**](https://github.com/seven456/MultiChannelPackageTool) - 将渠道写入APK文件的注释，这个项目没有提供Gradle插件，只有命令行工具，不方便CI集成，使用ZIP文件注释的思路就是来自此项目
-
 
 ------
 
