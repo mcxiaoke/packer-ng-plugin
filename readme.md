@@ -94,7 +94,7 @@ market是你的渠道名列表文件，market文件是基于**项目根目录**�
 
 **不支持`productFlavors`中定义的条件编译变量，不支持修改AndroidManifest**
 
-如果你的项目有多个`productFlavors`，默认只会用第一个`flavor`生成的APK文件作为打包工具的输入参数，忽略其它`flavor`生成的apk，代码里用的是 `ariant.outputs[0].outputFile`。如果你想指定使用某个flavor来生成渠道包，可以用 `apkFlavor1Release`，`apkFlavor2Beta`这样的名字，示例（假设flavor名字是Intel）：
+如果你的项目有多个`productFlavors`，默认只会用第一个`flavor`生成的APK文件作为打包工具的输入参数，忽略其它`flavor`生成的apk，代码里用的是 `theVariant.outputs[0].outputFile`。如果你想指定使用某个flavor来生成渠道包，可以用 `apkFlavor1Release`，`apkFlavor2Beta`这样的名字，示例（假设flavor名字是Intel）：
 
 ```shell
 ./gradlew -Pmarket=markets.txt clean apkIntelRelease
