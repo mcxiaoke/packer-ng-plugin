@@ -60,7 +60,7 @@ AnalyticsConfig.setChannel(market)
 
 ```
 
-### 渠道打包脚本
+### Gradle打包说明
 
 可以通过两种方式指定 `market` 属性，根据需要选用：
 
@@ -100,6 +100,30 @@ market是你的渠道名列表文件，market文件是基于**项目根目录**�
 ./gradlew -Pmarket=markets.txt clean apkIntelRelease
 ``` 
 
+### 命令行打包说明
+
+**特别提示：如果你同时使用其它的资源压缩工具或应用加固功能，请使用命令行脚本打包增加渠道信息，增加渠道信息需要放在APK处理过程的最后一步。**
+
+如果不想使用Gradle插件，这里还有两个命令行打包脚本，在项目的 `tools` 目录里，分别是 `ngpacker-x.x.x-capsule.jar` 和 `ngpacker.py`，使用命令行打包工具，在Java代码里仍然是使用`packer-helper`包里的 `PackerNg.getMarket(Context)` 读取渠道
+
+#### Java脚本
+
+```shell
+java -jar ngpacker-x.x.x-capsule.jar release_apk_file market_file
+// help: java -jar packer-ng-x.x.x-capsule.jar
+```
+
+#### Python脚本
+
+```shell
+python ngpacker.py [file] [market] [output] [-h] [-s] [-t TEST]
+// help: python packer-ng.py -h
+// python; import ngpacker; help(ngpacker)
+```
+
+#### 不使用Gradle
+使用命令行打包脚本，不想添加Gradle依赖的，可以完全忽略Gradle的配置，直接复制 [PackerNg.java](helper/src/main/java/com/mcxiaoke/packer/helper/PackerNg.java) 到项目中使用即可
+
 ### 插件配置说明（可选） 
 
 ```groovy 
@@ -132,28 +156,6 @@ packer {
   * *buildTime* - `buildTime` (编译构建日期时间) 
   * *fileMD5* - `fileMD5 ` (最终APK文件的MD5哈希值) (**v1.0.5新增**)
   * *fileSHA1* - `fileSHA1 ` (最终APK文件的SHA1哈希值) (**v1.0.5新增**)
-
-### 命令行打包脚本
-
-如果不想使用Gradle插件，这里还有两个命令行打包脚本，在项目的 `tools` 目录里，分别是 `ngpacker-x.x.x-capsule.jar` 和 `ngpacker.py`，使用命令行打包工具，在Java代码里仍然是使用`packer-helper`包里的 `PackerNg.getMarket(Context)` 读取渠道
-
-#### Java脚本
-
-```shell
-java -jar ngpacker-x.x.x-capsule.jar release_apk_file market_file
-// help: java -jar packer-ng-x.x.x-capsule.jar
-```
-
-#### Python脚本
-
-```shell
-python ngpacker.py [file] [market] [output] [-h] [-s] [-t TEST]
-// help: python packer-ng.py -h
-// python; import ngpacker; help(ngpacker)
-```
-
-#### 不使用Gradle
-使用命令行打包脚本，不想添加Gradle依赖的，可以完全忽略Gradle的配置，直接复制 [PackerNg.java](helper/src/main/java/com/mcxiaoke/packer/helper/PackerNg.java) 到项目中使用即可
 
 ## 实现原理
 
