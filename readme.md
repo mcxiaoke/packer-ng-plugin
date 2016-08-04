@@ -19,6 +19,14 @@
 
 [`Maven Central`](http://search.maven.org/#search%7Cga%7C1%7Ca%3A%22packer-ng%22)
 
+### 兼容性问题说明 (2016.08.04)
+
+**使用最新版SDK时，请在 `signingConfigs` 里加入这一行 `v2SigningEnabled false`**
+
+从`Android Studio 2.2`和`Android Gradle Plugin 2.2`开始，构建系统在打包应用后签名时默认使用`APK signature scheme v2`，该模式在原有的签名模式上，增加校验APK的SHA256哈希值，如果签名后对APK作了任何修改，安装时会校验失败，提示没有签名无法安装，使用本工具修改的APK会无法安装，**解决办法是在 `signingConfigs` 里增加 `v2SigningEnabled false`** ，禁用新版签名模式，技术细节请看官方文档：[APK signature scheme v2](https://developer.android.com/preview/api-overview.html#apk_signature_v2)，还有这里 [Issue 31](https://github.com/mcxiaoke/packer-ng-plugin/issues/31) 的讨论 。
+
+另一个可能有效的解决办法是，先打包未签名的APK，然后使用`zipaligin`工具，使用`packer`打包工具加入渠道信息，最后再签名。
+
 ### 修改项目根目录的 `build.gradle`
 
 ```groovy
@@ -34,13 +42,25 @@ buildscript {
 
 ### 修改Android模块的 `build.gradle`
 
+**再次提醒，增加这一行 `v2SigningEnabled false` 禁用新版签名模式**
+
 ```groovy
 apply plugin: 'packer' 
 
 dependencies {
-	// add packer-helper
 	compile 'com.mcxiaoke.gradle:packer-helper:1.0.5'
 } 
+
+ android {
+    //...
+    signingConfigs {
+      release {
+      	// 如果使用Android 2.2和Gradle Plguin 2.2版以上
+      	// 这一行必须加，否则安装时会提示没有签名
+        v2SigningEnabled false // 禁用V2版签名模式
+      }
+    }
+  }
 ```
 
 **注意：`packer-ng` 和 `packer-helper` 的版本号需要保持一致**
