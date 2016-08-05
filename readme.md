@@ -3,6 +3,7 @@
 
 ## 最新版本
 
+- **v1.0.6 - 2016.08.05** - V2签名模式兼容问题提示，打包脚本优化
 - **v1.0.5 - 2016.05.30** - 签名检查调整为可选，文件名模板支持MD5和SHA1
 - **v1.0.4 - 2016.01.19** - 完善获取APK路径的方法,增加MarketInfo
 - **v1.0.3 - 2016.01.14** - 增加缓存，新增ResUtils，更有好的错误提示
@@ -13,7 +14,7 @@
 
 ## 项目介绍
 
-[**packer-ng-plugin**](https://github.com/mcxiaoke/packer-ng-plugin) 是下一代Android渠道打包工具Gradle插件，支持极速打包，**100**个渠道包只需要**10**秒钟，速度是 [**gradle-packer-plugin**](https://github.com/mcxiaoke/gradle-packer-plugin) 的**300**倍以上，可方便的用于CI系统集成，支持自定义输出目录和最终APK文件名，依赖包： `com.mcxiaoke.gradle:packer-ng:1.0.5` 简短名：`packer`，可以在项目的 `build.gradle` 中指定使用，还提供了命令行独立使用的Java和Python脚本。实现原理见本文末尾。
+[**packer-ng-plugin**](https://github.com/mcxiaoke/packer-ng-plugin) 是下一代Android渠道打包工具Gradle插件，支持极速打包，**100**个渠道包只需要**10**秒钟，速度是 [**gradle-packer-plugin**](https://github.com/mcxiaoke/gradle-packer-plugin) 的**300**倍以上，可方便的用于CI系统集成，支持自定义输出目录和最终APK文件名，依赖包： `com.mcxiaoke.gradle:packer-ng:1.0.6` 简短名：`packer`，可以在项目的 `build.gradle` 中指定使用，还提供了命令行独立使用的Java和Python脚本。实现原理见本文末尾。
 
 ## 使用指南
 
@@ -27,29 +28,30 @@ buildscript {
 	......
 	dependencies{
 	// add packer-ng
-		classpath 'com.mcxiaoke.gradle:packer-ng:1.0.5'
+		classpath 'com.mcxiaoke.gradle:packer-ng:1.0.6'
 	}
 }  
 ```
 
 ### 修改Android模块的 `build.gradle`
 
-**特别提示：务必增加这一行 `v2SigningEnabled false` 禁用新版签名模式，详细的说明见这里：[兼容性问题说明](compatibility.md)**
+**特别提示：要支持Android N，请务必增加这一行 `v2SigningEnabled false` 禁用新版签名模式，详细的说明见这里：[兼容性问题说明](compatibility.md)。**
 
 ```groovy
 apply plugin: 'packer' 
 
 dependencies {
-	compile 'com.mcxiaoke.gradle:packer-helper:1.0.5'
+	compile 'com.mcxiaoke.gradle:packer-helper:1.0.6'
 } 
 
  android {
     //...
     signingConfigs {
       release {
-      	// 如果使用Android 2.2和Gradle Plguin 2.2版以上
+      	// 如果要支持最新版的系统 Android N(7.0)
       	// 这一行必须加，否则安装时会提示没有签名
-        v2SigningEnabled false // 禁用V2版签名模式
+      	// 作用是只使用旧版签名，禁用V2版签名模式
+        v2SigningEnabled false 
       }
     }
   }
@@ -116,21 +118,18 @@ market是你的渠道名列表文件，market文件是基于**项目根目录**�
 
 **特别提示：如果你同时使用其它的资源压缩工具或应用加固功能，请使用命令行脚本打包增加渠道信息，增加渠道信息需要放在APK处理过程的最后一步。**
 
-如果不想使用Gradle插件，这里还有两个命令行打包脚本，在项目的 `tools` 目录里，分别是 `ngpacker-x.x.x-capsule.jar` 和 `ngpacker.py`，使用命令行打包工具，在Java代码里仍然是使用`packer-helper`包里的 `PackerNg.getMarket(Context)` 读取渠道
+如果不想使用Gradle插件，这里还有两个命令行打包脚本，在项目的 `tools` 目录里，分别是 `PackerNg-1.0.6.jar` 和 `PackerNg-1.0.6.py`，使用命令行打包工具，在Java代码里仍然是使用`helper`包里的 `PackerNg.getMarket(Context)` 读取渠道
 
 #### Java脚本
 
 ```shell
-java -jar ngpacker-x.x.x-capsule.jar release_apk_file market_file
-// help: java -jar packer-ng-x.x.x-capsule.jar
+java -jar PackerNg-x.x.x.jar apkFile marketFile outputDir
 ```
 
 #### Python脚本
 
 ```shell
-python ngpacker.py [file] [market] [output] [-h] [-s] [-t TEST]
-// help: python packer-ng.py -h
-// python; import ngpacker; help(ngpacker)
+python PackerNg-x.x.x.py [file] [market] [output] [-h] [-s] [-t TEST]
 ```
 
 #### 不使用Gradle
@@ -190,34 +189,7 @@ Android应用使用的APK文件就是一个带签名信息的ZIP文件，根据 
 
 ### 细节处理
 
-原理很简单，就是将渠道信息存放在APK文件的注释字段中，但是实现起来遇到不少坑，测试了好多次。
-
-#### ZipOutputStream.setComment
-
-```java
-
-FileOutputStream is = new FileOutputStream("demo.apk", true);
-ZipOutputStream zos = new ZipOutputStream(is);
-zos.setComment("Google_Market");
-zos.finish();
-zos.close();
-
-ZipFile zipFile=new ZipFile("demo.apk");
-System.out.println(zipFile.getComment());
-
-```
-使用Java写入APK文件注释虽然可以正常读取，但是安装的时候会失败，错误信息是：
-
-```shell
-adb install -r demo.apk
-Failure [INSTALL_FAILED_INVALID_APK]
-```
-
-原因未知，可能Java的Zip实现写入了某些特殊字符导致APK文件校验失败，于是只能放弃这个方法。同样的功能使用Python测试完全没有问题，处理后的APK可以正常安装。
-
-#### ZipFile.getComment
-
-上面是ZIP文件注释写入，使用Java会导致APK文件被破坏，无法安装。这里是读取ZIP文件注释的问题，Java 7里可以使用 `zipFile.getComment()` 方法直接读取注释，非常方便。但是Android系统直到API 19，也就是4.4以上的版本才支持 [`ZipFile.getComment()`](http://developer.android.com/intl/zh-cn/reference/java/util/zip/ZipFile.html#getComment()) 方法。由于要兼容之前的版本，所以这个方法也不能使用。
+原理很简单，就是将渠道信息存放在APK文件的注释字段中，但是实现起来遇到不少坑，测试了好多次。使用Java写入APK文件注释虽然可以正常读取，但是安装的时候会失败，Java的Zip实现写入了某些特殊字符导致APK文件校验失败，于是只能放弃这个方法。同样的功能使用Python测试完全没有问题，处理后的APK可以正常安装。Java 7里可以使用 `zipFile.getComment()` 方法直接读取注释，非常方便。但是Android系统直到API 19，也就是4.4以上的版本才支持 `ZipFile.getComment()` 方法。由于要兼容之前的版本，所以这个方法也不能使用。
 
 #### 解决方法
 
@@ -235,128 +207,9 @@ static final byte[] MAGIC = new byte[]{0x21, 0x5a, 0x58, 0x4b, 0x21}; //!ZXK!
 
 ```
 
-#### 读写注释
-
-Java版详细的实现见 [PackerNg.java](helper/src/main/java/com/mcxiaoke/packer/helper/PackerNg.java)，Python版的实现见 [ngpacker.py](tools/ngpacker.py) 。
-
-写入ZIP文件注释：
-
-```java
-
-public static void writeZipComment(File file, String comment) 
-throws IOException {
-    byte[] data = comment.getBytes(UTF_8);
-    final RandomAccessFile raf = new RandomAccessFile(file, "rw");
-    raf.seek(file.length() - SHORT_LENGTH);
-    // write zip comment length
-    // (content field length + length field length + magic field length)
-    writeShort(data.length + SHORT_LENGTH + MAGIC.length, raf);
-    // write content
-    writeBytes(data, raf);
-    // write content length
-    writeShort(data.length, raf);
-    // write magic bytes
-    writeBytes(MAGIC, raf);
-    raf.close();
-}
-
-```
-
-读取ZIP文件注释，有两个版本的实现，这里使用的是 `RandomAccessFile` ，另一个版本使用的是 `MappedByteBuffer` ，经过测试，对于特别长的注释，使用内存映射文件读取性能要稍微好一些，对于特别短的注释（比如渠道名），这个版本反而更快一些。
-
-```java
-
-public static String readZipComment(File file) throws IOException {
-    RandomAccessFile raf = null;
-    try {
-        raf = new RandomAccessFile(file, "r");
-        long index = raf.length();
-        byte[] buffer = new byte[MAGIC.length];
-        index -= MAGIC.length;
-        // read magic bytes
-        raf.seek(index);
-        raf.readFully(buffer);
-        // if magic bytes matched
-        if (isMagicMatched(buffer)) {
-            index -= SHORT_LENGTH;
-            raf.seek(index);
-            // read content length field
-            int length = readShort(raf);
-            if (length > 0) {
-                index -= length;
-                raf.seek(index);
-                // read content bytes
-                byte[] bytesComment = new byte[length];
-                raf.readFully(bytesComment);
-                return new String(bytesComment, UTF_8);
-            }
-        }
-    } finally {
-        if (raf != null) {
-            raf.close();
-        }
-    }
-    return null;
-}
-
-```
-
-读取APK文件，由于这个库 `packer-helper` 需要同时给Gradle插件和Android项目使用，所以不能添加Android相关的依赖，但是又需要读取自身APK文件的路径，使用反射实现：
-
-```java
-
-// for android code
-private static String getSourceDir(final Object context)
-        throws ClassNotFoundException,
-        InvocationTargetException,
-        IllegalAccessException,
-        NoSuchFieldException,
-        NoSuchMethodException {
-    final Class<?> contextClass = Class.forName("android.content.Context");
-    final Class<?> applicationInfoClass = Class.forName("android.content.pm.ApplicationInfo");
-    final Method getApplicationInfoMethod = contextClass.getMethod("getApplicationInfo");
-    final Object appInfo = getApplicationInfoMethod.invoke(context);
-    final Field sourceDirField = applicationInfoClass.getField("sourceDir");
-    return (String) sourceDirField.get(appInfo);
-}
-
-```
-
 #### Gradle Plugin
 
-这个和旧版插件基本一致，首先是读取渠道列表文件，保存起来，打包的时候遍历列表，复制生成的APK文件到临时文件，给临时文件写入渠道信息，然后复制到输出目录，文件名可以使用模板定制。主要代码如下：
-
-```groovy
-// 添加打包用的TASK
-def archiveTask = project.task("apk${variant.name.capitalize()}",
-                type: ArchiveAllApkTask) {
-            theVariant = variant
-            theExtension = modifierExtension
-            theMarkets = markets
-            dependsOn variant.assemble
-        }
-        def buildTypeName = variant.buildType.name
-        if (variant.name != buildTypeName) {
-            project.task("apk${buildTypeName.capitalize()}", dependsOn: archiveTask)
-        }
-
-
-// 遍历列表修改APK文件
-theMarkets.each { String market ->
-            String apkName = buildApkName(theVariant, market)
-            File tempFile = new File(tempDir, apkName)
-            File finalFile = new File(outputDir, apkName)
-            tempFile << originalFile.bytes
-            copyTo(originalFile, tempFile)
-            PackerNg.Helper.writeMarket(tempFile, market)
-            if (PackerNg.Helper.verifyMarket(tempFile, market)) {
-                copyTo(tempFile, finalFile)
-            } 
-        }
-
-```
-
-详细的实现可以查看文件 [PackerNgPlugin.groovy](plugin/src/main/groovy/com/mcxiaoke/packer/ng/PackerNgPlugin.groovy) 和文件 [ArchiveAllApkTask.groovy](plugin/src/main/groovy/com/mcxiaoke/packer/ng/ArchiveAllApkTask.groovy)
+这个和旧版插件基本一致，首先是读取渠道列表文件，保存起来，打包的时候遍历列表，复制生成的APK文件到临时文件，给临时文件写入渠道信息，然后复制到输出目录，文件名可以使用模板定制。详细的实现可以查看文件 [PackerNgPlugin.groovy](plugin/src/main/groovy/com/mcxiaoke/packer/ng/PackerNgPlugin.groovy) 和文件 [ArchiveAllApkTask.groovy](plugin/src/main/groovy/com/mcxiaoke/packer/ng/ArchiveAllApkTask.groovy)
 
 ### 同类工具
 
