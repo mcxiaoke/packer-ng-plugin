@@ -1,12 +1,8 @@
 buildscript {
     repositories {
         jcenter()
-        maven {
-            url "https://plugins.gradle.org/m2/"
-        }
     }
     dependencies {
-        classpath "us.kirchmeier:gradle-capsule-plugin:1.0.1"
     }
 }
 
@@ -15,7 +11,6 @@ repositories {
 }
 
 apply plugin: 'java'
-apply plugin: 'us.kirchmeier.capsule'
 
 sourceCompatibility = 1.6
 targetCompatibility = 1.6
@@ -23,24 +18,16 @@ targetCompatibility = 1.6
 dependencies {
 }
 
-jar {
+task fatJar(type: Jar) {
     manifest {
-        attributes 'Main-Class': 'com.mcxiaoke.packer.helper.PackerNg'
+        attributes 'Implementation-Title': 'Gradle Jar File Example',
+                'Implementation-Version': VERSION_NAME,
+                'Main-Class': 'com.mcxiaoke.packer.helper.PackerNg',
+                'Description': 'This is PackerNg executable Jar.'
     }
-}
-
-task fatCapsule(type: FatCapsule) {
-    applicationClass 'com.mcxiaoke.packer.helper.PackerNg'
-    baseName 'ngpacker'
-    reallyExecutable
-}
-
-task helperJar(type: Copy) {
-    from fatCapsule.outputs
-    into new File(project.rootProject.rootDir, "tools")
-    // exclude '*SNAPSHOT*'
-    dependsOn fatCapsule
-
+    baseName = 'PackerNg'
+    from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
+    with jar
 }
 
 apply from: '../gradle-mvn-push.gradle'
