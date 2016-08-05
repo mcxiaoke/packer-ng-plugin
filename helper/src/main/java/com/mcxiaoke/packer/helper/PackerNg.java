@@ -18,7 +18,6 @@ import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.channels.FileChannel.MapMode;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -64,7 +63,7 @@ public final class PackerNg {
         return new MarketInfo(market == null ? defaultValue : market, error);
     }
 
-    public static class MarketInfo {
+    public static final class MarketInfo {
         public final String market;
         public final Exception error;
 
@@ -79,6 +78,26 @@ public final class PackerNg {
                     "market='" + market + '\'' +
                     ", error=" + error +
                     '}';
+        }
+    }
+
+    public static class MarketExistsException extends IOException {
+        public MarketExistsException() {
+            super();
+        }
+
+        public MarketExistsException(final String message) {
+            super(message);
+        }
+    }
+
+    public static class MarketNotFoundException extends IOException {
+        public MarketNotFoundException() {
+            super();
+        }
+
+        public MarketNotFoundException(final String message) {
+            super(message);
         }
     }
 
@@ -148,7 +167,7 @@ public final class PackerNg {
 
         public static void writeZipComment(File file, String comment) throws IOException {
             if (hasZipCommentMagic(file)) {
-                throw new IllegalStateException("zip comment already exists, ignore.");
+                throw new MarketExistsException("Zip comment already exists, ignore.");
             }
             // {@see java.util.zip.ZipOutputStream.writeEND}
             byte[] data = comment.getBytes(UTF_8);
@@ -209,10 +228,10 @@ public final class PackerNg {
                         raf.readFully(bytesComment);
                         return new String(bytesComment, UTF_8);
                     } else {
-                        throw new IOException("zip comment content not found");
+                        throw new MarketNotFoundException("Zip comment content not found");
                     }
                 } else {
-                    throw new IOException("zip comment magic bytes not found");
+                    throw new MarketNotFoundException("Zip comment magic bytes not found");
                 }
             } finally {
                 if (raf != null) {
@@ -276,7 +295,11 @@ public final class PackerNg {
         }
 
         public static void println(String msg) {
-            System.out.println(TAG + ": " + msg);
+            System.out.println(msg);
+        }
+
+        public static void printErr(String msg) {
+            System.err.println(msg);
         }
 
         public static List<String> parseMarkets(final File file) throws IOException {
@@ -291,11 +314,7 @@ public final class PackerNg {
                     final String market = parts[0].trim();
                     if (market.length() > 0) {
                         markets.add(market);
-                    } else {
-                        println("skip invalid market line " + lineNo + ":'" + line + "'");
                     }
-                } else {
-                    println("skip invalid market line" + lineNo + ":'" + line + "'");
                 }
                 ++lineNo;
             }
@@ -358,56 +377,83 @@ public final class PackerNg {
         }
     }
 
-    public static void main(String[] args) throws Exception {
+    private static final String USAGE_TEXT =
+            "Usage: java -jar PackerNg-x.x.x.jar apkFile marketFile [outputDir] ";
+    private static final String INTRO_TEXT =
+            "\nAttention: if your app target Android 7.0 or later devices, " +
+                    "be sure to install one of the generated Apks to device or emulator, " +
+                    "to ensure the apk can be installed without errors. " +
+                    "More details please go to github " +
+                    "https://github.com/mcxiaoke/packer-ng-plugin .\n";
+
+    public static void main(String[] args) {
         if (args.length < 2) {
-            Helper.println("Usage: java -jar packer-ng-x.x.x.jar your_apk_file market_file");
+            Helper.println(USAGE_TEXT);
             System.exit(1);
         }
-        Helper.println("command args: " + Arrays.toString(args));
         File apkFile = new File(args[0]);
-        final File marketFile = new File(args[1]);
+        File marketFile = new File(args[1]);
+        File outputDir = new File(args.length >= 3 ? args[2] : "apks");
         if (!apkFile.exists()) {
-            Helper.println("apk file:" + apkFile + " not exists or not readable");
+            Helper.printErr("Apk file '" + apkFile.getAbsolutePath() +
+                    "' is not exists or not readable.");
+            Helper.println(USAGE_TEXT);
             System.exit(1);
             return;
         }
         if (!marketFile.exists()) {
-            Helper.println("markets file:" + marketFile + " not exists or not readable");
+            Helper.printErr("Market file '" + marketFile.getAbsolutePath() +
+                    "' is not exists or not readable.");
+            Helper.println(USAGE_TEXT);
             System.exit(1);
             return;
         }
-        Helper.println("apk file: " + apkFile);
-        Helper.println("market file: " + marketFile);
-        List<String> markets = Helper.parseMarkets(marketFile);
-        if (markets == null || markets.isEmpty()) {
-            Helper.println("not markets found.");
-            System.exit(1);
-            return;
-        }
-        Helper.println("markets: " + markets);
-        final String baseName = Helper.getBaseName(apkFile.getName());
-        final String extName = Helper.getExtension(apkFile.getName());
-        final File outputDir = new File("apks");
         if (!outputDir.exists()) {
             outputDir.mkdirs();
-        } else {
-            Helper.deleteDir(outputDir);
         }
+        Helper.println("Apk File: " + apkFile.getAbsolutePath());
+        Helper.println("Market File: " + marketFile.getAbsolutePath());
+        Helper.println("Output Dir: " + outputDir.getAbsolutePath());
+        List<String> markets = null;
+        try {
+            markets = Helper.parseMarkets(marketFile);
+        } catch (IOException e) {
+            Helper.printErr("Market file parse failed.");
+            System.exit(1);
+        }
+        if (markets == null || markets.isEmpty()) {
+            Helper.printErr("No markets found.");
+            System.exit(1);
+            return;
+        }
+        final String baseName = Helper.getBaseName(apkFile.getName());
+        final String extName = Helper.getExtension(apkFile.getName());
         int processed = 0;
-        for (final String market : markets) {
-            final String apkName = baseName + "-" + market + "." + extName;
-            File destFile = new File(outputDir, apkName);
-            Helper.copyFile(apkFile, destFile);
-            Helper.writeMarket(destFile, market);
-            if (Helper.verifyMarket(destFile, market)) {
-                ++processed;
-                Helper.println("processed apk " + apkName);
-            } else {
-                destFile.delete();
-                Helper.println("failed to process " + apkName);
+        try {
+            for (final String market : markets) {
+                final String apkName = baseName + "-" + market + "." + extName;
+                File destFile = new File(outputDir, apkName);
+                Helper.copyFile(apkFile, destFile);
+                Helper.writeMarket(destFile, market);
+                if (Helper.verifyMarket(destFile, market)) {
+                    ++processed;
+                    Helper.println("Generating apk " + apkName);
+                } else {
+                    destFile.delete();
+                    Helper.printErr("Failed to generate " + apkName);
+                }
             }
+            Helper.println("[Success] All " + processed
+                    + " apks saved to " + outputDir.getAbsolutePath());
+            Helper.println(INTRO_TEXT);
+        } catch (MarketExistsException ex) {
+            Helper.printErr("Market info exists in '" + apkFile
+                    + "', please using a clean apk.");
+            System.exit(1);
+        } catch (IOException ex) {
+            Helper.printErr("" + ex);
+            System.exit(1);
         }
-        Helper.println("all " + processed + " processed apks saved to " + outputDir);
     }
 
 }

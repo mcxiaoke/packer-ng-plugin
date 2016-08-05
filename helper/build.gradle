@@ -20,7 +20,7 @@ dependencies {
 
 task fatJar(type: Jar) {
     manifest {
-        attributes 'Implementation-Title': 'Gradle Jar File Example',
+        attributes 'Implementation-Title': 'PackerNg Executable Jar',
                 'Implementation-Version': VERSION_NAME,
                 'Main-Class': 'com.mcxiaoke.packer.helper.PackerNg',
                 'Description': 'This is PackerNg executable Jar.'
