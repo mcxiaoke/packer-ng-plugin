@@ -389,6 +389,7 @@ public final class PackerNg {
     public static void main(String[] args) {
         if (args.length < 2) {
             Helper.println(USAGE_TEXT);
+            Helper.println(INTRO_TEXT);
             System.exit(1);
         }
         File apkFile = new File(args[0]);
