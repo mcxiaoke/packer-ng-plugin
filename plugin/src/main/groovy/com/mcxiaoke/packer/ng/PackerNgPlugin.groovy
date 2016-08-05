@@ -1,7 +1,6 @@
 package com.mcxiaoke.packer.ng
 
 import com.android.build.gradle.api.BaseVariant
-import org.gradle.api.InvalidUserDataException
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.ProjectConfigurationException
@@ -69,7 +68,7 @@ class PackerNgPlugin implements Plugin<Project> {
 
         File file = project.rootProject.file(marketsFilePath)
         if (!file.exists() || !file.isFile() || !file.canRead()) {
-            throw new InvalidUserDataException(":${project.name} invalid market file: ${file.absolutePath}")
+            throw new IllegalArgumentException("Invalid market file: ${file.absolutePath}")
         }
         println(":${project.name} market: ${file.absolutePath}")
         markets = readMarkets(file)
@@ -99,9 +98,19 @@ class PackerNgPlugin implements Plugin<Project> {
  * @param variant current Variant
  */
     void checkPackerNgTask(BaseVariant variant) {
-        if (variant.buildType.signingConfig == null) {
+        def signingConfig = variant.buildType.signingConfig
+        if (signingConfig == null) {
             println("WARNING:${project.name}:${variant.name}: signingConfig is null, " +
                     "task apk${variant.name.capitalize()} may fail.")
+        } else {
+            // ensure APK Signature Scheme v2 disabled.
+            if (signingConfig.hasProperty("v2SigningEnabled") &&
+                    signingConfig.v2SigningEnabled == true) {
+                throw new IllegalArgumentException("Please add 'v2SigningEnabled false' " +
+                        "to signingConfig to disable APK Signature Scheme v2, " +
+                        "as it's not compatible with packer-ng plugin, more details at " +
+                        "https://github.com/mcxiaoke/packer-ng-plugin/blob/master/compatibility.md.")
+            }
         }
         if (!variant.buildType.zipAlignEnabled) {
             println("WARNING:${project.name}:${variant.name}: zipAlignEnabled is false, " +
