@@ -1,40 +1,5 @@
 Google_Market#Google电子市场
 安卓市场#安卓市场
-Goapk_Market#安智市场
-
-Eoe_Market#优亿市场
-GFan_Market#机锋市场 
-Yingyonghui_Market#应用汇市场
-Unicom_Market#联通wo市场
-ali_market#阿里云商店
-
-小米市场#小米市场 
-YidongMM_Market#移动MM市场 
-Yingyongbao_Market#腾讯应用宝市场
-Samsung_Market#三星市场 
-OPPO_Market#OPPO市场 
-Huawei_Market#华为市场
-amazon_market#亚马逊市场
-Meizu_Market#魅族市场
-dangle_market#当乐网
-
-yingyongso_market#应用搜
-3G_market#3G安卓市场
-WanDouJia_Parter#豌豆荚商店
-Baidu_Market#百度应用中心
-360手机助手#360手机助手
-Nduo_Market#N多市场
-
-Mumayi_Market#木蚂蚁市场
-Shizhimao_Market#十字猫市场
-Taobao_Market#淘宝应用市场
-Lenovo_Market#联想市场
-易用汇#易用汇
-suning_market#苏宁应用商店
-sohu_market#搜狐应用商店
-189works_market#天翼空间
-zhongxing_market#中兴汇天地
-sogou_market #搜狗市场
  91_market#91商城
 
 sony_market     #sony商城
