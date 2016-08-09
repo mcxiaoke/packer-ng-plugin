@@ -38,9 +38,7 @@ class PackerNgPlugin implements Plugin<Project> {
             debug(":${project.name} flavors: ${project.android.productFlavors.collect { it.name }}")
             //applySigningConfigs()
             project.android.applicationVariants.all { BaseVariant variant ->
-                if (variant.buildType.name != "debug") {
-                    checkPackerNgTask(variant)
-                }
+                checkPackerNgTask(variant)
             }
         }
     }
@@ -98,24 +96,6 @@ class PackerNgPlugin implements Plugin<Project> {
  * @param variant current Variant
  */
     void checkPackerNgTask(BaseVariant variant) {
-        def signingConfig = variant.buildType.signingConfig
-        if (signingConfig == null) {
-            println("WARNING:${project.name}:${variant.name}: signingConfig is null, " +
-                    "task apk${variant.name.capitalize()} may fail.")
-        } else {
-            // ensure APK Signature Scheme v2 disabled.
-            if (signingConfig.hasProperty("v2SigningEnabled") &&
-                    signingConfig.v2SigningEnabled == true) {
-                throw new IllegalArgumentException("Please add 'v2SigningEnabled false' " +
-                        "to signingConfig to disable APK Signature Scheme v2, " +
-                        "as it's not compatible with packer-ng plugin, more details at " +
-                        "https://github.com/mcxiaoke/packer-ng-plugin/blob/master/compatibility.md.")
-            }
-        }
-        if (!variant.buildType.zipAlignEnabled) {
-            println("WARNING:${project.name}:${variant.name}: zipAlignEnabled is false, " +
-                    "task apk${variant.name.capitalize()} may fail.")
-        }
         debug("checkPackerNgTask() for ${variant.name}")
         def File inputFile = variant.outputs[0].outputFile
         def File tempDir = modifierExtension.tempOutput

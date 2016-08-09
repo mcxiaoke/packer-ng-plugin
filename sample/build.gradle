@@ -1,5 +1,5 @@
 buildscript {
-    ext.packer_version = '1.0.6-SNAPSHOT'
+    ext.packer_version = '1.0.6'
 
     repositories {
         maven { url '/tmp/repo/' }
@@ -86,7 +86,7 @@ android {
             debuggable true
         }
 
-        invalidType {
+        nosign {
             // invalid: no signingConfig
             minifyEnabled false
         }

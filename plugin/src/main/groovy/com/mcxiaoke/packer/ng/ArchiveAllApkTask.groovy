@@ -1,7 +1,9 @@
 package com.mcxiaoke.packer.ng
 
 import com.android.build.gradle.api.BaseVariant
+import com.android.builder.model.SigningConfig
 import com.mcxiaoke.packer.helper.PackerNg
+import groovy.io.FileType
 import groovy.text.SimpleTemplateEngine
 import org.gradle.api.DefaultTask
 import org.gradle.api.GradleException
@@ -10,6 +12,8 @@ import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.TaskAction
 
 import java.text.SimpleDateFormat
+import java.util.jar.JarEntry
+import java.util.jar.JarFile
 
 /**
  * User: mcxiaoke
@@ -29,7 +33,7 @@ class ArchiveAllApkTask extends DefaultTask {
     List<String> theMarkets
 
     ArchiveAllApkTask() {
-        setDescription('modify original apk file and move to archive dir')
+        setDescription('modify original apk file and move to release dir')
     }
 
     @TaskAction
@@ -37,55 +41,97 @@ class ArchiveAllApkTask extends DefaultTask {
         project.logger.info("${name}: ${description}")
     }
 
+    void checkMarkets() throws GradleException {
+        if (theMarkets == null || theMarkets.isEmpty()) {
+            throw new InvalidUserDataException(":${name} " +
+                    "no markets found, please check your market file!")
+        }
+    }
+
+    SigningConfig getSigningConfig() {
+        def config1 = theVariant.buildType.signingConfig
+        def config2 = theVariant.mergedFlavor.signingConfig
+        return config1 == null ? config2 : config1
+    }
+
+    void checkSigningConfig() throws GradleException {
+        logger.info(":${name} buildType.signingConfig = " +
+                "${theVariant.buildType.signingConfig}")
+        logger.info(":${name} mergedFlavor.signingConfig = " +
+                "${theVariant.mergedFlavor.signingConfig}")
+        def signingConfig = getSigningConfig()
+        if (theExtension.checkSigningConfig && signingConfig == null) {
+            throw new GradleException(":${project.name}:${name} " +
+                    "signingConfig not found, task aborted, " +
+                    "please check your signingConfig!")
+        }
+
+        // ensure APK Signature Scheme v2 disabled.
+        if (signingConfig.hasProperty("v2SigningEnabled") &&
+                signingConfig.v2SigningEnabled == true) {
+            throw new GradleException("Please add 'v2SigningEnabled false' " +
+                    "to signingConfig to disable APK Signature Scheme v2, " +
+                    "as it's not compatible with packer-ng plugin, more details at " +
+                    "https://github.com/mcxiaoke/packer-ng-plugin/blob/master/compatibility.md.")
+        }
+    }
+
+    void checkApkSignature(File file) throws GradleException {
+        File apkPath = project.rootDir.toPath().relativize(file.toPath()).toFile()
+        JarFile jarFile = new JarFile(file)
+        JarEntry mfEntry = jarFile.getJarEntry("META-INF/MANIFEST.MF")
+        JarEntry certEntry = jarFile.getJarEntry("META-INF/CERT.SF")
+        if (mfEntry == null || certEntry == null) {
+            throw new GradleException(":${name} " +
+                    "apk ${apkPath} not signed, please check your signingConfig!")
+        }
+    }
+
     @TaskAction
     void modify() {
-        logger.info("====================ARCHIVE APK TASK START====================")
-        if (theMarkets == null || theMarkets.isEmpty()) {
-            throw new InvalidUserDataException(":${name} ERROR: no markets found, task aborted!")
-        }
-        if (theExtension.checkSigningConfig
-                && theVariant.buildType.signingConfig == null) {
-            throw new GradleException(":${project.name}:${name} ERROR: android." +
-                    "${theVariant.buildType.name}.signingConfig is null, task aborted!")
-        }
-        if (theExtension.checkZipAlign
-                && !theVariant.buildType.zipAlignEnabled) {
-            throw new GradleException(":${project.name}:${name} ERROR: android." +
-                    "${theVariant.buildType.name}.zipAlignEnabled is false, task aborted!")
-        }
+        logger.info("====================PACKER APK TASK BEGIN====================")
+        checkMarkets()
+        checkSigningConfig()
         File originalFile = theVariant.outputs[0].outputFile
-        File tempDir = new File(project.rootProject.buildDir, "temp")
+        checkApkSignature(originalFile)
         File outputDir = theExtension.archiveOutput
-        println(":${project.name}:${name} apk: ${originalFile.absolutePath}")
-        logger.info(":${name} temp dir:${tempDir.absolutePath}")
+        File apkPath = project.rootDir.toPath().relativize(originalFile.toPath()).toFile()
+        println(":${project.name}:${name} apk: ${apkPath}")
         logger.info(":${name} output dir:${outputDir.absolutePath}")
-        logger.info(":${name} delete old files in ${outputDir.absolutePath}")
-        outputDir.deleteDir()
-        if (!tempDir.exists()) {
-            tempDir.mkdirs()
-        }
         if (!outputDir.exists()) {
             outputDir.mkdirs()
+        } else {
+            logger.info(":${name} delete old apks in ${outputDir.absolutePath}")
+            // delete old apks
+            outputDir.eachFile(FileType.FILES) { file ->
+                if (file.getName().endsWith(".apk")) {
+                    file.delete()
+                }
+            }
         }
         logger.info(":${project.name}:${name} markets:[${theMarkets.join(', ')}]")
-        theMarkets.eachWithIndex { String market, index ->
-            File tempFile = new File(tempDir, market+".apk")
+        for (String market : theMarkets) {
+            File tempFile = new File(outputDir, market + ".tmp")
             copyTo(originalFile, tempFile)
-            PackerNg.Helper.writeMarket(tempFile, market)
-            String apkName = buildApkName(theVariant, market, tempFile)
-            File finalFile = new File(outputDir, apkName)
-            if (PackerNg.Helper.verifyMarket(tempFile, market)) {
-                println(":${project.name}:${name} processed apk for ${market} (${index + 1})")
-                copyTo(tempFile, finalFile)
-            } else {
-                println(":${project.name}:${name} apk failed for ${market} (${index + 1})")
+            try {
+                PackerNg.Helper.writeMarket(tempFile, market)
+                String apkName = buildApkName(theVariant, market, tempFile)
+                File finalFile = new File(outputDir, apkName)
+                if (PackerNg.Helper.verifyMarket(tempFile, market)) {
+                    println(":${project.name}:${name} Generating apk for ${market}")
+                    tempFile.renameTo(finalFile)
+                } else {
+                    throw new GradleException(":${name} ${market} apk verify failed.")
+                }
+            } catch (IOException ex) {
+                throw new GradleException(":${name} ${market} apk generate failed.", ex)
+            } finally {
+                tempFile.delete()
             }
         }
         println(":${project.name}:${name} all ${theMarkets.size()} apks saved to ${outputDir.path}")
-        println(":${project.name}:${name} PackerNg: Market Packaging Successful!")
-        logger.info(":${name} delete temp files in ${tempDir.absolutePath}")
-        tempDir.deleteDir()
-        logger.info("====================ARCHIVE APK TASK END====================")
+        println("\nPackerNg Build Successful!")
+        logger.info("====================PACKER APK TASK END====================")
     }
 
     /**
