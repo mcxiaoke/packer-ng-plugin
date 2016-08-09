@@ -3,7 +3,6 @@
 
 ## 最新版本
 
-- **v1.0.6 - 2016.08.05** - V2签名模式兼容问题提示，打包脚本优化
 - **v1.0.5 - 2016.05.30** - 签名检查调整为可选，文件名模板支持MD5和SHA1
 - **v1.0.4 - 2016.01.19** - 完善获取APK路径的方法,增加MarketInfo
 - **v1.0.3 - 2016.01.14** - 增加缓存，新增ResUtils，更有好的错误提示
@@ -14,7 +13,7 @@
 
 ## 项目介绍
 
-[**packer-ng-plugin**](https://github.com/mcxiaoke/packer-ng-plugin) 是下一代Android渠道打包工具Gradle插件，支持极速打包，**100**个渠道包只需要**10**秒钟，速度是 [**gradle-packer-plugin**](https://github.com/mcxiaoke/gradle-packer-plugin) 的**300**倍以上，可方便的用于CI系统集成，支持自定义输出目录和最终APK文件名，依赖包： `com.mcxiaoke.gradle:packer-ng:1.0.6` 简短名：`packer`，可以在项目的 `build.gradle` 中指定使用，还提供了命令行独立使用的Java和Python脚本。实现原理见本文末尾。
+[**packer-ng-plugin**](https://github.com/mcxiaoke/packer-ng-plugin) 是下一代Android渠道打包工具Gradle插件，支持极速打包，**100**个渠道包只需要**10**秒钟，速度是 [**gradle-packer-plugin**](https://github.com/mcxiaoke/gradle-packer-plugin) 的**300**倍以上，可方便的用于CI系统集成，支持自定义输出目录和最终APK文件名，依赖包： `com.mcxiaoke.gradle:packer-ng:1.0.5` 简短名：`packer`，可以在项目的 `build.gradle` 中指定使用，还提供了命令行独立使用的Java和Python脚本。实现原理见本文末尾。
 
 ## 使用指南
 
@@ -28,34 +27,19 @@ buildscript {
 	......
 	dependencies{
 	// add packer-ng
-		classpath 'com.mcxiaoke.gradle:packer-ng:1.0.6'
+		classpath 'com.mcxiaoke.gradle:packer-ng:1.0.5'
 	}
 }  
 ```
 
 ### 修改Android模块的 `build.gradle`
 
-**特别提示：如果使用2.2.0以上的Android Gradle Plugin版本，请务必增加这一行 `v2SigningEnabled false` 禁用新版签名模式，详细的说明见这里：[兼容性问题说明](compatibility.md)。**
-
 ```groovy
 apply plugin: 'packer' 
 
 dependencies {
-	compile 'com.mcxiaoke.gradle:packer-helper:1.0.6'
+	compile 'com.mcxiaoke.gradle:packer-helper:1.0.5'
 } 
-
- android {
-    //...
-    signingConfigs {
-      release {
-      	// 同时满足下面两个条件才需要此配置
-      	// 1. Gradle版本 >= 2.14.1
-      	// 2. Android Gradle Plugin 版本 >= 2.2.0
-      	// 作用是只使用旧版签名，禁用V2版签名模式
-        v2SigningEnabled false 
-      }
-    }
-  }
 ```
 
 **注意：`packer-ng` 和 `packer-helper` 的版本号需要保持一致**
