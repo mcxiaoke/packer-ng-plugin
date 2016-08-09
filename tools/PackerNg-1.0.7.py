@@ -2,7 +2,7 @@
 # @Author: mcxiaoke
 # @Date:   2015-11-26 16:52:55
 # @Last Modified by:   mcxiaoke
-# @Last Modified time: 2016-08-05 15:41:51
+# @Last Modified time: 2016-08-09 15:30:12
 from __future__ import print_function
 import os
 import sys
@@ -12,14 +12,14 @@ import argparse
 import time
 from apkinfo import APK
 
-__version__ = '1.0.6'  # 2016.08.05
+__version__ = '1.0.7'  # 2016.08.09
 
 ZIP_SHORT = 2
 MARKET_PATH = 'markets.txt'
 OUTPUT_PATH = 'apks'
 MAGIC = '!ZXK!'
 
-INTRO_TEXT = "\nAttention: if your app target Android 7.0 or later devices, \
+INTRO_TEXT = "\nAttention: if your app using Android gradle plugin 2.2.0 or later, \
 be sure to install one of the generated Apks to device or emulator, \
 to ensure the apk can be installed without errors. \
 More details please go to github \

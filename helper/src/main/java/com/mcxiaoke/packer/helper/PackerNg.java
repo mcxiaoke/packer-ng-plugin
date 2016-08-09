@@ -380,7 +380,7 @@ public final class PackerNg {
     private static final String USAGE_TEXT =
             "Usage: java -jar PackerNg-x.x.x.jar apkFile marketFile [outputDir] ";
     private static final String INTRO_TEXT =
-            "\nAttention: if your app target Android 7.0 or later devices, " +
+            "\nAttention: if your app using Android gradle plugin 2.2.0 or later, " +
                     "be sure to install one of the generated Apks to device or emulator, " +
                     "to ensure the apk can be installed without errors. " +
                     "More details please go to github " +
