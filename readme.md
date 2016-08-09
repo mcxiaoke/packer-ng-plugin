@@ -35,7 +35,7 @@ buildscript {
 
 ### 修改Android模块的 `build.gradle`
 
-**特别提示：要支持Android N，请务必增加这一行 `v2SigningEnabled false` 禁用新版签名模式，详细的说明见这里：[兼容性问题说明](compatibility.md)。**
+**特别提示：如果使用2.2.0以上的Android Gradle Plugin版本，请务必增加这一行 `v2SigningEnabled false` 禁用新版签名模式，详细的说明见这里：[兼容性问题说明](compatibility.md)。**
 
 ```groovy
 apply plugin: 'packer' 
@@ -48,8 +48,9 @@ dependencies {
     //...
     signingConfigs {
       release {
-      	// 如果要支持最新版的系统 Android N(7.0)
-      	// 这一行必须加，否则安装时会提示没有签名
+      	// 同时满足下面两个条件才需要此配置
+      	// 1. Gradle版本 >= 2.14.1
+      	// 2. Android Gradle Plugin 版本 >= 2.2.0
       	// 作用是只使用旧版签名，禁用V2版签名模式
         v2SigningEnabled false 
       }
