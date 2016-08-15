@@ -2,7 +2,7 @@
 # @Author: mcxiaoke
 # @Date:   2015-11-26 16:52:55
 # @Last Modified by:   mcxiaoke
-# @Last Modified time: 2016-08-09 15:30:12
+# @Last Modified time: 2016-08-15 17:03:22
 from __future__ import print_function
 import os
 import sys
@@ -176,31 +176,31 @@ def run_test(path, times):
     pass
 
 
-def _check(path, market=MARKET_PATH, output=OUTPUT_PATH, show=False, test=0):
+def _check(apkfile, marketfile=MARKET_PATH, output=OUTPUT_PATH, show=False, test=0):
     '''
     check apk file exists, check apk valid, check arguments, check market file exists
     '''
-    if not os.path.exists(path):
-        print('apk file', path, 'not exists or not readable')
+    if not os.path.exists(apkfile):
+        print('apk file', apkfile, 'not exists or not readable')
         return
-    if not parse_apk(path):
-        print('apk file', path, 'is not valid apk')
+    if not parse_apk(apkfile):
+        print('apk file', apkfile, 'is not valid apk')
         return
     if show:
-        show_market(path)
+        show_market(apkfile)
         return
     if test > 0:
-        run_test(path, test)
+        run_test(apkfile, test)
         return
-    if not os.path.exists(market):
-        print('market file', market, 'not exists or not readable.')
+    if not os.path.exists(marketfile):
+        print('marketfile file', marketfile, 'not exists or not readable.')
         return
-    old_market = read_market(path)
+    old_market = read_market(apkfile)
     if old_market:
-        print('apk file', path, 'already had market:', old_market,
+        print('apk file', apkfile, 'already had market:', old_market,
               'please using original release apk file')
         return
-    process(path, market, output)
+    process(apkfile, marketfile, output)
 
 
 def _parse_args():
