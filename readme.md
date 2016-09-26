@@ -120,7 +120,7 @@ market是你的渠道名列表文件，market文件是基于**项目根目录**�
 
 **特别提示：如果你同时使用其它的资源压缩工具或应用加固功能，请使用命令行脚本打包增加渠道信息，增加渠道信息需要放在APK处理过程的最后一步。**
 
-如果不想使用Gradle插件，这里还有两个命令行打包脚本，在项目的 `tools` 目录里，分别是 `PackerNg-1.0.7.jar` 和 `PackerNg-1.0.7.py`，使用命令行打包工具，在Java代码里仍然是使用`helper`包里的 `PackerNg.getMarket(Context)` 读取渠道
+如果不想使用Gradle插件，这里还有两个命令行打包脚本，在项目的 `tools` 目录里，分别是 `PackerNg-1.0.7.jar` 和 `PackerNg-1.0.7.py`，使用命令行打包工具，在Java代码里仍然是使用`helper`包里的 `PackerNg.getMarket(Context)` 读取渠道。
 
 #### Java脚本
 
@@ -135,7 +135,7 @@ python PackerNg-x.x.x.py [file] [market] [output] [-h] [-s] [-t TEST]
 ```
 
 #### 不使用Gradle
-使用命令行打包脚本，不想添加Gradle依赖的，可以完全忽略Gradle的配置，直接复制 [PackerNg.java](helper/src/main/java/com/mcxiaoke/packer/helper/PackerNg.java) 到项目中使用即可
+使用命令行打包脚本，不想添加Gradle依赖的，可以完全忽略Gradle的配置，直接复制 [PackerNg.java](helper/src/main/java/com/mcxiaoke/packer/helper/PackerNg.java) 到项目中使用即可。
 
 ### 插件配置说明（可选） 
 
