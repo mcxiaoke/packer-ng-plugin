@@ -11,12 +11,14 @@ import shutil
 import argparse
 import time
 from apkinfo import APK
+from string import Template
 
 __version__ = '1.0.7'  # 2016.08.09
 
 ZIP_SHORT = 2
 MARKET_PATH = 'markets.txt'
 OUTPUT_PATH = 'apks'
+ARCHIVE_FORMAT = '${name}-${package}-v${vname}-${vcode}-${market}${ext}'
 MAGIC = '!ZXK!'
 
 INTRO_TEXT = "\nAttention: if your app using Android gradle plugin 2.2.0 or later, \
@@ -26,7 +28,7 @@ More details please go to github \
 https://github.com/mcxiaoke/packer-ng-plugin.\n"
 
 
-def write_market(path, market, output):
+def write_market(path, market, output, format):
     '''
     write market info to apk file
     write_market(apk-file-path, market-name, output-path)
@@ -46,8 +48,18 @@ def write_market(path, market, output):
     name, ext = os.path.splitext(os.path.basename(path))
     # name,package,vname,vcode
     app = parse_apk(path)
-    apk_name = '%s-%s-%s-%s%s' % (app['app_package'],
-                                  market.decode('utf8'), app['version_name'], app['version_code'], ext)
+
+    dic = dict(
+        name=name,
+        package=app['app_package'],
+        vname=app['version_name'],
+        vcode=app['version_code'],
+        market=market.decode('utf8'),
+        ext=ext)
+    tpl = Template(format)
+    apk_name=tpl.substitute(dic)
+
+    # apk_name = '%s-%s-%s-%s%s' % (app['app_package'], market.decode('utf8'), app['version_name'], app['version_code'], ext)
     # apk_name = name + "-" + market + ext
     apk_file = os.path.join(output, apk_name)
     shutil.copy(path, apk_file)
@@ -143,7 +155,7 @@ def parse_apk(path):
     }
 
 
-def process(path, market=MARKET_PATH, output=OUTPUT_PATH):
+def process(path, market=MARKET_PATH, output=OUTPUT_PATH, format=ARCHIVE_FORMAT):
     '''
     process apk file to create market apk archives
     process(apk-file-path, market = MARKET_PATH, output = OUTPUT_PATH)
@@ -152,7 +164,7 @@ def process(path, market=MARKET_PATH, output=OUTPUT_PATH):
     markets = parse_markets(market)
     counter = 0
     for market in markets:
-        apk_file = write_market(path, market, output)
+        apk_file = write_market(path, market, output, format)
         verified = verify_market(apk_file, market)
         if not verified:
             print('apk', apk_file, 'for market', market, 'verify failed')
@@ -176,7 +188,7 @@ def run_test(path, times):
     pass
 
 
-def _check(apkfile, marketfile=MARKET_PATH, output=OUTPUT_PATH, show=False, test=0):
+def _check(apkfile, marketfile=MARKET_PATH, output=OUTPUT_PATH, format=ARCHIVE_FORMAT, show=False, test=0):
     '''
     check apk file exists, check apk valid, check arguments, check market file exists
     '''
@@ -200,7 +212,7 @@ def _check(apkfile, marketfile=MARKET_PATH, output=OUTPUT_PATH, show=False, test
         print('apk file', apkfile, 'already had market:', old_market,
               'please using original release apk file')
         return
-    process(apkfile, marketfile, output)
+    process(apkfile, marketfile, output, format)
 
 
 def _parse_args():
@@ -217,6 +229,8 @@ def _parse_args():
                         help='markets file path [default: ./markets.txt]')
     parser.add_argument('output', nargs='?', default=OUTPUT_PATH,
                         help='archives output path [default: ./archives]')
+    parser.add_argument('-f', '--format', nargs='?', default=ARCHIVE_FORMAT, const=True,
+                        help="archive format [default:'${name}-${package}-v${vname}-${vcode}-${market}${ext}']")
     parser.add_argument('-s', '--show', action='store_const', const=True,
                         help='show apk file info (pkg/market/version)')
     parser.add_argument('-t', '--test', default=0, type=int,
