@@ -10,14 +10,14 @@ buildscript {
 }
 
 repositories {
-    mavenCentral()
+    jcenter()
 }
 
 dependencies {
     compile localGroovy()
     compile gradleApi()
     compile project(':helper')
-    compile 'com.android.tools.build:gradle:2.1.0'
+    compile 'com.android.tools.build:gradle:2.2.1'
 }
 
 apply from: '../gradle-mvn-push.gradle'
