@@ -3,6 +3,7 @@
 
 ## 最新版本
 
+- **v1.0.8 - 2016.10.20** - 移除对旧版打包工具的扩展属性兼容 
 - **v1.0.7 - 2016.08.09** - 优化签名校验和渠道写入，完善异常处理
 - **v1.0.6 - 2016.08.05** - V2签名模式兼容问题提示，打包脚本优化
 - **v1.0.5 - 2016.05.30** - 签名检查调整为可选，文件名模板支持MD5和SHA1
@@ -29,7 +30,7 @@ buildscript {
 	......
 	dependencies{
 	// add packer-ng
-		classpath 'com.mcxiaoke.gradle:packer-ng:1.0.7'
+		classpath 'com.mcxiaoke.gradle:packer-ng:1.0.8'
 	}
 }  
 ```
@@ -42,14 +43,14 @@ buildscript {
 apply plugin: 'packer' 
 
 dependencies {
-	compile 'com.mcxiaoke.gradle:packer-helper:1.0.7'
+	compile 'com.mcxiaoke.gradle:packer-helper:1.0.8'
 } 
 
  android {
     //...
     signingConfigs {
       release {
-      	// 同时满足下面两个条件才需要此配置
+      	// 满足下面两个条件时需要此配置
       	// 1. Gradle版本 >= 2.14.1
       	// 2. Android Gradle Plugin 版本 >= 2.2.0
       	// 作用是只使用旧版签名，禁用V2版签名模式
