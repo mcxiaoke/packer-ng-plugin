@@ -36,13 +36,6 @@ class PackerNgExtension {
      */
     String archiveNameFormat
 
-    // unused, compat for old
-    List<String> manifestMatcher
-    // unused, compat for old
-    boolean buildNumberAuto
-    // unused, compat for old
-    List<String> buildNumberTypeMatcher
-
     PackerNgExtension(Project project) {
         archiveOutput = new File(project.rootProject.buildDir, "archives")
         tempOutput = new File(project.rootProject.buildDir, "temp")
