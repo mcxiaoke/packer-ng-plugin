@@ -73,7 +73,7 @@ dependencies {
 final String market = PackerNg.getMarket(Context)
 // 或者使用 PackerNg.getMarket(Context,defaultValue)
 // 之后就可以使用了，比如友盟可以这样设置
-AnalyticsConfig.setChannel(market)
+MobclickAgent.startWithConfigure(new MobclickAgent.UMAnalyticsConfig(context, umeng_appkey, market));
 
 ```
 
