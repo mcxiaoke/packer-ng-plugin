@@ -8,20 +8,18 @@
 
 - **使用最新版SDK(Android Gradle Plugin 2.2.0+)时，请务必在 `signingConfigs` 里加入 `v2SigningEnabled false` ，否则打包时会报错**
 
-- **只有使用最2.2.0以上版本的Android Gradle Plugin和2.14.1以上版本的Gradle时才需要添加此配置**
-
 ```groovy
 apply plugin: 'packer' 
 
 dependencies {
-	compile 'com.mcxiaoke.gradle:packer-helper:1.0.6'
+	compile 'com.mcxiaoke.gradle:packer-helper:1.0.8'
 } 
 
  android {
     //...
     signingConfigs {
       release {
-      	// 如果要支持最新版的系统 Android N(7.0)
+      	// 如果要支持最新版的系统 Android 7.0
       	// 这一行必须加，否则安装时会提示没有签名
       	// 作用是只使用旧版签名，禁用V2版签名模式
         v2SigningEnabled false 
