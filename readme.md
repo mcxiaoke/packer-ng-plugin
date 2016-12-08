@@ -1,6 +1,10 @@
 下一代Android渠道打包工具
 ========
 
+## 特别提示
+
+**请使用最新版本的PackerNg，如果使用的Android Gradle Plugin版本大于2.2.0，请务必在 `signingConfigs` 里增加 `v2SigningEnabled false` 禁用新版签名模式，详细的说明见这里：[兼容性问题说明](compatibility.md)。**
+
 ## 最新版本
 
 - **v1.0.8 - 2016.10.20** - 移除对旧版打包工具的扩展属性兼容 
@@ -36,8 +40,6 @@ buildscript {
 ```
 
 ### 修改Android模块的 `build.gradle`
-
-**特别提示：如果使用2.2.0以上的Android Gradle Plugin版本，请务必增加这一行 `v2SigningEnabled false` 禁用新版签名模式，详细的说明见这里：[兼容性问题说明](compatibility.md)。**
 
 ```groovy
 apply plugin: 'packer' 
