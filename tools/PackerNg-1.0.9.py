@@ -2,7 +2,7 @@
 # @Author: mcxiaoke
 # @Date:   2015-11-26 16:52:55
 # @Last Modified by:   mcxiaoke
-# @Last Modified time: 2016-08-15 17:03:22
+# @Last Modified time: 2017-03-02 18:30:36
 from __future__ import print_function
 import os
 import sys
@@ -13,7 +13,7 @@ import time
 from apkinfo import APK
 from string import Template
 
-__version__ = '1.0.7'  # 2016.08.09
+__version__ = '1.0.9'  # 2017.03.03
 
 ZIP_SHORT = 2
 MARKET_PATH = 'markets.txt'

@@ -1,15 +1,15 @@
 buildscript {
-    ext.packer_version = '1.0.8'
+    ext.packer_version = '1.0.9-SNAPSHOT'
 
     repositories {
         maven { url '/tmp/repo/' }
         jcenter()
-//        maven { url 'https://oss.sonatype.org/content/repositories/snapshots' }
+       maven { url 'https://oss.sonatype.org/content/repositories/snapshots' }
     }
 
     dependencies {
         classpath "com.android.tools.build:gradle:2.2.1"
-        // classpath "com.mcxiaoke.gradle:packer-ng:$packer_version"
+        classpath "com.mcxiaoke.gradle:packer-ng:$packer_version"
     }
 }
 
@@ -20,11 +20,11 @@ repositories {
 }
 
 apply plugin: 'com.android.application'
-// apply plugin: 'packer'
+apply plugin: 'packer'
 
 // https://code.google.com/p/android/issues/detail?id=171089
 dependencies {
-//    compile project(':helper')
+   // compile project(':helper')
     compile "com.mcxiaoke.gradle:packer-helper:$packer_version"
     compile fileTree(dir: 'libs', include: ['*.jar'])
     compile 'com.android.support:support-v4:24.1.1'
@@ -39,12 +39,12 @@ dependencies {
     }
 }
 
-// packer {
-//     checkSigningConfig = true
-//     checkZipAlign = true
-//     archiveNameFormat = '${appPkg}-${flavorName}-${buildType}-v${versionName}-${versionCode}-${fileMD5}'
-//     archiveOutput = file(new File(project.rootProject.buildDir.path, "myapks"))
-// }
+packer {
+    checkSigningConfig = true
+    checkZipAlign = true
+    archiveNameFormat = '${appPkg}-${flavorName}-${buildType}-v${versionName}-${versionCode}-${fileMD5}'
+    archiveOutput = file(new File(project.rootProject.buildDir.path, "myapks"))
+}
 
 android {
     compileSdkVersion Integer.parseInt(project.COMPILE_SDK_VERSION)

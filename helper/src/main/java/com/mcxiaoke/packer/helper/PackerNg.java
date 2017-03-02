@@ -118,12 +118,12 @@ public final class PackerNg {
             final Class<?> applicationInfoClass = Class.forName("android.content.pm.ApplicationInfo");
             final Method getApplicationInfoMethod = contextClass.getMethod("getApplicationInfo");
             final Object appInfo = getApplicationInfoMethod.invoke(context);
-            // try ApplicationInfo.publicSourceDir
-            final Field publicSourceDirField = applicationInfoClass.getField("publicSourceDir");
-            String sourceDir = (String) publicSourceDirField.get(appInfo);
+            // try ApplicationInfo.sourceDir
+            Field sourceDirField = applicationInfoClass.getField("sourceDir");
+            String sourceDir = (String) sourceDirField.get(appInfo);
             if (sourceDir == null) {
-                // try ApplicationInfo.sourceDir
-                final Field sourceDirField = applicationInfoClass.getField("sourceDir");
+                // try ApplicationInfo.publicSourceDir
+                sourceDirField = applicationInfoClass.getField("publicSourceDir");
                 sourceDir = (String) sourceDirField.get(appInfo);
             }
             if (sourceDir == null) {
