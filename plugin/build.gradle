@@ -1,7 +1,7 @@
 apply plugin: 'groovy'
 
-sourceCompatibility = 1.6
-targetCompatibility = 1.6
+sourceCompatibility = 1.7
+targetCompatibility = 1.7
 
 buildscript {
     repositories {
@@ -17,7 +17,8 @@ dependencies {
     compile localGroovy()
     compile gradleApi()
     compile project(':helper')
-    compile 'com.android.tools.build:gradle:2.2.1'
+    compile 'com.android.tools.build:gradle:2.2.2'
+    compile 'com.android.tools.build:apksig:2.3.0'
 }
 
 apply from: '../gradle-mvn-push.gradle'
