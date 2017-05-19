@@ -137,7 +137,21 @@ java -jar PackerNg-x.x.x.jar apkFile marketFile outputDir
 #### Python脚本
 
 ```shell
-python PackerNg-x.x.x.py [file] [market] [output] [-h] [-s] [-t TEST]
+usage: PackerNg-1.0.9.py [-h] [-f [FORMAT]] [-s] [-t TEST]
+                         [apkfile] [marketfile] [output]
+
+positional arguments:
+  apkfile               original release apk file path (required)
+  marketfile            markets file path [default: ./markets.txt]
+  output                archives output path [default: ./archives]
+
+optional arguments:
+  -h, --help            show this help message and exit
+  -f [FORMAT], --format [FORMAT]
+                        archive format [default:'${name}-${package}-v${vname}-
+                        ${vcode}-${market}${ext}']
+  -s, --show            show apk file info (pkg/market/version)
+  -t TEST, --test TEST  perform serval times packer-ng test
 ```
 
 #### 不使用Gradle
