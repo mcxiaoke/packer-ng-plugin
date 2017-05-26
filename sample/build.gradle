@@ -1,22 +1,22 @@
 buildscript {
-    ext.packer_version = '1.0.9'
+    ext.packer_version = '1.0.1-SNAPSHOT'
 
     repositories {
         maven { url '/tmp/repo/' }
         jcenter()
-//       maven { url 'https://oss.sonatype.org/content/repositories/snapshots' }
+       maven { url 'https://oss.sonatype.org/content/repositories/snapshots' }
     }
 
     dependencies {
         classpath "com.android.tools.build:gradle:2.2.2"
-        classpath "com.mcxiaoke.gradle:packer-ng:$packer_version"
+        classpath "com.mcxiaoke.packer-ng:plugin:$packer_version"
     }
 }
 
 repositories {
     maven { url '/tmp/repo/' }
     jcenter()
-//    maven { url 'https://oss.sonatype.org/content/repositories/snapshots' }
+    maven { url 'https://oss.sonatype.org/content/repositories/snapshots' }
 }
 
 apply plugin: 'com.android.application'
@@ -25,7 +25,7 @@ apply plugin: 'packer'
 // https://code.google.com/p/android/issues/detail?id=171089
 dependencies {
    // compile project(':helper')
-    compile "com.mcxiaoke.gradle:packer-helper:$packer_version"
+    compile "com.mcxiaoke.packer-ng:helper:$packer_version"
     compile fileTree(dir: 'libs', include: ['*.jar'])
     compile 'com.android.support:support-v4:25.3.1'
     compile 'com.android.support:appcompat-v7:25.3.1'
@@ -36,8 +36,8 @@ dependencies {
 }
 
 packer {
-    checkSigningConfig = true
-    checkZipAlign = true
+    checkSigningConfig = false
+    checkZipAlign = false
     archiveNameFormat = '${appPkg}-${flavorName}-${buildType}-v${versionName}-${versionCode}-${fileMD5}'
     archiveOutput = file(new File(project.rootProject.buildDir.path, "myapks"))
 }
@@ -49,15 +49,15 @@ android {
         targetCompatibility JavaVersion.VERSION_1_7
         encoding "UTF-8"
     }
-                        
-    compileSdkVersion Integer.parseInt(project.COMPILE_SDK_VERSION)
-    buildToolsVersion project.BUILD_TOOLS_VERSION
+
+    compileSdkVersion project.compileSdkVersion
+    buildToolsVersion project.buildToolsVersion
 
     defaultConfig {
         versionName project.VERSION_NAME
         versionCode Integer.parseInt(project.VERSION_CODE)
-        minSdkVersion Integer.parseInt(project.MIN_SDK_VERSION)
-        targetSdkVersion Integer.parseInt(project.TARGET_SDK_VERSION)
+        minSdkVersion project.minSdkVersion
+        targetSdkVersion project.targetSdkVersion
     }
 
     signingConfigs {
@@ -66,7 +66,15 @@ android {
             storePassword "android"
             keyAlias "android"
             keyPassword "android"
-            v2SigningEnabled false
+            v2SigningEnabled true
+        }
+
+        v2dev {
+            storeFile file("android.keystore")
+            storePassword "android"
+            keyAlias "android"
+            keyPassword "android"
+            v2SigningEnabled true
         }
     }
 
@@ -110,6 +118,7 @@ android {
 
     packagingOptions {
         exclude 'LICENSE.txt'
+        exclude 'META-INF/services/javax.annotation.processing.Processor'
     }
 
 }

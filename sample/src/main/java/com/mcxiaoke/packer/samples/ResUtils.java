@@ -1,7 +1,6 @@
 package com.mcxiaoke.packer.samples;
 
 import android.content.Context;
-import com.mcxiaoke.packer.helper.PackerNg;
 
 /**
  * User: mcxiaoke
@@ -9,25 +8,6 @@ import com.mcxiaoke.packer.helper.PackerNg;
  * Time: 15:11
  */
 public class ResUtils {
-
-
-    // for icon R.drawable.ic_search for market Google
-    // you should name it ic_search_Google.png
-    public static int getMarketDrawableId(Context context, String resName) {
-        return getDrawableResId(context, resName + "_" + PackerNg.getMarket(context).toLowerCase());
-    }
-
-    public static int getMarketLayoutId(Context context, String resName) {
-        return getLayoutResId(context, resName + "_" + PackerNg.getMarket(context).toLowerCase());
-    }
-
-    public static int getMarketStringId(Context context, String resName) {
-        return getStringResId(context, resName + "_" + PackerNg.getMarket(context).toLowerCase());
-    }
-
-    public static int getMarketResourceId(Context context, String resName) {
-        return getResourceId(context, resName + "_" + PackerNg.getMarket(context).toLowerCase());
-    }
 
     public static int getDrawableResId(Context context, String resName) {
         return getResId(context, "drawable", resName);
