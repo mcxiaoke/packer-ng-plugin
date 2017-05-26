@@ -16,7 +16,8 @@ repositories {
 dependencies {
     compile localGroovy()
     compile gradleApi()
-    compile project(':helper')
+    compile project(':common')
+    compile project(':cli')
     compile 'com.android.tools.build:gradle:2.2.2'
     compile 'com.android.tools.build:apksig:2.3.0'
 }

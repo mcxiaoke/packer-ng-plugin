@@ -2,7 +2,7 @@ package com.mcxiaoke.packer.ng
 
 import com.android.build.gradle.api.BaseVariant
 import com.android.builder.model.SigningConfig
-import com.mcxiaoke.packer.helper.PackerNg
+import com.mcxiaoke.packer.cli.PackerNgUtils
 import groovy.io.FileType
 import groovy.text.SimpleTemplateEngine
 import org.gradle.api.DefaultTask
@@ -12,8 +12,6 @@ import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.TaskAction
 
 import java.text.SimpleDateFormat
-import java.util.jar.JarEntry
-import java.util.jar.JarFile
 
 /**
  * User: mcxiaoke
@@ -66,24 +64,14 @@ class ArchiveAllApkTask extends DefaultTask {
                     "please check your signingConfig!")
         }
 
-        // ensure APK Signature Scheme v2 disabled.
-        if (signingConfig.hasProperty("v2SigningEnabled") &&
-                signingConfig.v2SigningEnabled == true) {
-            throw new GradleException("Please add 'v2SigningEnabled false' " +
-                    "to signingConfig to disable APK Signature Scheme v2, " +
-                    "as it's not compatible with packer-ng plugin, more details at " +
-                    "https://github.com/mcxiaoke/packer-ng-plugin/blob/master/compatibility.md.")
-        }
     }
 
     void checkApkSignature(File file) throws GradleException {
         File apkPath = project.rootDir.toPath().relativize(file.toPath()).toFile()
-        JarFile jarFile = new JarFile(file)
-        JarEntry mfEntry = jarFile.getJarEntry("META-INF/MANIFEST.MF")
-        JarEntry certEntry = jarFile.getJarEntry("META-INF/CERT.SF")
-        if (mfEntry == null || certEntry == null) {
+        boolean apkVerified = PackerNgUtils.verifyApk(apkPath)
+        if (!apkVerified) {
             throw new GradleException(":${name} " +
-                    "apk ${apkPath} not signed, please check your signingConfig!")
+                    "apk ${apkPath} not v2 signed, please check your signingConfig!")
         }
     }
 
@@ -114,10 +102,10 @@ class ArchiveAllApkTask extends DefaultTask {
             File tempFile = new File(outputDir, market + ".tmp")
             copyTo(originalFile, tempFile)
             try {
-                PackerNg.Helper.writeMarket(tempFile, market)
+                PackerNgUtils.writeChannel(tempFile, market)
                 String apkName = buildApkName(theVariant, market, tempFile)
                 File finalFile = new File(outputDir, apkName)
-                if (PackerNg.Helper.verifyMarket(tempFile, market)) {
+                if (PackerNgUtils.verifyChannel(tempFile, market)) {
                     println(":${project.name}:${name} Generating apk for ${market}")
                     tempFile.renameTo(finalFile)
                 } else {
