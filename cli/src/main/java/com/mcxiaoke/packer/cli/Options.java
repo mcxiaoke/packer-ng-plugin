@@ -32,17 +32,17 @@ import java.util.Arrays;
  * <p>To use the parser, create an instance, providing it with the command-line parameters, then
  * iterate over options by invoking {@link #nextOption()} until it returns {@code null}.
  */
-class OptionsParser {
-    private final String[] mParams;
-    private int mIndex;
-    private String mLastOptionValue;
-    private String mLastOptionOriginalForm;
+class Options {
+    private final String[] params;
+    private int index;
+    private String lastOptionValue;
+    private String lastOptionOriginalForm;
 
     /**
      * Constructs a new {@code OptionsParser} initialized with the provided command-line.
      */
-    public OptionsParser(String[] params) {
-        mParams = params.clone();
+    public Options(String[] params) {
+        this.params = params.clone();
     }
 
     /**
@@ -53,19 +53,19 @@ class OptionsParser {
      * {@link #getRequiredIntValue(String)}, and {@link #getOptionalBooleanValue(boolean)}.
      */
     public String nextOption() {
-        if (mIndex >= mParams.length) {
+        if (index >= params.length) {
             // No more parameters left
             return null;
         }
-        String param = mParams[mIndex];
+        String param = params[index];
         if (!param.startsWith("-")) {
             // Not an option
             return null;
         }
 
-        mIndex++;
-        mLastOptionOriginalForm = param;
-        mLastOptionValue = null;
+        index++;
+        lastOptionOriginalForm = param;
+        lastOptionValue = null;
         if (param.startsWith("--")) {
             // FORMAT: --name value OR --name=value
             if ("--".equals(param)) {
@@ -74,8 +74,8 @@ class OptionsParser {
             }
             int valueDelimiterIndex = param.indexOf('=');
             if (valueDelimiterIndex != -1) {
-                mLastOptionValue = param.substring(valueDelimiterIndex + 1);
-                mLastOptionOriginalForm = param.substring(0, valueDelimiterIndex);
+                lastOptionValue = param.substring(valueDelimiterIndex + 1);
+                lastOptionOriginalForm = param.substring(0, valueDelimiterIndex);
                 return param.substring("--".length(), valueDelimiterIndex);
             } else {
                 return param.substring("--".length());
@@ -91,30 +91,30 @@ class OptionsParser {
      * or dashes. This is intended to be used for referencing the option in error messages.
      */
     public String getOptionOriginalForm() {
-        return mLastOptionOriginalForm;
+        return lastOptionOriginalForm;
     }
 
     /**
      * Returns the value of the current option, throwing an exception if the value is missing.
      */
     public String getRequiredValue(String valueDescription) throws OptionsException {
-        if (mLastOptionValue != null) {
-            String result = mLastOptionValue;
-            mLastOptionValue = null;
+        if (lastOptionValue != null) {
+            String result = lastOptionValue;
+            lastOptionValue = null;
             return result;
         }
-        if (mIndex >= mParams.length) {
+        if (index >= params.length) {
             // No more parameters left
             throw new OptionsException(
-                    valueDescription + " missing after " + mLastOptionOriginalForm);
+                    valueDescription + " missing after " + lastOptionOriginalForm);
         }
-        String param = mParams[mIndex];
+        String param = params[index];
         if ("--".equals(param)) {
             // End of options marker
             throw new OptionsException(
-                    valueDescription + " missing after " + mLastOptionOriginalForm);
+                    valueDescription + " missing after " + lastOptionOriginalForm);
         }
-        mIndex++;
+        index++;
         return param;
     }
 
@@ -128,7 +128,7 @@ class OptionsParser {
             return Integer.parseInt(value);
         } catch (NumberFormatException e) {
             throw new OptionsException(
-                    valueDescription + " (" + mLastOptionOriginalForm
+                    valueDescription + " (" + lastOptionOriginalForm
                             + ") must be a decimal number: " + value);
         }
     }
@@ -138,31 +138,31 @@ class OptionsParser {
      * explicitly specified values.
      */
     public boolean getOptionalBooleanValue(boolean defaultValue) throws OptionsException {
-        if (mLastOptionValue != null) {
+        if (lastOptionValue != null) {
             // --option=value form
-            String stringValue = mLastOptionValue;
-            mLastOptionValue = null;
+            String stringValue = lastOptionValue;
+            lastOptionValue = null;
             if ("true".equals(stringValue)) {
                 return true;
             } else if ("false".equals(stringValue)) {
                 return false;
             }
             throw new OptionsException(
-                    "Unsupported value for " + mLastOptionOriginalForm + ": " + stringValue
+                    "Unsupported value for " + lastOptionOriginalForm + ": " + stringValue
                             + ". Only true or false supported.");
         }
 
         // --option (true|false) form OR just --option
-        if (mIndex >= mParams.length) {
+        if (index >= params.length) {
             return defaultValue;
         }
 
-        String stringValue = mParams[mIndex];
+        String stringValue = params[index];
         if ("true".equals(stringValue)) {
-            mIndex++;
+            index++;
             return true;
         } else if ("false".equals(stringValue)) {
-            mIndex++;
+            index++;
             return false;
         } else {
             return defaultValue;
@@ -174,15 +174,15 @@ class OptionsParser {
      * {@link #nextOption()} returns {@code null}.
      */
     public String[] getRemainingParams() {
-        if (mIndex >= mParams.length) {
+        if (index >= params.length) {
             return new String[0];
         }
-        String param = mParams[mIndex];
+        String param = params[index];
         if ("--".equals(param)) {
             // Skip end of options marker
-            return Arrays.copyOfRange(mParams, mIndex + 1, mParams.length);
+            return Arrays.copyOfRange(params, index + 1, params.length);
         } else {
-            return Arrays.copyOfRange(mParams, mIndex, mParams.length);
+            return Arrays.copyOfRange(params, index, params.length);
         }
     }
 
