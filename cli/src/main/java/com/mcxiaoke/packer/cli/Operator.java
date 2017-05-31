@@ -15,7 +15,7 @@ import java.security.NoSuchAlgorithmException;
  * Date: 2017/5/26
  * Time: 16:21
  */
-public class PackerNgUtils {
+public class Operator {
 
     public static void writeChannel(File apkFile, String channel) throws IOException {
         PackerParser.create(apkFile).writeChannel(channel);
@@ -29,8 +29,8 @@ public class PackerNgUtils {
         return verifyApk(apkFile) && (channel.equals(readChannel(apkFile)));
     }
 
-    public static boolean verifyApk(File f) throws IOException {
-        ApkVerifier verifier = new Builder(f).build();
+    public static boolean verifyApk(File apkFile) throws IOException {
+        ApkVerifier verifier = new Builder(apkFile).build();
         try {
             Result result = verifier.verify();
             return result.isVerified()

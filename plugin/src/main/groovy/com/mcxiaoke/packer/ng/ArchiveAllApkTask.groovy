@@ -2,7 +2,7 @@ package com.mcxiaoke.packer.ng
 
 import com.android.build.gradle.api.BaseVariant
 import com.android.builder.model.SigningConfig
-import com.mcxiaoke.packer.cli.PackerNgUtils
+import com.mcxiaoke.packer.cli.Operator
 import groovy.io.FileType
 import groovy.text.SimpleTemplateEngine
 import org.gradle.api.DefaultTask
@@ -68,7 +68,7 @@ class ArchiveAllApkTask extends DefaultTask {
 
     void checkApkSignature(File file) throws GradleException {
         File apkPath = project.rootDir.toPath().relativize(file.toPath()).toFile()
-        boolean apkVerified = PackerNgUtils.verifyApk(apkPath)
+        boolean apkVerified = Operator.verifyApk(apkPath)
         if (!apkVerified) {
             throw new GradleException(":${name} " +
                     "apk ${apkPath} not v2 signed, please check your signingConfig!")
@@ -102,10 +102,10 @@ class ArchiveAllApkTask extends DefaultTask {
             File tempFile = new File(outputDir, market + ".tmp")
             copyTo(originalFile, tempFile)
             try {
-                PackerNgUtils.writeChannel(tempFile, market)
+                Operator.writeChannel(tempFile, market)
                 String apkName = buildApkName(theVariant, market, tempFile)
                 File finalFile = new File(outputDir, apkName)
-                if (PackerNgUtils.verifyChannel(tempFile, market)) {
+                if (Operator.verifyChannel(tempFile, market)) {
                     println(":${project.name}:${name} Generating apk for ${market}")
                     tempFile.renameTo(finalFile)
                 } else {
