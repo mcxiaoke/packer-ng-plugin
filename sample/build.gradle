@@ -102,15 +102,6 @@ android {
 
     }
 
-    productFlavors {
-        cat {
-        }
-
-        dog {
-            signingConfig signingConfigs.release
-        }
-    }
-
     lintOptions {
         abortOnError false
         htmlReport true

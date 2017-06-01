@@ -15,7 +15,7 @@ import java.security.NoSuchAlgorithmException;
  * Date: 2017/5/26
  * Time: 16:21
  */
-public class Operator {
+public class Packer {
 
     public static void writeChannel(File apkFile, String channel) throws IOException {
         PackerParser.create(apkFile).writeChannel(channel);
