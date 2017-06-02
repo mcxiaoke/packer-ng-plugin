@@ -1,10 +1,10 @@
 buildscript {
-    ext.packer_version = '1.0.1-SNAPSHOT'
+    ext.packer_version = '1.0.13-SNAPSHOT'
 
     repositories {
         maven { url '/tmp/repo/' }
         jcenter()
-       maven { url 'https://oss.sonatype.org/content/repositories/snapshots' }
+        maven { url 'https://oss.sonatype.org/content/repositories/snapshots' }
     }
 
     dependencies {
@@ -24,7 +24,7 @@ apply plugin: 'packer'
 
 // https://code.google.com/p/android/issues/detail?id=171089
 dependencies {
-   // compile project(':helper')
+    // compile project(':helper')
     compile "com.mcxiaoke.packer-ng:helper:$packer_version"
     compile fileTree(dir: 'libs', include: ['*.jar'])
     compile 'com.android.support:support-v4:25.3.1'
@@ -36,10 +36,10 @@ dependencies {
 }
 
 packer {
-    checkSigningConfig = false
-    checkZipAlign = false
-    archiveNameFormat = '${appPkg}-${flavorName}-${buildType}-v${versionName}-${versionCode}-${fileMD5}'
-    archiveOutput = file(new File(project.rootProject.buildDir.path, "myapks"))
+    archiveNameFormat = '${channel}-${buildType}-v${versionName}-${versionCode}'
+    archiveOutput = new File(project.rootProject.buildDir, "myapks")
+    channelFile = new File(project.rootDir, "markets.txt")
+    channelList = ['Douban', 'Google', '中文市场', 'Some Market', '!@#$%^', '20070601']
 }
 
 android {

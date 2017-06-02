@@ -24,7 +24,6 @@ import butterknife.InjectView;
 import com.mcxiaoke.next.utils.AndroidUtils;
 import com.mcxiaoke.next.utils.LogUtils;
 import com.mcxiaoke.next.utils.StringUtils;
-import com.mcxiaoke.packer.helper.PackerNg;
 import com.mcxiaoke.packer.samples.BuildConfig;
 import com.mcxiaoke.packer.samples.R;
 
@@ -64,8 +63,8 @@ public class MainActivity extends ActionBarActivity {
             StringBuilder builder = new StringBuilder();
             builder.append("[AppInfo]\n");
             builder.append("SourceDir: ").append(getSourceDir(this)).append("\n");
-            builder.append("Market: ").append(PackerNg.getChannel(this)).append("\n");
-            builder.append("MarketInfo: ").append(PackerNg.getChannel(this)).append("\n");
+//            builder.append("Market: ").append(PackerNg.getChannel(this)).append("\n");
+//            builder.append("MarketInfo: ").append(PackerNg.getChannel(this)).append("\n");
             builder.append("Name: ").append(getString(info.labelRes)).append("\n");
             builder.append("Package: ").append(BuildConfig.APPLICATION_ID).append("\n");
             builder.append("VersionCode: ").append(BuildConfig.VERSION_CODE).append("\n");

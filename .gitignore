@@ -3,8 +3,8 @@
 build/
 apks/
 repo/
+dist/
 *.iml
 *.apk
 *.pyc
 .DS_Store
-packer.properties
