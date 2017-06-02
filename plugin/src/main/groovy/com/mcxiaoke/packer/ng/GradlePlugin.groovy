@@ -22,7 +22,6 @@ class GradlePlugin implements Plugin<Project> {
         project.configurations.create(PLUGIN_NAME).extendsFrom(project.configurations.compile)
         project.extensions.create(PLUGIN_NAME, GradleExtension, project)
         project.afterEvaluate {
-            addCleanTask()
             project.android.applicationVariants.all { BaseVariant variant ->
                 addPackTask(variant)
             }
@@ -48,18 +47,6 @@ class GradlePlugin implements Plugin<Project> {
                 debug("addPackTask() new build type task:${taskName}")
                 project.task(taskName, dependsOn: packTask)
             }
-        }
-    }
-
-    void addCleanTask() {
-        def output = project.packer.archiveOutput
-        debug("addCleanTask() create clean archived apks task, path:${output}")
-        def task = project.task("cleanPackOutputs",
-                type: CleanTask) {
-            target = output
-        }
-        project.getTasksByName("clean", true)?.each {
-            it.dependsOn task
         }
     }
 
