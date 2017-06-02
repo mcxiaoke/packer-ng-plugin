@@ -1,50 +1,29 @@
 buildscript {
-    ext.packer_version = '1.0.9-SNAPSHOT'
+    ext.packer_version = '1.0.9'
 
     repositories {
-        maven { url '/tmp/repo/' }
+        maven { url "file://" + project.rootProject.rootDir + '/tmp/repo/' }
         jcenter()
-       maven { url 'https://oss.sonatype.org/content/repositories/snapshots' }
+//        maven { url 'https://oss.sonatype.org/content/repositories/snapshots' }
     }
 
     dependencies {
-        classpath "com.android.tools.build:gradle:2.2.1"
+        classpath 'com.android.tools.build:gradle:2.3.0'
         classpath "com.mcxiaoke.gradle:packer-ng:$packer_version"
     }
 }
 
 repositories {
-    maven { url '/tmp/repo/' }
+    maven { url "file://" + project.rootProject.rootDir + '/tmp/repo/' }
     jcenter()
-    maven { url 'https://oss.sonatype.org/content/repositories/snapshots' }
+//    maven { url 'https://oss.sonatype.org/content/repositories/snapshots' }
 }
 
 apply plugin: 'com.android.application'
 apply plugin: 'packer'
 
 // https://code.google.com/p/android/issues/detail?id=171089
-dependencies {
-   // compile project(':helper')
-    compile "com.mcxiaoke.gradle:packer-helper:$packer_version"
-    compile fileTree(dir: 'libs', include: ['*.jar'])
-    compile 'com.android.support:support-v4:24.1.1'
-    compile 'com.android.support:appcompat-v7:24.1.1'
-    compile 'com.jakewharton:butterknife:6.0.0'
-    compile('com.mcxiaoke.next:core:1.2.0@aar') {
-        exclude group: 'com.android.support', module: 'support-v4'
-    }
-    compile('com.mcxiaoke.next:http:1.2.0@aar')
-    compile('com.mcxiaoke.next:ui:1.2.0@aar') {
-        exclude group: 'com.android.support', module: 'support-v4'
-    }
-}
 
-packer {
-    checkSigningConfig = true
-    checkZipAlign = true
-    archiveNameFormat = '${appPkg}-${flavorName}-${buildType}-v${versionName}-${versionCode}-${fileMD5}'
-    archiveOutput = file(new File(project.rootProject.buildDir.path, "myapks"))
-}
 
 android {
     compileSdkVersion Integer.parseInt(project.COMPILE_SDK_VERSION)
@@ -79,26 +58,33 @@ android {
         //    minifyEnabled false
         //    debuggable true
         //}
-        beta {
+//        beta {
+//            signingConfig signingConfigs.release
+//            minifyEnabled false
+//            debuggable true
+//        }
+
+        debug {
+            // invalid: no signingConfig
             signingConfig signingConfigs.release
             minifyEnabled false
-            debuggable true
-        }
 
-        nosign {
-            // invalid: no signingConfig
-            minifyEnabled false
         }
 
 
     }
 
+
     productFlavors {
         cat {
+            packer.market name, rootProject.rootDir.absolutePath + File.separator + "markets_cat.txt"
         }
-
         dog {
             signingConfig signingConfigs.release
+            packer.market name, rootProject.rootDir.absolutePath + File.separator + "markets_dog.txt"
+        }
+        pig {
+
         }
     }
 
@@ -111,6 +97,31 @@ android {
         exclude 'LICENSE.txt'
     }
 
+}
+
+packer {
+    checkSigningConfig = true
+    checkZipAlign = true
+//    archiveNameFormat = '${appPkg}-${flavorName}-${buildType}-v${versionName}-${versionCode}'
+    archiveOutput = file(new File(project.rootProject.buildDir.path, "apks"))
+    market = rootProject.rootDir.absolutePath + File.separator + "markets.txt"
+}
+
+
+dependencies {
+    // compile project(':helper')
+    compile "com.mcxiaoke.gradle:packer-helper:$packer_version"
+    compile fileTree(include: ['*.jar'], dir: 'libs')
+    compile 'com.android.support:support-v4:25.2.0'
+    compile 'com.android.support:appcompat-v7:25.2.0'
+    compile 'com.jakewharton:butterknife:6.0.0'
+    compile('com.mcxiaoke.next:core:1.2.0@aar') {
+        exclude group: 'com.android.support', module: 'support-v4'
+    }
+    compile 'com.mcxiaoke.next:http:1.2.0@aar'
+    compile('com.mcxiaoke.next:ui:1.2.0@aar') {
+        exclude group: 'com.android.support', module: 'support-v4'
+    }
 }
 
 //android.applicationVariants.all { variant ->

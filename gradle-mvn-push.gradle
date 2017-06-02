@@ -26,20 +26,22 @@ def isReleaseBuild() {
 
 def getReleaseRepositoryUrl() {
     return hasProperty('RELEASE_REPOSITORY_URL') ? RELEASE_REPOSITORY_URL
-            : "https://oss.sonatype.org/service/local/staging/deploy/maven2/"
+//            : "https://oss.sonatype.org/service/local/staging/deploy/maven2/"
+            : "file://" + project.rootProject.rootDir + "/tmp/repo/"
 }
 
 def getSnapshotRepositoryUrl() {
     return hasProperty('SNAPSHOT_REPOSITORY_URL') ? SNAPSHOT_REPOSITORY_URL
-            : "https://oss.sonatype.org/content/repositories/snapshots/"
+//            : "https://oss.sonatype.org/content/repositories/snapshots/"
+            : "file://" + project.rootProject.rootDir + "/tmp/repo/"
 }
 
 def getRepositoryUsername() {
-    return hasProperty('USERNAME') ? USERNAME : (hasProperty('NEXUS_USERNAME')?NEXUS_USERNAME:"")
+    return hasProperty('USERNAME') ? USERNAME : (hasProperty('NEXUS_USERNAME') ? NEXUS_USERNAME : "")
 }
 
 def getRepositoryPassword() {
-    return hasProperty('PASSWORD') ? PASSWORD : (hasProperty('NEXUS_PASSWORD')?NEXUS_PASSWORD:"")
+    return hasProperty('PASSWORD') ? PASSWORD : (hasProperty('NEXUS_PASSWORD') ? NEXUS_PASSWORD : "")
 }
 
 afterEvaluate { project ->
@@ -185,13 +187,13 @@ afterEvaluate { project ->
                 }
             }
         }
-    
-        task sourcesJar(type: Jar, dependsOn:classes) {
+
+        task sourcesJar(type: Jar, dependsOn: classes) {
             classifier = 'sources'
             from sourceSets.main.allSource
         }
 
-        task javadocJar(type: Jar, dependsOn:javadoc) {
+        task javadocJar(type: Jar, dependsOn: javadoc) {
             classifier = 'javadoc'
             from javadoc.destinationDir
         }

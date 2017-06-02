@@ -22,7 +22,6 @@ class PackerNgPlugin implements Plugin<Project> {
             throw new ProjectConfigurationException("the android plugin must be applied", null)
         }
         applyExtension()
-        parseMarkets()
         applyPluginTasks()
     }
 
@@ -44,54 +43,6 @@ class PackerNgPlugin implements Plugin<Project> {
     }
 
 /**
- *  parse markets file
- * @param project Project
- * @return found markets file
- */
-    boolean parseMarkets() {
-        markets = new ArrayList<String>();
-
-        if (!project.hasProperty(P_MARKET)) {
-            debug("parseMarkets() market property not found, ignore")
-            return false
-        }
-
-        // check markets file exists
-        def marketsFilePath = project.property(P_MARKET).toString()
-        if (!marketsFilePath) {
-            println(":${project.name} markets property not found, using default")
-            // if not set, use default ./markets.txt
-            marketsFilePath = "markets.txt"
-        }
-
-        File file = project.rootProject.file(marketsFilePath)
-        if (!file.exists() || !file.isFile() || !file.canRead()) {
-            throw new IllegalArgumentException("Invalid market file: ${file.absolutePath}")
-        }
-        println(":${project.name} market: ${file.absolutePath}")
-        markets = readMarkets(file)
-        debug(":${project.name} found markets:$markets")
-        return true
-    }
-
-    List<String> readMarkets(File file) {
-        // add all markets
-        List<String> allMarkets = []
-        file.eachLine { line, number ->
-            String[] parts = line.split('#')
-            if (parts && parts[0]) {
-                def market = parts[0].trim()
-                if (market) {
-                    allMarkets.add(market)
-                }
-            } else {
-                debug(":${project.name} skip invalid market line ${number}:'${line}'")
-            }
-        }
-        return allMarkets
-    }
-
-/**
  *  add archiveApk tasks
  * @param variant current Variant
  */
@@ -106,9 +57,20 @@ class PackerNgPlugin implements Plugin<Project> {
         def archiveTask = project.task("apk${variant.name.capitalize()}",
                 type: ArchiveAllApkTask) {
             theVariant = variant
-            theExtension = modifierExtension
-            theMarkets = markets
+            theExtension = modifierExtension.clone()
+            if (modifierExtension.flavorMarket.containsKey(variant.flavorName)) {
+                debug("checkPackerNgTask() variant: ${variant.flavorName}")
+                theExtension.archiveOutput = new File(modifierExtension.archiveOutput, variant.flavorName)
+                debug("checkPackerNgTask() variant: ${theExtension.archiveOutput.absolutePath}")
+                theMarkets = new MarkertsParser(project, modifierExtension.flavorMarket.get(variant.flavorName)).parseMarkets()
+            } else if (!variant.flavorName.equals("")) {
+                theExtension.archiveOutput = new File(modifierExtension.archiveOutput, variant.flavorName)
+                theMarkets = new MarkertsParser(project, modifierExtension.market).parseMarkets()
+            } else {
+                theMarkets = new MarkertsParser(project, modifierExtension.market).parseMarkets()
+            }
             dependsOn variant.assemble
+
         }
 
         debug("checkPackerNgTask() new variant task:${archiveTask.name}")
@@ -120,6 +82,8 @@ class PackerNgPlugin implements Plugin<Project> {
             if (task == null) {
                 debug("checkPackerNgTask() new build type task:${taskName}")
                 task = project.task(taskName, dependsOn: archiveTask)
+            } else {
+                task.dependsOn archiveTask
             }
         }
     }
