@@ -9,13 +9,13 @@ import org.gradle.api.tasks.TaskAction
  * Date: 14/12/19
  * Time: 11:29
  */
-class CleanArchivesTask extends DefaultTask {
+class CleanTask extends DefaultTask {
 
     @Input
     File target
 
-    CleanArchivesTask() {
-        setDescription('clean all apk archives in output dir')
+    CleanTask() {
+        setDescription('clean all files in output dir')
     }
 
     @TaskAction

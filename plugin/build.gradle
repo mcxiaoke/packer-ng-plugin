@@ -1,3 +1,11 @@
+buildscript {
+    repositories {
+        jcenter()
+    }
+    dependencies {
+    }
+}
+
 apply plugin: 'groovy'
 
 sourceCompatibility = 1.7
