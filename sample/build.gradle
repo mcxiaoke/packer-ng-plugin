@@ -1,5 +1,5 @@
 buildscript {
-    ext.packer_version = '1.0.13-SNAPSHOT'
+    ext.packer_version = '1.0.21-SNAPSHOT'
 
     repositories {
         maven { url '/tmp/repo/' }
@@ -35,12 +35,15 @@ dependencies {
     }
 }
 
+//packer-begin
 packer {
     archiveNameFormat = '${channel}-${buildType}-v${versionName}-${versionCode}'
     archiveOutput = new File(project.rootProject.buildDir, "myapks")
     channelFile = new File(project.rootDir, "markets.txt")
-    channelList = ['Douban', 'Google', '中文市场', 'Some Market', '!@#$%^', '20070601']
+    channelList = ['Doub!@#$%an', 'Google/', '中文/@#市场',
+                   '!@#:?>;,.$%^', '20070601!@#$%^&*(){}:"<>?-=[];\',./']
 }
+//packer-end
 
 android {
 
@@ -61,7 +64,7 @@ android {
     }
 
     signingConfigs {
-        release {
+        releasev2 {
             storeFile file("android.keystore")
             storePassword "android"
             keyAlias "android"
@@ -69,37 +72,43 @@ android {
             v2SigningEnabled true
         }
 
-        v2dev {
+        releasev1 {
             storeFile file("android.keystore")
             storePassword "android"
             keyAlias "android"
             keyPassword "android"
-            v2SigningEnabled true
+            v2SigningEnabled false
         }
+
     }
 
     buildTypes {
         release {
-            signingConfig signingConfigs.release
+            signingConfig signingConfigs.releasev2
             minifyEnabled false
         }
 
-        //someType {
-        //    minifyEnabled false
-        //    debuggable true
-        //}
-        beta {
-            signingConfig signingConfigs.release
+        releasev1 {
+            signingConfig signingConfigs.releasev1
             minifyEnabled false
-            debuggable true
         }
 
         nosign {
-            // invalid: no signingConfig
             minifyEnabled false
         }
 
+    }
 
+    productFlavors {
+        Dog {}
+
+        Cat {}
+
+        Rabbit {}
+
+        Fish {
+            signingConfig signingConfigs.releasev1
+        }
     }
 
     lintOptions {
@@ -113,36 +122,3 @@ android {
     }
 
 }
-
-//android.applicationVariants.all { variant ->
-//    variant.outputs.each {
-//        println("release: ${it.outputFile}")
-//    }
-//}
-
-// gradle hook
-//android.applicationVariants.all { variant ->
-//    def copyAssets = project.task("copy${variant.name.capitalize()}Assets",
-//            type: Copy) {
-//        from "~/Downloads/demo"
-//        into "src/main/assets/demo"
-//        doLast {
-//            println("copy assets to src/main/assets/demo for ${variant.name}")
-//        }
-//    }
-//    def deleteAssets = project.task("delete${variant.name.capitalize()}Assets",
-//            type: Delete) {
-//        delete "src/main/assets/demo"
-//        doLast {
-//            println("delete assets in src/main/assets/demo for ${variant.name}")
-//        }
-//    }
-//    variant.mergeAssets.dependsOn copyAssets
-//    variant.assemble.dependsOn deleteAssets
-//}
-
-// gradle hook
-//gradle.buildFinished { buildResult ->
-//    println "BUILD FINISHED"
-//    println "build failure - " + buildResult.failure
-//}

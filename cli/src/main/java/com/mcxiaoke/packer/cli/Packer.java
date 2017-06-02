@@ -17,26 +17,25 @@ import java.security.NoSuchAlgorithmException;
  */
 public class Packer {
 
-    public static void writeChannel(File apkFile, String channel) throws IOException {
-        PackerParser.create(apkFile).writeChannel(channel);
+    public static void writeChannel(File file, String channel) throws IOException {
+        PackerParser.create(file).writeChannel(channel);
     }
 
-    public static String readChannel(File apkFile) throws IOException {
-        return PackerParser.create(apkFile).readChannel();
+    public static String readChannel(File file) throws IOException {
+        return PackerParser.create(file).readChannel();
     }
 
-    public static boolean verifyChannel(File apkFile, String channel) throws IOException {
-        return verifyApk(apkFile) && (channel.equals(readChannel(apkFile)));
+    public static boolean verifyChannel(File file, String channel) throws IOException {
+        return verifyApk(file) && (channel.equals(readChannel(file)));
     }
 
-    public static boolean verifyApk(File apkFile) throws IOException {
-        ApkVerifier verifier = new Builder(apkFile).build();
+    public static boolean verifyApk(File file) throws IOException {
+        ApkVerifier verifier = new Builder(file).build();
         try {
             Result result = verifier.verify();
             return result.isVerified()
                     && result.isVerifiedUsingV1Scheme()
-                    && result.isVerifiedUsingV2Scheme()
-                    && !result.containsErrors();
+                    && result.isVerifiedUsingV2Scheme();
         } catch (ApkFormatException e) {
             throw new IOException(e);
         } catch (NoSuchAlgorithmException e) {

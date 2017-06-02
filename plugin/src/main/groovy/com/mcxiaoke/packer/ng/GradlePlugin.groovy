@@ -20,24 +20,24 @@ class GradlePlugin implements Plugin<Project> {
                     "the android plugin must be applied", null)
         }
         project.configurations.create(PLUGIN_NAME).extendsFrom(project.configurations.compile)
-        project.extensions.create(PLUGIN_NAME, GradleExtension, project)
+        project.extensions.create(PLUGIN_NAME, GradleExtension)
         project.afterEvaluate {
             project.android.applicationVariants.all { BaseVariant variant ->
-                addPackTask(variant)
+                addTasks(variant)
             }
         }
     }
 
-    void addPackTask(BaseVariant v) {
-        debug("addPackTask() for ${v.name}")
-        def packTask = project.task("apk${v.name.capitalize()}",
+    void addTasks(BaseVariant vt) {
+        debug("addPackTask() for ${vt.name}")
+        def variantTask = project.task("apk${vt.name.capitalize()}",
                 type: GradleTask) {
-            variant = v
+            variant = vt
             extension = project.packer
-            dependsOn v.assemble
+            dependsOn vt.assemble
         }
 
-        debug("addPackTask() new variant task:${packTask.name}")
+        debug("addPackTask() new variant task:${variantTask.name}")
 
         def buildTypeName = v.buildType.name
         if (v.name != buildTypeName) {
