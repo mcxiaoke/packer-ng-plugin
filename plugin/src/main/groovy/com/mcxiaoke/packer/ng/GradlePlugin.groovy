@@ -6,7 +6,7 @@ import org.gradle.api.Project
 import org.gradle.api.ProjectConfigurationException
 
 // Android PackerNg Plugin Source
-class MainPlugin implements Plugin<Project> {
+class GradlePlugin implements Plugin<Project> {
     static final String TAG = "PackerNg"
     static final String PLUGIN_NAME = "packer"
 
@@ -20,7 +20,7 @@ class MainPlugin implements Plugin<Project> {
                     "the android plugin must be applied", null)
         }
         project.configurations.create(PLUGIN_NAME).extendsFrom(project.configurations.compile)
-        project.extensions.create(PLUGIN_NAME, Extension, project)
+        project.extensions.create(PLUGIN_NAME, GradleExtension, project)
         project.afterEvaluate {
             addCleanTask()
             project.android.applicationVariants.all { BaseVariant variant ->
@@ -32,7 +32,7 @@ class MainPlugin implements Plugin<Project> {
     void addPackTask(BaseVariant v) {
         debug("addPackTask() for ${v.name}")
         def packTask = project.task("apk${v.name.capitalize()}",
-                type: PackTask) {
+                type: GradleTask) {
             variant = v
             extension = project.packer
             dependsOn v.assemble

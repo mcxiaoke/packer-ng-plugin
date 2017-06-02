@@ -15,12 +15,7 @@ class CleanTask extends DefaultTask {
     File target
 
     CleanTask() {
-        setDescription('clean all files in output dir')
-    }
-
-    @TaskAction
-    void showMessage() {
-        logger.info("${name}: ${description}")
+        description = 'clean all files in output dir'
     }
 
     @TaskAction

@@ -17,15 +17,15 @@ import java.text.SimpleDateFormat
  * Date: 15/11/23
  * Time: 14:40
  */
-class PackTask extends DefaultTask {
+class GradleTask extends DefaultTask {
 
     @Input
     BaseVariant variant
 
     @Input
-    Extension extension
+    GradleExtension extension
 
-    PackTask() {
+    GradleTask() {
         setDescription('pack original apk file and move to output dir')
     }
 
@@ -165,7 +165,7 @@ class PackTask extends DefaultTask {
                 'buildTime'  : buildTime
         ]
 
-        def dt = Extension.DEFAULT_NAME_TEMPLATE
+        def dt = GradleExtension.DEFAULT_NAME_TEMPLATE
         def engine = new SimpleTemplateEngine()
         def template = extension.archiveNameFormat == null ? dt : extension.archiveNameFormat
         def fileName = engine.createTemplate(template).make(nameMap).toString()

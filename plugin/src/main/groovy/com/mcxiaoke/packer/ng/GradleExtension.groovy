@@ -3,7 +3,7 @@ package com.mcxiaoke.packer.ng
 import org.gradle.api.Project
 
 // Android Packer Plugin Extension
-class Extension {
+class GradleExtension {
     static final String DEFAULT_NAME_TEMPLATE = '${appPkg}-${channel}-${buildType}-v${versionName}-${versionCode}'
 
     File archiveOutput
@@ -31,7 +31,7 @@ class Extension {
 
     File channelFile;
 
-    Extension(Project project) {
+    GradleExtension(Project project) {
         archiveOutput = new File(project.rootProject.buildDir, "archives")
         archiveNameFormat = DEFAULT_NAME_TEMPLATE
         channelList = null
