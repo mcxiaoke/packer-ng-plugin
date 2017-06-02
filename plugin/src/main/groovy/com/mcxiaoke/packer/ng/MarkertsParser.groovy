@@ -45,8 +45,7 @@ public class MarkertsParser {
 
         File file = project.rootProject.file(marketsFilePath)
         if (!file.exists() || !file.isFile() || !file.canRead()) {
-//            throw new IllegalArgumentException("Invalid market file: ${file.absolutePath}")
-            return;
+            throw new IllegalArgumentException("Invalid market file: ${file.absolutePath}")
         }
         println(":${project.name} market: ${file.absolutePath}")
         markets = readMarkets(file)
