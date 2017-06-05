@@ -14,7 +14,7 @@ import java.util.Map.Entry;
  * Date: 2017/5/26
  * Time: 13:18
  */
-public class PayloadUtils {
+public class Payload {
     // charset utf8
     public static final String UTF8 = "UTF-8";
 

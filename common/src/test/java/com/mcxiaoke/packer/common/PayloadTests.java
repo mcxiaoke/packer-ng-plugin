@@ -77,8 +77,8 @@ public class PayloadTests extends TestCase {
             NoSuchAlgorithmException {
         File f = newTestFile();
         // don't write with APK Signature Scheme v2 Block ID 0x7109871a
-        PayloadUtils.writeRaw(f, "OverrideSignatureSchemeBlock", 0x7109871a);
-        assertEquals("OverrideSignatureSchemeBlock", PayloadUtils.readRaw(f, 0x7109871a));
+        Payload.writeRaw(f, "OverrideSignatureSchemeBlock", 0x7109871a);
+        assertEquals("OverrideSignatureSchemeBlock", Payload.readRaw(f, 0x7109871a));
         ApkVerifier verifier = new Builder(f).build();
         Result result = verifier.verify();
         final List<IssueWithParams> errors = result.getErrors();
@@ -113,10 +113,10 @@ public class PayloadTests extends TestCase {
 
     public void testStringWrite() throws IOException {
         File f = newTestFile();
-        PayloadUtils.writeRaw(f, "Test String", 0x717a786b);
-        assertEquals("Test String", PayloadUtils.readRaw(f, 0x717a786b));
-        PayloadUtils.writeRaw(f, "中文和特殊符号测试！@#¥%……*（）《》？：【】、", 0x717a786b);
-        assertEquals("中文和特殊符号测试！@#¥%……*（）《》？：【】、", PayloadUtils.readRaw(f, 0x717a786b));
+        Payload.writeRaw(f, "Test String", 0x717a786b);
+        assertEquals("Test String", Payload.readRaw(f, 0x717a786b));
+        Payload.writeRaw(f, "中文和特殊符号测试！@#¥%……*（）《》？：【】、", 0x717a786b);
+        assertEquals("中文和特殊符号测试！@#¥%……*（）《》？：【】、", Payload.readRaw(f, 0x717a786b));
         checkApkVerified(f);
     }
 
@@ -127,8 +127,8 @@ public class PayloadTests extends TestCase {
         in.put("名字", "哈哈啊哈哈哈");
         in.put("!@#$!%^@&*()_+\"?:><", "渠道Google");
         in.put("12345abcd", "2017");
-        PayloadUtils.writeValues(f, in, 0x12345);
-        Map<String, String> out = PayloadUtils.readValues(f, 0x12345);
+        Payload.writeValues(f, in, 0x12345);
+        Map<String, String> out = Payload.readValues(f, 0x12345);
         assertNotNull(out);
         assertEquals(in.size(), out.size());
         for (Map.Entry<String, String> entry : in.entrySet()) {
@@ -142,19 +142,19 @@ public class PayloadTests extends TestCase {
         Map<String, String> in = new HashMap<>();
         in.put("!@#$!%^@&*()_+\"?:><", "渠道Google");
         in.put("12345abcd", "2017");
-        PayloadUtils.writeValues(f, in, 0x123456);
-        PayloadUtils.writeChannel(f, "Mixed", "hello", 0x8888);
-        Map<String, String> out = PayloadUtils.readValues(f, 0x123456);
+        Payload.writeValues(f, in, 0x123456);
+        Payload.writeChannel(f, "Mixed", "hello", 0x8888);
+        Map<String, String> out = Payload.readValues(f, 0x123456);
         assertNotNull(out);
         assertEquals(in.size(), out.size());
         for (Map.Entry<String, String> entry : in.entrySet()) {
             assertEquals(entry.getValue(), out.get(entry.getKey()));
         }
-        assertEquals("Mixed", PayloadUtils.readChannel(f, "hello", 0x8888));
-        PayloadUtils.writeRaw(f, "RawValue", 0x2017);
-        assertEquals("RawValue", PayloadUtils.readRaw(f, 0x2017));
-        PayloadUtils.writeRaw(f, "OverrideValues", 0x123456);
-        assertEquals("OverrideValues", PayloadUtils.readRaw(f, 0x123456));
+        assertEquals("Mixed", Payload.readChannel(f, "hello", 0x8888));
+        Payload.writeRaw(f, "RawValue", 0x2017);
+        assertEquals("RawValue", Payload.readRaw(f, 0x2017));
+        Payload.writeRaw(f, "OverrideValues", 0x123456);
+        assertEquals("OverrideValues", Payload.readRaw(f, 0x123456));
         checkApkVerified(f);
     }
 
@@ -218,7 +218,7 @@ public class PayloadTests extends TestCase {
 
     public void testChannelWriteRead() throws IOException {
         File f = newTestFile();
-        PackerParser p = new PackerParser(f);
+        Parser p = new Parser(f);
         p.writeChannel("Hello");
         assertEquals("Hello", p.readChannel());
         p.writeChannel("中文");

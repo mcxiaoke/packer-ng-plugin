@@ -2,7 +2,7 @@ package com.mcxiaoke.packer.helper;
 
 import android.content.Context;
 import android.content.pm.ApplicationInfo;
-import com.mcxiaoke.packer.common.PackerParser;
+import com.mcxiaoke.packer.common.Parser;
 
 import java.io.File;
 
@@ -44,7 +44,7 @@ public final class PackerNg {
         try {
             final ApplicationInfo info = context.getApplicationInfo();
             final File apkFile = new File(info.sourceDir);
-            final PackerParser parser = PackerParser.create(apkFile);
+            final Parser parser = Parser.create(apkFile);
             market = parser.readChannel();
         } catch (Exception e) {
             error = e;

@@ -29,8 +29,8 @@ public class Main {
         final String cmd = args[0];
         final String[] params = Arrays.copyOfRange(args, 1, args.length);
         try {
-            if ("pack".equals(cmd)) {
-                pack(params);
+            if ("generate".equals(cmd)) {
+                generate(params);
             } else if ("verify".equals(cmd)) {
                 verify(params);
             } else if ("help".equals(cmd)) {
@@ -52,7 +52,7 @@ public class Main {
         Helper.printUsage();
     }
 
-    private static void pack(String[] params) throws Exception {
+    private static void generate(String[] params) throws Exception {
         if (params.length == 0) {
             printUsage();
             return;
@@ -91,9 +91,9 @@ public class Main {
                 String value = optionsParser.getRequiredValue("Output Directory");
                 outputDir = new File(value);
             } else {
-                printUsage();
                 System.err.println(
                         "Unsupported option: " + form);
+                printUsage();
             }
         }
         params = optionsParser.getRemainingParams();
@@ -106,17 +106,17 @@ public class Main {
         if (outputDir == null) {
             outputDir = new File(OUTPUT);
         }
-        doPack(apkFile, channels, outputDir);
+        doGenerate(apkFile, channels, outputDir);
     }
 
-    private static void doPack(File apkFile, List<String> channels, File outputDir)
+    private static void doGenerate(File apkFile, List<String> channels, File outputDir)
             throws IOException {
         if (apkFile == null
                 || !apkFile.exists()
                 || !apkFile.isFile()) {
             throw new IOException("Invalid Input APK: " + apkFile);
         }
-        if (!Packer.verifyApk(apkFile)) {
+        if (!Bridge.verifyApk(apkFile)) {
             throw new IOException("Invalid Signature: " + apkFile);
         }
         if (outputDir.exists()) {
@@ -124,9 +124,9 @@ public class Main {
         } else {
             outputDir.mkdirs();
         }
-        System.out.println("File: " + apkFile.getAbsolutePath());
+        System.out.println("Input: " + apkFile.getAbsolutePath());
+        System.out.println("Output:" + outputDir.getAbsolutePath());
         System.out.println("Channels:" + Arrays.toString(channels.toArray()));
-        System.out.println("OutputDir:" + outputDir.getAbsolutePath());
         final String fileName = apkFile.getName();
         final String baseName = Helper.getBaseName(fileName);
         final String extName = Helper.getExtName(fileName);
@@ -135,15 +135,14 @@ public class Main {
                     "%s-%s.%s", baseName, channel, extName);
             File destFile = new File(outputDir, apkName);
             Helper.copyFile(apkFile, destFile);
-            Packer.writeChannel(destFile, channel);
-            if (Packer.verifyChannel(destFile, channel)) {
-                System.out.println("Generating APK: " + apkName);
+            Bridge.writeChannel(destFile, channel);
+            if (Bridge.verifyChannel(destFile, channel)) {
+                System.out.println("Generating " + apkName);
             } else {
                 destFile.delete();
                 throw new IOException("Failed to verify APK: " + apkName);
             }
         }
-        System.out.println("All APK files saved to " + outputDir.getAbsolutePath());
     }
 
     private static void verify(String[] params) throws Exception {
@@ -165,8 +164,8 @@ public class Main {
                 || !apkFile.isFile()) {
             throw new IOException("Invalid Input APK: " + apkFile);
         }
-        final boolean verified = Packer.verifyApk(apkFile);
-        final String channel = Packer.readChannel(apkFile);
+        final boolean verified = Bridge.verifyApk(apkFile);
+        final String channel = Bridge.readChannel(apkFile);
         System.out.println("File: " + apkFile);
         System.out.println("Signed:" + verified);
         System.out.println("Channel:" + channel);

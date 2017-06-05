@@ -4,7 +4,7 @@ import com.android.apksig.ApkVerifier;
 import com.android.apksig.ApkVerifier.Builder;
 import com.android.apksig.ApkVerifier.Result;
 import com.android.apksig.apk.ApkFormatException;
-import com.mcxiaoke.packer.common.PackerParser;
+import com.mcxiaoke.packer.common.Parser;
 
 import java.io.File;
 import java.io.IOException;
@@ -15,14 +15,14 @@ import java.security.NoSuchAlgorithmException;
  * Date: 2017/5/26
  * Time: 16:21
  */
-public class Packer {
+public class Bridge {
 
     public static void writeChannel(File file, String channel) throws IOException {
-        PackerParser.create(file).writeChannel(channel);
+        Parser.create(file).writeChannel(channel);
     }
 
     public static String readChannel(File file) throws IOException {
-        return PackerParser.create(file).readChannel();
+        return Parser.create(file).readChannel();
     }
 
     public static boolean verifyChannel(File file, String channel) throws IOException {
