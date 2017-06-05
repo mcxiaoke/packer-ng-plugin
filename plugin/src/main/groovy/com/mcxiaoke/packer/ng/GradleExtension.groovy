@@ -5,6 +5,7 @@ class GradleExtension {
     String archiveNameFormat
     List<String> channelList;
     File channelFile;
+    Map<String, File> channelMap;
 
     @Override
     String toString() {
@@ -13,6 +14,7 @@ class GradleExtension {
                 "\narchiveNameFormat='" + archiveNameFormat + '\'' +
                 "\nchannelList=" + channelList +
                 "\nchannelFile=" + channelFile +
+                "\nchannelMap=" + channelMap +
                 '}';
     }
 }

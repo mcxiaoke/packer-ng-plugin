@@ -112,19 +112,23 @@ class GradleTask extends DefaultTask {
             }
             return escape(channels)
         }
-        // check extension property
         if (extension.channelList != null) {
             channels = extension.channelList
             logger.info(":${project.name} ext.channelList: ${channels}")
-        } else {
-            File f;
-            if (extension.channelFile != null) {
-                f = extension.channelFile
-            } else {
-                f = new File(project.rootDir, "channels.txt")
+        } else if (extension.channelMap != null) {
+            String flavorName = variant.flavorName
+            File f = extension.channelMap.get(flavorName)
+            logger.info(":${project.name} extension.channelMap file: ${f}")
+            if (f == null || !f.isFile()) {
+                throw new PluginException("channel file not exists: '${f.absolutePath}'")
             }
+            if (f != null && f.isFile()) {
+                channels = readChannels(f)
+            }
+        } else if (extension.channelFile != null) {
+            File f = extension.channelFile
             logger.info(":${project.name} extension.channelFile: ${f}")
-            if (!f.isFile() || !f.canRead()) {
+            if (!f.isFile()) {
                 throw new PluginException("channel file not exists: '${f.absolutePath}'")
             }
             channels = readChannels(f)
@@ -137,25 +141,28 @@ class GradleTask extends DefaultTask {
 
 
     void showProperties() {
-        println("Extension: ${extension}")
-        println("Property: ${Const.PROP_CHANNELS} = ${project.findProperty(Const.PROP_CHANNELS)}")
-        println("Property: ${Const.PROP_OUTPUT} = ${project.findProperty(Const.PROP_OUTPUT)}")
-        println("Property: ${Const.PROP_FORMAT} = ${project.findProperty(Const.PROP_FORMAT)}")
+        logger.info("Extension: ${extension}")
+        logger.info("Property: ${Const.PROP_CHANNELS} = " +
+                "${project.findProperty(Const.PROP_CHANNELS)}")
+        logger.info("Property: ${Const.PROP_OUTPUT} = " +
+                "${project.findProperty(Const.PROP_OUTPUT)}")
+        logger.info("Property: ${Const.PROP_FORMAT} = " +
+                "${project.findProperty(Const.PROP_FORMAT)}")
     }
 
     @TaskAction
     void generate() {
-
-        println("=======================================================")
+        println("============================================================")
         println("PackerNg - https://github.com/mcxiaoke/packer-ng-plugin")
-        println("=======================================================")
-//        showProperties()
+        println("============================================================")
+        showProperties()
         File apkFile = getOriginalApkWithCheck()
         File outputDir = getOutputWithCheck()
         Collection<String> channels = getChannelsWithCheck()
         Template template = getNameTemplate()
-        println("Input: ${apkFile.absolutePath}")
-        println("Output: ${outputDir.absolutePath}")
+        println("Variant: ${variant.name}")
+        println("Input: ${apkFile.path}")
+        println("Output: ${outputDir.path}")
         println("Channels: [${channels.join(', ')}]")
         for (String channel : channels) {
             File tempFile = new File(outputDir, channel + ".tmp")
@@ -165,7 +172,7 @@ class GradleTask extends DefaultTask {
                 String apkName = buildApkName(channel, tempFile, template)
                 File finalFile = new File(outputDir, apkName)
                 if (Bridge.verifyChannel(tempFile, channel)) {
-                    println("Generating: ${apkName}")
+                    println("--> Generating: ${apkName}")
                     tempFile.renameTo(finalFile)
                 } else {
                     throw new PluginException("${channel} APK verify failed")
@@ -176,8 +183,8 @@ class GradleTask extends DefaultTask {
                 tempFile.delete()
             }
         }
-        println("Outputs:${outputDir.absolutePath}")
-        println("=======================================================")
+        println("Outputs: ${outputDir.absolutePath}")
+        println("============================================================")
     }
 
     String buildApkName(channel, file, template) {

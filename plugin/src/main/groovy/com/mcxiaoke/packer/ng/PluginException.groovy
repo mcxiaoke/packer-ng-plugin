@@ -9,14 +9,15 @@ import org.gradle.api.GradleException
  */
 class PluginException extends GradleException {
     PluginException() {
-        super("See docs on ${Const.HOME_PAGE}")
+//        super("See docs on ${Const.HOME_PAGE}")
+        super()
     }
 
     PluginException(final String message) {
-        super(message + ", See docs on ${Const.HOME_PAGE}")
+        super(message)
     }
 
     PluginException(final String message, final Throwable cause) {
-        super(message + ", See docs on ${Const.HOME_PAGE}", cause)
+        super(message, cause)
     }
 }
