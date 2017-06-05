@@ -134,7 +134,7 @@ class GradleTask extends DefaultTask {
             channels = readChannels(f)
         }
         if (channels == null || channels.isEmpty()) {
-            throw new PluginException("channels is null or empty")
+            throw new PluginException("No channels found")
         }
         return escape(channels)
     }

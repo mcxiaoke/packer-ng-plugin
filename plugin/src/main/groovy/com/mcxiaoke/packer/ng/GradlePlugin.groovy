@@ -49,7 +49,7 @@ class GradlePlugin implements Plugin<Project> {
 
     void addTasks(BaseVariant vt) {
         debug("addTasks() for ${vt.name}")
-        def variantTask = project.task("generate${vt.name.capitalize()}Channels",
+        def variantTask = project.task("apk${vt.name.capitalize()}",
                 type: GradleTask) {
             variant = vt
             extension = project.packer
@@ -60,7 +60,7 @@ class GradlePlugin implements Plugin<Project> {
 
         def buildTypeName = vt.buildType.name
         if (vt.name != buildTypeName) {
-            def taskName = "generate${buildTypeName.capitalize()}Channels"
+            def taskName = "apk${buildTypeName.capitalize()}"
             def task = project.tasks.findByName(taskName)
             if (task == null) {
                 task = project.task(taskName)

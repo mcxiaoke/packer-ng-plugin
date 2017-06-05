@@ -1,5 +1,5 @@
 buildscript {
-    ext.packer_version = '1.5.3-SNAPSHOT'
+    ext.packer_version = '1.5.4-SNAPSHOT'
 
     repositories {
         maven { url '/tmp/repo/' }
@@ -42,11 +42,11 @@ packer {
 //    channelFile = new File(project.rootDir, "markets.txt")
 //    channelList = ['*Douban*', 'Google/', '中文/@#市场', 'Hello@World',
 //                   'GradleTest', '20070601!@#$%^&*(){}:"<>?-=[];\',./']
-    channelMap = [
-            "Cat" : project.rootProject.file("channels/cat.txt"),
-            "Dog" : project.rootProject.file("channels/dog.txt"),
-            "Fish": project.rootProject.file("channels/markets.txt")
-    ]
+//    channelMap = [
+//            "Cat" : project.rootProject.file("channels/cat.txt"),
+//            "Dog" : project.rootProject.file("channels/dog.txt"),
+//            "Fish": project.rootProject.file("channels/markets.txt")
+//    ]
 }
 //packer-end
 
