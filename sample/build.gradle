@@ -1,5 +1,5 @@
 buildscript {
-    ext.packer_version = '1.0.21-SNAPSHOT'
+    ext.packer_version = '1.4.0-SNAPSHOT'
 
     repositories {
         maven { url '/tmp/repo/' }
@@ -37,11 +37,11 @@ dependencies {
 
 //packer-begin
 packer {
-    archiveNameFormat = '${channel}-${buildType}-v${versionName}-${versionCode}'
+    archiveNameFormat = '${appPkg}-${buildType}-v${versionName}-${channel}'
     archiveOutput = new File(project.rootProject.buildDir, "myapks")
     channelFile = new File(project.rootDir, "markets.txt")
-    channelList = ['Doub!@#$%an', 'Google/', '中文/@#市场',
-                   '!@#:?>;,.$%^', '20070601!@#$%^&*(){}:"<>?-=[];\',./']
+    channelList = ['*Douban*', 'Google/', '中文/@#市场', 'Hello@World',
+                   'GradleTest', '20070601!@#$%^&*(){}:"<>?-=[];\',./']
 }
 //packer-end
 
@@ -64,7 +64,7 @@ android {
     }
 
     signingConfigs {
-        releasev2 {
+        v2 {
             storeFile file("android.keystore")
             storePassword "android"
             keyAlias "android"
@@ -72,7 +72,7 @@ android {
             v2SigningEnabled true
         }
 
-        releasev1 {
+        v1 {
             storeFile file("android.keystore")
             storePassword "android"
             keyAlias "android"
@@ -84,16 +84,16 @@ android {
 
     buildTypes {
         release {
-            signingConfig signingConfigs.releasev2
+            signingConfig signingConfigs.v2
             minifyEnabled false
         }
 
-        releasev1 {
-            signingConfig signingConfigs.releasev1
+        beta {
+            signingConfig signingConfigs.v1
             minifyEnabled false
         }
 
-        nosign {
+        alpha {
             minifyEnabled false
         }
 
@@ -104,11 +104,7 @@ android {
 
         Cat {}
 
-        Rabbit {}
-
-        Fish {
-            signingConfig signingConfigs.releasev1
-        }
+        Fish {}
     }
 
     lintOptions {
