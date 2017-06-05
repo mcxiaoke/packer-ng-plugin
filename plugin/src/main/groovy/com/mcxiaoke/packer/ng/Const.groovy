@@ -6,6 +6,7 @@ package com.mcxiaoke.packer.ng
  * Time: 12:02
  */
 class Const {
+    static final String HOME_PAGE = "https://github.com/mcxiaoke/packer-ng-plugin/"
     static final String PROP_CHANNELS = "channels"
     static final String PROP_OUTPUT = "output"
     static final String PROP_FORMAT = "format"

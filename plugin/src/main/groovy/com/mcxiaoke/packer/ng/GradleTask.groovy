@@ -1,12 +1,11 @@
 package com.mcxiaoke.packer.ng
 
 import com.android.build.gradle.api.BaseVariant
-import com.mcxiaoke.packer.cli.Packer
+import com.mcxiaoke.packer.cli.Bridge
 import groovy.io.FileType
 import groovy.text.SimpleTemplateEngine
 import groovy.text.Template
 import org.gradle.api.DefaultTask
-import org.gradle.api.GradleException
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.TaskAction
 
@@ -27,7 +26,7 @@ class GradleTask extends DefaultTask {
     GradleExtension extension
 
     GradleTask() {
-        description = 'add channel info to  original APK file'
+        description = 'generate APK with channel info'
     }
 
     Template getNameTemplate() {
@@ -47,9 +46,8 @@ class GradleTask extends DefaultTask {
 
     File getOriginalApkWithCheck() {
         File file = variant.outputs[0].outputFile
-        boolean apkVerified = Packer.verifyApk(file)
-        if (!apkVerified) {
-            throw new GradleException("APK Signature Scheme v2 not verified: '${file}'")
+        if (!Bridge.verifyApk(file)) {
+            throw new PluginException("APK Signature Scheme v2 verify failed: '${file}'")
         }
         return file
     }
@@ -65,6 +63,10 @@ class GradleTask extends DefaultTask {
         }
         if (outputDir == null) {
             outputDir = new File(project.buildDir, Const.DEFAULT_OUTPUT)
+        }
+        String flavorName = variant.flavorName
+        if (flavorName.length() > 0) {
+            outputDir = new File(outputDir, flavorName)
         }
         if (!outputDir.exists()) {
             outputDir.mkdirs()
@@ -96,17 +98,17 @@ class GradleTask extends DefaultTask {
                 if (fileName != null) {
                     File f = new File(project.rootDir, fileName)
                     if (!f.isFile() || !f.canRead()) {
-                        throw new GradleException("channel file not exists: '${f.absolutePath}'")
+                        throw new PluginException("channel file not exists: '${f.absolutePath}'")
                     }
                     channels = readChannels(f)
                 } else {
-                    throw new GradleException("invalid channels property: '${prop}'")
+                    throw new PluginException("invalid channels property: '${prop}'")
                 }
             } else {
                 channels = prop.split(",")
             }
             if (channels == null || channels.isEmpty()) {
-                throw new GradleException("invalid channels property: '${prop}'")
+                throw new PluginException("invalid channels property: '${prop}'")
             }
             return escape(channels)
         }
@@ -123,12 +125,12 @@ class GradleTask extends DefaultTask {
             }
             logger.info(":${project.name} extension.channelFile: ${f}")
             if (!f.isFile() || !f.canRead()) {
-                throw new GradleException("channel file not exists: '${f.absolutePath}'")
+                throw new PluginException("channel file not exists: '${f.absolutePath}'")
             }
             channels = readChannels(f)
         }
         if (channels == null || channels.isEmpty()) {
-            throw new GradleException("channels is null or empty")
+            throw new PluginException("channels is null or empty")
         }
         return escape(channels)
     }
@@ -142,12 +144,12 @@ class GradleTask extends DefaultTask {
     }
 
     @TaskAction
-    void pack() {
+    void generate() {
 
         println("=======================================================")
         println("PackerNg - https://github.com/mcxiaoke/packer-ng-plugin")
         println("=======================================================")
-        showProperties()
+//        showProperties()
         File apkFile = getOriginalApkWithCheck()
         File outputDir = getOutputWithCheck()
         Collection<String> channels = getChannelsWithCheck()
@@ -159,23 +161,22 @@ class GradleTask extends DefaultTask {
             File tempFile = new File(outputDir, channel + ".tmp")
             copyTo(apkFile, tempFile)
             try {
-                Packer.writeChannel(tempFile, channel)
+                Bridge.writeChannel(tempFile, channel)
                 String apkName = buildApkName(channel, tempFile, template)
                 File finalFile = new File(outputDir, apkName)
-                if (Packer.verifyChannel(tempFile, channel)) {
-                    println("Generating apk: ${apkName} ......")
+                if (Bridge.verifyChannel(tempFile, channel)) {
+                    println("Generating: ${apkName}")
                     tempFile.renameTo(finalFile)
                 } else {
-                    throw new GradleException("${channel} APK verify failed.")
+                    throw new PluginException("${channel} APK verify failed")
                 }
             } catch (IOException ex) {
-                throw new GradleException("${channel} APK generate failed.", ex)
+                throw new PluginException("${channel} APK generate failed", ex)
             } finally {
                 tempFile.delete()
             }
         }
         println("Outputs:${outputDir.absolutePath}")
-        println("PackerNg Task Successful!")
         println("=======================================================")
     }
 
@@ -187,6 +188,7 @@ class GradleTask extends DefaultTask {
                 'projectName': project.rootProject.name,
                 'fileSHA1'   : fileSHA1,
                 'channel'    : channel,
+                'flavor'     : variant.flavorName,
                 'buildType'  : variant.buildType.name,
                 'versionName': variant.versionName,
                 'versionCode': variant.versionCode,
