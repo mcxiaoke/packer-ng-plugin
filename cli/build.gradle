@@ -11,7 +11,7 @@ repositories {
 }
 
 apply plugin: 'java'
-apply plugin: 'application'
+//apply plugin: 'application'
 
 sourceCompatibility = 1.7
 targetCompatibility = 1.7
@@ -21,7 +21,7 @@ dependencies {
     compile 'com.android.tools.build:apksig:2.3.2'
 }
 
-mainClassName = 'com.mcxiaoke.packer.cli.Main'
+//mainClassName = 'com.mcxiaoke.packer.cli.Main'
 
 task fatJar(type: Jar) {
     with jar
@@ -42,7 +42,7 @@ task fatJar(type: Jar) {
 
 task distJar(type: Copy, dependsOn: fatJar) {
     from fatJar.outputs.files
-    into project.rootProject.file('dist')
+    into project.rootProject.file('tools')
 }
 
 // apply from: '../jar.gradle'

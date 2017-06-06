@@ -1,5 +1,5 @@
 buildscript {
-    ext.packer_version = '1.6.6-SNAPSHOT'
+    ext.packer_version = '1.7.0-SNAPSHOT'
 
     repositories {
         maven { url '/tmp/repo/' }
