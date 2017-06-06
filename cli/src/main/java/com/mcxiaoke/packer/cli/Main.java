@@ -38,9 +38,9 @@ public class Main {
             } else if ("version".equals(cmd)) {
                 printUsage();
             } else {
-                printUsage();
                 System.err.println(
                         "Unsupported command: " + cmd);
+                printUsage();
             }
         } catch (Exception e) {
             System.err.println("Error: " + e.getMessage());
@@ -166,9 +166,9 @@ public class Main {
         }
         final boolean verified = Bridge.verifyApk(apkFile);
         final String channel = Bridge.readChannel(apkFile);
-        System.out.println("File: " + apkFile);
-        System.out.println("Signed:" + verified);
-        System.out.println("Channel:" + channel);
+        System.out.println("File: " + apkFile.getName());
+        System.out.println("Signed: " + verified);
+        System.out.println("Channel: " + channel);
     }
 
 

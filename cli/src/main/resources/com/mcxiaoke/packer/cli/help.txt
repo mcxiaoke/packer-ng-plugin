@@ -30,5 +30,3 @@ generate    Add channel info to the provided APK
 verify    Check whether signatures and channel of the provided APK is valid.
 
        packer-ng verify app.apk
-
-

@@ -4,6 +4,8 @@ build/
 apks/
 repo/
 dist/
+tmp/
+channels/
 *.iml
 *.apk
 *.pyc
