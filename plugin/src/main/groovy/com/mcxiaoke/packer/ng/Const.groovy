@@ -20,13 +20,12 @@ class Const {
      * 1. projectName
      * 2. appName
      * 3. appPkg
-     * 4. buildType
-     * 5. channel
+     * 4. channel
+     * 5. buildType
      * 6. versionName
      * 7. versionCode
      * 8. buildTime
-     * 9. fileMD5
-     * 10. fileSHA1
+     * 9. fileSHA1
      *
      * default value: '${appPkg}-${channel}-${buildType}-v${versionName}-${versionCode}'
      */
