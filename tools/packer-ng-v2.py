@@ -2,7 +2,7 @@
 # @Author: mcxiaoke
 # @Date:   2017-06-06 14:03:18
 # @Last Modified by:   mcxiaoke
-# @Last Modified time: 2017-06-07 14:58:50
+# @Last Modified time: 2017-06-07 15:42:07
 from __future__ import print_function
 # from __future__ import unicode_literals
 import os
@@ -55,17 +55,6 @@ except Exception as e:
 
 logger.debug('AUTHOR:%s', AUTHOR)
 logger.debug('VERSION:%s', VERSION)
-
-APK1 = 'apks/Cat/packer-ng-release-v1.7.1-SNAPSHOT-田园猫.apk'
-APK2 = 'apks/Cat/packer-ng-release-v1.7.1-SNAPSHOT-Special@Cat%001.apk'
-APK3 = 'apks/Fish/packer-ng-release-v1.7.1-SNAPSHOT-2017年.apk'
-APK_RELEASE = 'apks/sample-Cat-release.apk'
-APK_BETA = 'apks/sample-Cat-beta.apk'
-APK_DEBUG = 'apks/sample-Cat-debug.apk'
-ZIP_NOT_APK = 'cli.zip'
-TXT_NOT_APK = 'cv.java'
-
-APK = APK1
 
 
 class ZipFormatException(Exception):
@@ -162,7 +151,7 @@ def findPluginBlockValues(apk):
 def findApkSigningBlock(apk):
     zp = zipfile.ZipFile(apk)
     zp.testzip()
-    with open(apk, "r+b") as f:
+    with open(apk, "rb") as f:
         mm = mmap.mmap(f.fileno(), 0, access=mmap.ACCESS_READ)
         sections = findZipSections(mm)
 
@@ -376,9 +365,14 @@ if __name__ == '__main__':
     if len(sys.argv) < 2:
         print('Usage: {} app.apk'.format(prog))
         sys.exit(1)
+    apk = os.path.abspath(sys.argv[1])
+    from apk import APK
+    info = APK(apk)
     try:
-        apk = os.path.abspath(sys.argv[1])
-        print('File: \t{}'.format(os.path.basename(apk)))
+        print('File: \t\t{}'.format(os.path.basename(apk)))
+        print('Package: \t{}'.format(info.get_package()))
+        print('Version: \t{}'.format(info.get_version_name()))
+        print('Build: \t\t{}'.format(info.get_version_code()))
         channel = getChannel(apk)
         print('Channel: \t{}'.format(channel))
     except Exception as e:
