@@ -1,5 +1,5 @@
 buildscript {
-    ext.packer_version = '1.7.0-SNAPSHOT'
+    ext.packer_version = '1.7.1-SNAPSHOT'
 
     repositories {
         maven { url '/tmp/repo/' }
@@ -39,14 +39,14 @@ dependencies {
 packer {
     archiveNameFormat = '${projectName}-${buildType}-v${versionName}-${channel}'
     archiveOutput = new File(project.rootProject.buildDir, "apks")
-    channelList = ['*Douban*', 'Google/', '中文/@#市场', 'Hello@World',
-                   'GradleTest', '20070601!@#$%^&*(){}:"<>?-=[];\',./']
+//    channelList = ['*Douban*', 'Google/', '中文/@#市场', 'Hello@World',
+//                   'GradleTest', '20070601!@#$%^&*(){}:"<>?-=[];\',./']
 //    channelFile = new File(project.rootDir, "markets.txt")
-//    channelMap = [
-//            "Cat" : project.rootProject.file("channels/cat.txt"),
-//            "Dog" : project.rootProject.file("channels/dog.txt"),
-//            "Fish": project.rootProject.file("channels/channels.txt")
-//    ]
+    channelMap = [
+            "Cat" : project.rootProject.file("channels/cat.txt"),
+            "Dog" : project.rootProject.file("channels/dog.txt"),
+            "Fish": project.rootProject.file("channels/channels.txt")
+    ]
 }
 //packer-end
 

@@ -2,7 +2,7 @@ package com.mcxiaoke.packer.helper;
 
 import android.content.Context;
 import android.content.pm.ApplicationInfo;
-import com.mcxiaoke.packer.common.Parser;
+import com.mcxiaoke.packer.common.CPacker;
 
 import java.io.File;
 
@@ -12,7 +12,7 @@ import java.io.File;
  * Time: 13:12
  */
 public final class PackerNg {
-    private static final String TAG = PackerNg.class.getSimpleName();
+    private static final String TAG = "PackerNg";
     private static final String EMPTY_STRING = "";
     private static String sCachedChannel;
 
@@ -44,8 +44,7 @@ public final class PackerNg {
         try {
             final ApplicationInfo info = context.getApplicationInfo();
             final File apkFile = new File(info.sourceDir);
-            final Parser parser = Parser.create(apkFile);
-            market = parser.readChannel();
+            market = CPacker.of(apkFile).readChannel();
         } catch (Exception e) {
             error = e;
         }

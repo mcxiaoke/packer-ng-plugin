@@ -5,7 +5,11 @@ import com.mcxiaoke.packer.support.walle.PayloadWriter;
 
 import java.io.File;
 import java.io.IOException;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
 
@@ -14,41 +18,45 @@ import java.util.Map.Entry;
  * Date: 2017/5/26
  * Time: 13:18
  */
-public class Payload {
+public class CPayload {
     // charset utf8
-    public static final String UTF8 = "UTF-8";
+    private static final String UTF8 = "UTF-8";
 
-    public static String readChannel(File apkFile,
-                                     String channelKey,
-                                     int blockId) throws IOException {
+    public static String readValue(File apkFile,
+                                   String key,
+                                   int blockId) throws IOException {
         final Map<String, String> map = readValues(apkFile, blockId);
         if (map == null || map.isEmpty()) {
             return null;
         }
-        return map.get(channelKey);
+        return map.get(key);
     }
 
-    public static void writeChannel(File apkFile,
-                                    String channel,
-                                    String channelKey,
-                                    int blockId) throws IOException {
+    public static void writeValue(File apkFile,
+                                  String key,
+                                  String value,
+                                  int blockId) throws IOException {
         final Map<String, String> values = new HashMap<>();
-        values.put(channelKey, channel);
+        values.put(key, value);
         writeValues(apkFile, values, blockId);
     }
 
     public static Map<String, String> readValues(File apkFile, int blockId)
             throws IOException {
-        final String content = readRaw(apkFile, blockId);
+        final String content = readString(apkFile, blockId);
         return mapFromString(content);
     }
 
-    public static String readRaw(File apkFile, int blockId) throws IOException {
-        final byte[] bytes = PayloadReader.readBlock(apkFile, blockId);
+    public static String readString(File apkFile, int blockId) throws IOException {
+        final byte[] bytes = readBytes(apkFile, blockId);
         if (bytes == null || bytes.length == 0) {
             return null;
         }
         return new String(bytes, UTF8);
+    }
+
+    public static byte[] readBytes(File apkFile, int blockId) throws IOException {
+        return PayloadReader.readBlock(apkFile, blockId);
     }
 
     public static void writeValues(File apkFile, Map<String, String> values, int blockId)
@@ -62,16 +70,21 @@ public class Payload {
             newValues.putAll(oldValues);
         }
         newValues.putAll(values);
-        writeRaw(apkFile, mapToString(newValues), blockId);
+        writeString(apkFile, mapToString(newValues), blockId);
     }
 
-    public static void writeRaw(File apkFile, final String content, int blockId)
+    public static void writeString(File apkFile, final String content, int blockId)
             throws IOException {
         PayloadWriter.writeBlock(apkFile, blockId, content.getBytes(UTF8));
     }
 
-    private static final String SEP_KV = "\u2218";
-    private static final String SEP_LINE = "\u2219";
+    public static void writeBytes(File apkFile, final byte[] bytes, int blockId)
+            throws IOException {
+        PayloadWriter.writeBlock(apkFile, blockId, bytes);
+    }
+
+    public static final String SEP_KV = "∘";//\u2218
+    public static final String SEP_LINE = "∙";//\u2219
 
     private static String mapToString(final Map<String, String> map) throws IOException {
         if (map == null || map.isEmpty()) {
@@ -99,5 +112,12 @@ public class Payload {
             }
         }
         return map;
+    }
+
+    private static final String DATE_FORMAT = "yyyy/MM/dd HH:mm:ss Z";
+
+    private static String getDateString() {
+        final DateFormat df = new SimpleDateFormat(DATE_FORMAT, Locale.US);
+        return df.format(new Date());
     }
 }

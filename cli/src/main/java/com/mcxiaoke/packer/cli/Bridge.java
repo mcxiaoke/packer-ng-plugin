@@ -4,7 +4,7 @@ import com.android.apksig.ApkVerifier;
 import com.android.apksig.ApkVerifier.Builder;
 import com.android.apksig.ApkVerifier.Result;
 import com.android.apksig.apk.ApkFormatException;
-import com.mcxiaoke.packer.common.Parser;
+import com.mcxiaoke.packer.common.CPacker;
 
 import java.io.File;
 import java.io.IOException;
@@ -18,11 +18,11 @@ import java.security.NoSuchAlgorithmException;
 public class Bridge {
 
     public static void writeChannel(File file, String channel) throws IOException {
-        Parser.create(file).writeChannel(channel);
+        CPacker.of(file).writeChannel(channel);
     }
 
     public static String readChannel(File file) throws IOException {
-        return Parser.create(file).readChannel();
+        return CPacker.of(file).readChannel();
     }
 
     public static boolean verifyChannel(File file, String channel) throws IOException {
