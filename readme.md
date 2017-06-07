@@ -23,7 +23,6 @@ V2版只支持`APK Signature Scheme v2`，要求在 `signingConfigs` 里 `v2Sign
 ```groovy
 
 buildscript {
-	......
 	dependencies{
 		classpath 'com.mcxiaoke.packer-ng:plugin:2.0.0'
 	}
@@ -44,8 +43,7 @@ dependencies {
 
 ### 插件配置示例
 
-```
-//packer-begin
+```groovy
 packer {
     archiveNameFormat = '${buildType}-v${versionName}-${channel}'
     archiveOutput = new File(project.rootProject.buildDir, "apks")
@@ -58,7 +56,6 @@ packer {
             "Fish": project.rootProject.file("channels/channels.txt")
     ]
 }
-//packer-end
 ```
 
 * **archiveNameFormat** - 指定最终输出的渠道包文件名的格式模版，详细说明见后面，默认值是 `${appPkg}-${channel}-${buildType}-v${versionName}-${versionCode}` (可选)
@@ -81,7 +78,6 @@ Gradle_Test# 这是注释
 SomeMarket#some market
 中文渠道 # comments
 HelloWorld
-
 ```
 
 ### 集成打包
@@ -206,7 +202,7 @@ String market = PackerNg.getMarket(Context)
 #### 联系方式
 * Blog: <http://blog.mcxiaoke.com>
 * Github: <https://github.com/mcxiaoke>
-* Email: [packer-ng-plugin@mcxiaoke.com](mailto: packer-ng-plugin@mcxiaoke.com)
+* Email: [packer-ng-plugin@mcxiaoke.com](mailto:packer-ng-plugin@mcxiaoke.com)
 
 #### 开源项目
 
