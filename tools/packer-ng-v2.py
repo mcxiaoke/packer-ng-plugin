@@ -2,7 +2,7 @@
 # @Author: mcxiaoke
 # @Date:   2017-06-06 14:03:18
 # @Last Modified by:   mcxiaoke
-# @Last Modified time: 2017-06-07 15:42:07
+# @Last Modified time: 2017-06-07 15:55:31
 from __future__ import print_function
 # from __future__ import unicode_literals
 import os
@@ -366,7 +366,7 @@ if __name__ == '__main__':
         print('Usage: {} app.apk'.format(prog))
         sys.exit(1)
     apk = os.path.abspath(sys.argv[1])
-    from apk import APK
+    from apkinfo import APK
     info = APK(apk)
     try:
         print('File: \t\t{}'.format(os.path.basename(apk)))
