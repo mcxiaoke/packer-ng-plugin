@@ -77,8 +77,8 @@ public class PayloadTests extends TestCase {
             NoSuchAlgorithmException {
         File f = newTestFile();
         // don't write with APK Signature Scheme v2 Block ID 0x7109871a
-        CPayload.writeString(f, "OverrideSignatureSchemeBlock", 0x7109871a);
-        assertEquals("OverrideSignatureSchemeBlock", CPayload.readString(f, 0x7109871a));
+        PackerCommon.writeString(f, "OverrideSignatureSchemeBlock", 0x7109871a);
+        assertEquals("OverrideSignatureSchemeBlock", PackerCommon.readString(f, 0x7109871a));
         ApkVerifier verifier = new Builder(f).build();
         Result result = verifier.verify();
         final List<IssueWithParams> errors = result.getErrors();
@@ -113,10 +113,10 @@ public class PayloadTests extends TestCase {
 
     public void testStringWrite() throws IOException {
         File f = newTestFile();
-        CPayload.writeString(f, "Test String", 0x717a786b);
-        assertEquals("Test String", CPayload.readString(f, 0x717a786b));
-        CPayload.writeString(f, "中文和特殊符号测试！@#¥%……*（）《》？：【】、", 0x717a786b);
-        assertEquals("中文和特殊符号测试！@#¥%……*（）《》？：【】、", CPayload.readString(f, 0x717a786b));
+        PackerCommon.writeString(f, "Test String", 0x717a786b);
+        assertEquals("Test String", PackerCommon.readString(f, 0x717a786b));
+        PackerCommon.writeString(f, "中文和特殊符号测试！@#¥%……*（）《》？：【】、", 0x717a786b);
+        assertEquals("中文和特殊符号测试！@#¥%……*（）《》？：【】、", PackerCommon.readString(f, 0x717a786b));
         checkApkVerified(f);
     }
 
@@ -127,8 +127,8 @@ public class PayloadTests extends TestCase {
         in.put("名字", "哈哈啊哈哈哈");
         in.put("!@#$!%^@&*()_+\"?:><", "渠道Google");
         in.put("12345abcd", "2017");
-        CPayload.writeValues(f, in, 0x12345);
-        Map<String, String> out = CPayload.readValues(f, 0x12345);
+        PackerCommon.writeValues(f, in, 0x12345);
+        Map<String, String> out = PackerCommon.readValues(f, 0x12345);
         assertNotNull(out);
         assertEquals(in.size(), out.size());
         for (Map.Entry<String, String> entry : in.entrySet()) {
@@ -142,19 +142,19 @@ public class PayloadTests extends TestCase {
         Map<String, String> in = new HashMap<>();
         in.put("!@#$!%^@&*()_+\"?:><", "渠道Google");
         in.put("12345abcd", "2017");
-        CPayload.writeValues(f, in, 0x123456);
-        CPayload.writeValue(f, "Mixed", "hello", 0x8888);
-        Map<String, String> out = CPayload.readValues(f, 0x123456);
+        PackerCommon.writeValues(f, in, 0x123456);
+        PackerCommon.writeValue(f, "hello", "Mixed", 0x8888);
+        Map<String, String> out = PackerCommon.readValues(f, 0x123456);
         assertNotNull(out);
         assertEquals(in.size(), out.size());
         for (Map.Entry<String, String> entry : in.entrySet()) {
             assertEquals(entry.getValue(), out.get(entry.getKey()));
         }
-        assertEquals("Mixed", CPayload.readValue(f, "hello", 0x8888));
-        CPayload.writeString(f, "RawValue", 0x2017);
-        assertEquals("RawValue", CPayload.readString(f, 0x2017));
-        CPayload.writeString(f, "OverrideValues", 0x123456);
-        assertEquals("OverrideValues", CPayload.readString(f, 0x123456));
+        assertEquals("Mixed", PackerCommon.readValue(f, "hello", 0x8888));
+        PackerCommon.writeString(f, "RawValue", 0x2017);
+        assertEquals("RawValue", PackerCommon.readString(f, 0x2017));
+        PackerCommon.writeString(f, "OverrideValues", 0x123456);
+        assertEquals("OverrideValues", PackerCommon.readString(f, 0x123456));
         checkApkVerified(f);
     }
 
@@ -218,13 +218,12 @@ public class PayloadTests extends TestCase {
 
     public void testChannelWriteRead() throws IOException {
         File f = newTestFile();
-        CPacker p = CPacker.of(f);
-        p.writeChannel("Hello");
-        assertEquals("Hello", p.readChannel());
-        p.writeChannel("中文");
-        assertEquals("中文", p.readChannel());
-        p.writeChannel("中文 C");
-        assertEquals("中文 C", p.readChannel());
+        PackerCommon.writeChannel(f, "Hello");
+        assertEquals("Hello", PackerCommon.readChannel(f));
+        PackerCommon.writeChannel(f, "中文");
+        assertEquals("中文", PackerCommon.readChannel(f));
+        PackerCommon.writeChannel(f, "中文 C");
+        assertEquals("中文 C", PackerCommon.readChannel(f));
         checkApkVerified(f);
     }
 
