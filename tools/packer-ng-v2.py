@@ -2,48 +2,21 @@
 # @Author: mcxiaoke
 # @Date:   2017-06-06 14:03:18
 # @Last Modified by:   mcxiaoke
-# @Last Modified time: 2017-06-07 15:55:31
+# @Last Modified time: 2017-06-08 17:52:03
 from __future__ import print_function
-# from __future__ import unicode_literals
 import os
 import sys
 import mmap
 import struct
 import zipfile
 import logging
+import time
 
-logging.basicConfig(format='%(levelname)s:%(lineno)s:%(funcName)s() %(message)s', level=logging.ERROR)
+logging.basicConfig(format='%(levelname)s:%(lineno)s: %(funcName)s() %(message)s',
+                    level=logging.ERROR)
 logger = logging.getLogger(__name__)
 
-# ref: https://android.googlesource.com/platform/tools/apksig/+/master
-# ref: https://source.android.com/security/apksigning/v2
-
-ZIP_EOCD_REC_MIN_SIZE = 22
-ZIP_EOCD_REC_SIG = 0x06054b50
-ZIP_EOCD_CENTRAL_DIR_TOTAL_RECORD_COUNT_OFFSET = 10
-ZIP_EOCD_CENTRAL_DIR_SIZE_FIELD_OFFSET = 12
-ZIP_EOCD_CENTRAL_DIR_OFFSET_FIELD_OFFSET = 16
-ZIP_EOCD_COMMENT_LENGTH_FIELD_OFFSET = 20
-ZIP_EOCD_COMMENT_MIN_LENGTH = 0
-
-UINT16_MAX_VALUE = 0xffff  # 65535
-
-APK_SIG_BLOCK_MAGIC_HI = 0x3234206b636f6c42
-APK_SIG_BLOCK_MAGIC_LO = 0x20676953204b5041
-APK_SIG_BLOCK_MIN_SIZE = 32
-APK_SIGNATURE_SCHEME_V2_BLOCK_ID = 0x7109871a
-
-# channel info key
-PLUGIN_CHANNEL_KEY = 'zKey'  # 0x7a4b6579
-# channel extra key
-PLUGIN_EXTRA_KEY = 'zExt'  # 0x7a457874
-# channel date key
-PLUGIN_DATE_KEY = 'zDat'  # 0x7a446174
-# plugin block id
-PLUGIN_BLOCK_ID = 0x7a786b21  # "zxk!"
-
-SEP_KV = '∘'
-SEP_LINE = '∙'
+#####################################################################
 
 AUTHOR = 'mcxiaoke'
 VERSION = '1.0.0'
@@ -53,104 +26,143 @@ try:
 except Exception as e:
     VERSION = '1.0.0'
 
-logger.debug('AUTHOR:%s', AUTHOR)
-logger.debug('VERSION:%s', VERSION)
 
+def main():
+    logger.debug('AUTHOR:%s', AUTHOR)
+    logger.debug('VERSION:%s', VERSION)
+    prog = os.path.basename(sys.argv[0])
+    if len(sys.argv) < 2:
+        print('Usage: {} app.apk'.format(prog))
+        sys.exit(1)
+    apk = os.path.abspath(sys.argv[1])
+    from apkinfo import APK
+    info = APK(apk)
+    try:
+        print('File: \t\t{}'.format(os.path.basename(apk)))
+        print('Package: \t{}'.format(info.get_package()))
+        print('Version: \t{}'.format(info.get_version_name()))
+        print('Build: \t\t{}'.format(info.get_version_code()))
+        channel = getChannel(apk)
+        print('Channel: \t{}'.format(channel))
+        # test(apk)
+    except Exception as e:
+        print("Error:", e)
 
-class ZipFormatException(Exception):
-    pass
+if __name__ == '__main__':
+    main()
 
-
-class SignatureNotFoundException(Exception):
-    pass
-
-
-class ByteDecoder(object):
-    '''
-    byte array decoder
-    https://docs.python.org/2/library/struct.html
-    '''
-
-    def __init__(self, buf, littleEndian=True):
-        self.buf = buf
-        self.sign = '<' if littleEndian else '>'
-
-    def getShort(self, offset=0):
-        return struct.unpack('{}h'.format(self.sign), self.buf[offset:offset+2])[0]
-
-    def getUShort(self, offset=0):
-        return struct.unpack('{}H'.format(self.sign), self.buf[offset:offset+2])[0]
-
-    def getInt(self, offset=0):
-        return struct.unpack('{}i'.format(self.sign), self.buf[offset:offset+4])[0]
-
-    def getUInt(self, offset=0):
-        return struct.unpack('{}I'.format(self.sign), self.buf[offset:offset+4])[0]
-
-    def getLong(self, offset=0):
-        return struct.unpack('{}q'.format(self.sign), self.buf[offset:offset+8])[0]
-
-    def getULong(self, offset=0):
-        return struct.unpack('{}Q'.format(self.sign), self.buf[offset:offset+8])[0]
-
-    def getFloat(self, offset=0):
-        return struct.unpack('{}f'.format(self.sign), self.buf[offset:offset+4])[0]
-
-    def getDouble(self, offset=0):
-        return struct.unpack('{}d'.format(self.sign), self.buf[offset:offset+8])[0]
-
-    def getChars(self, offset=0, size=16):
-        return struct.unpack('{}{}'.format(self.sign, 's'*size), self.buf[offset:offset+size])
-
-
-class ZipSections(object):
-    '''
-    long centralDirectoryOffset,
-    long centralDirectorySizeBytes,
-    int centralDirectoryRecordCount,
-    long eocdOffset,
-    ByteBuffer eocd
-
-    '''
-
-    def __init__(self, cdStartOffset,
-                 cdSizeBytes,
-                 cdRecordCount,
-                 eocdOffset,
-                 eocd):
-        self.cdStartOffset = cdStartOffset
-        self.cdSizeBytes = cdSizeBytes
-        self.cdRecordCount = cdRecordCount
-        self.eocdOffset = eocdOffset
-        self.eocd = eocd
+#####################################################################
 
 
 def getChannel(apk):
     apk = os.path.abspath(apk)
-    logger.debug('apk:%s', apk)
-    values = findPluginBlockValues(apk)
+    logger.debug('apk:%s', os.path.basename(apk))
+    zp = zipfile.ZipFile(apk)
+    zp.testzip()
+    values = findValues(apk)
     if values:
         channel = values.get(PLUGIN_CHANNEL_KEY)
-        extra = values.get(PLUGIN_EXTRA_KEY)
         logger.debug('channel:%s', channel)
-        logger.debug('extra:%s', extra)
         return channel
     else:
         logger.debug('channel not found')
 
 
-def findPluginBlockValues(apk):
-    apkSigningBlock = findApkSigningBlock(apk)
-    block = parseApkSigningBlock(apkSigningBlock, PLUGIN_BLOCK_ID)
-    if block:
-        values = dict(line.split(SEP_KV) for line in block.split(SEP_LINE) if line.strip())
-        logger.debug('values:%s', values)
-        return values
+def findValues(apk):
+    '''
+      PLUGIN BLOCK LAYOUT
+      OFFSET    DATA TYPE           DESCRIPTION
+      @+0       magic string        magic string 16 bytes
+      @+16      payload length      payload length int 4 bytes
+      @+20      payload             payload data bytes
+      @-20      payload length      same as @+16 4 bytes
+      @-16      magic string        same as @+0 16 bytes
+    '''
+    content = findBlock1(apk)
+    magicLen = len(PLUGIN_BLOCK_MAGIC)
+    logger.debug('content:%s', content)
+    if not content or len(content) < 2*(magicLen + 4):
+        return None
+    content = content[magicLen+4:-(magicLen+4)]
+    values = dict(line.split(SEP_KV)
+                  for line in content.split(SEP_LINE) if line.strip())
+    logger.debug('values:%s', values)
+    return values
 
 
-def findApkSigningBlock(apk):
-    zp = zipfile.ZipFile(apk)
-    zp.testzip()
+def findBlock1(apk):
+    # # search Plugin Magic words
+    with open(apk, "rb") as f:
+        mm = mmap.mmap(f.fileno(), 0, access=mmap.ACCESS_READ)
+        d = ByteDecoder(mm)
+        size = mm.size()
+        logger.debug('file size=%s', size)
+        magicLen = len(PLUGIN_BLOCK_MAGIC)
+        end = mm.rfind(PLUGIN_BLOCK_MAGIC)
+        if end == -1:
+            raise MagicNotFoundException(
+                'Plugin Magic words not found')
+        logger.debug('magic end offset=%s', end)
+        magic = ''.join(d.getChars(end, magicLen))
+        logger.debug('magic end string=%s', magic)
+        payloadLen = d.getInt(end-4)
+        logger.debug('magic payloadLen1=%s', payloadLen)
+
+        start = end - payloadLen - 8 - magicLen
+        if start == -1:
+            raise MagicNotFoundException(
+                'Plugin Magic words not found')
+        logger.debug('magic start offset=%s', start)
+        logger.debug('magic start string=%s', ''.join(d.getChars(start, magicLen)))
+        logger.debug('magic payloadLen2=%s', d.getInt(start+magicLen))
+
+        block = mm[start:end+magicLen]
+        mm.close()
+        return block
+
+
+def findBlock2(apk):
+    # search APK Signing Block Magic words
+    signingBlock = findBySigningMagic(apk)
+    if signingBlock:
+        return parseApkSigningBlock(signingBlock, PLUGIN_BLOCK_ID)
+
+
+def findBlock3(apk):
+    # find zip centralDirectory, then find apkSigningBlock
+    signingBlock = findByZipSections(apk)
+    if signingBlock:
+        return parseApkSigningBlock(signingBlock, PLUGIN_BLOCK_ID)
+
+
+def findBySigningMagic(apk):
+    # findApkSigningBlockUsingSigningMagic
+    with open(apk, "rb") as f:
+        mm = mmap.mmap(f.fileno(), 0, access=mmap.ACCESS_READ)
+        d = ByteDecoder(mm)
+        size = mm.size()
+        logger.debug('file size=%s', size)
+        offset = size - UINT16_MAX_VALUE
+        logger.debug('file offset=%s', offset)
+        index = mm.find(APK_SIG_BLOCK_MAGIC, offset)
+        if index == -1:
+            raise MagicNotFoundException(
+                'APK Signing Block Magic not found')
+        logger.debug('magic index=%s', index)
+        logger.debug('magic string=%s', ''.join(d.getChars(index, 16)))
+        bEnd = index + 16
+        logger.debug('block end=%s', bEnd)
+        bSize = d.getLong(bEnd-24)+8
+        logger.debug('block size=%s', bSize)
+        bStart = bEnd - bSize
+        logger.debug('block start=%s', bStart)
+        block = mm[bStart:bEnd]
+        mm.close()
+        return block
+
+
+def findByZipSections(apk):
+    # findApkSigningBlockUsingZipSections
     with open(apk, "rb") as f:
         mm = mmap.mmap(f.fileno(), 0, access=mmap.ACCESS_READ)
         sections = findZipSections(mm)
@@ -172,19 +184,28 @@ def findApkSigningBlock(apk):
                 + centralDirStartOffset)
 
         fStart = centralDirStartOffset-24
+        mStart = centralDirStartOffset - 16
         fEnd = centralDirStartOffset
+        logger.debug('fStart:%s', fStart)
+        logger.debug('mStart:%s', mStart)
+        logger.debug('fEnd:%s', fEnd)
         footer = mm[fStart:fEnd]
         footerSize = len(footer)
         # logger.debug('footer:%s',to_hex(footer))
         fd = ByteDecoder(footer)
+        magic = ''.join(fd.getChars(8, 16))
+        logger.debug('magic str:%s', magic)
         lo = fd.getLong(8)
         hi = fd.getLong(16)
         logger.debug('magic lo:%s', hex(lo))
         logger.debug('magic hi:%s', hex(hi))
 
-        if lo != APK_SIG_BLOCK_MAGIC_LO or hi != APK_SIG_BLOCK_MAGIC_HI:
+        if magic != APK_SIG_BLOCK_MAGIC:
             raise SignatureNotFoundException(
                 "No APK Signing Block before ZIP Central Directory")
+        # if lo != APK_SIG_BLOCK_MAGIC_LO or hi != APK_SIG_BLOCK_MAGIC_HI:
+        #     raise SignatureNotFoundException(
+        #         "No APK Signing Block before ZIP Central Directory")
 
         apkSigBlockSizeInFooter = fd.getLong(0)
         logger.debug('apkSigBlockSizeInFooter:%s', apkSigBlockSizeInFooter)
@@ -213,11 +234,15 @@ def findApkSigningBlock(apk):
                 "APK Signing Block sizes in header and footer do not match: "
                 + apkSigBlockSizeInHeader + " vs " + apkSigBlockSizeInFooter)
 
-        apkSigningBlock = mm[apkSigBlockOffset:apkSigBlockOffset+totalSize]
-        return apkSigningBlock
+        block = mm[apkSigBlockOffset:apkSigBlockOffset+totalSize]
+        mm.close()
+        return block
 
 
 def parseApkSigningBlock(block, blockId):
+    # parseApkSigningBlock
+    if not block or not blockId:
+        return None
     '''
         // APK Signing Block
         // FORMAT:
@@ -227,10 +252,17 @@ def parseApkSigningBlock(block, blockId):
         // * @-24 bytes uint64:    size in bytes(same as the one above)
         // * @-16 bytes uint128:   magic
     '''
-    block = block[8:-24]  # only payload
+    totalSize = len(block)
+    bd0 = ByteDecoder(block)
+    blockSizeInHeader = bd0.getULong(0)
+    logger.debug('blockSizeInHeader:%s', blockSizeInHeader)
+    blockSizeInFooter = bd0.getULong(totalSize-24)
+    logger.debug('blockSizeInFooter:%s', blockSizeInFooter)
+    # slice only payload
+    block = block[8:-24]
     bd = ByteDecoder(block)
     size = len(block)
-    logger.debug('size:%s', size)
+    logger.debug('payloadSize:%s', size)
 
     entryCount = 0
     position = 0
@@ -238,10 +270,10 @@ def parseApkSigningBlock(block, blockId):
     channelBlock = None
     while position < size:
         entryCount += 1
-        logger.debug('----------')
         logger.debug('entryCount:%s', entryCount)
         if size - position < 8:
-            raise SignatureNotFoundException('Insufficient data to read size of APK Signing Block entry: {}'.format(entryCount))
+            raise SignatureNotFoundException(
+                'Insufficient data to read size of APK Signing Block entry: {}'.format(entryCount))
         lenLong = bd.getLong(position)
         logger.debug('lenLong:%s', lenLong)
         position += 8
@@ -280,7 +312,8 @@ def parseApkSigningBlock(block, blockId):
 def findZipSections(mm):
     eocd = findEocdRecord(mm)
     if not eocd:
-        raise ZipFormatException("ZIP End of Central Directory record not found")
+        raise ZipFormatException(
+            "ZIP End of Central Directory record not found")
     eocdOffset, eocdBuf = eocd
     ed = ByteDecoder(eocdBuf)
     # logger.debug('eocdBuf:%s', to_hex(eocdBuf))
@@ -355,25 +388,138 @@ def findEocdStartOffset(buf):
         expectedCommentLength += 1
     return -1
 
+#####################################################################
+
+
+@timeit
+def test(apk):
+    for i in range(500):
+        channel = getChannel(apk)
+
 
 def to_hex(s):
     return " ".join("{:02x}".format(ord(c)) for c in s) if s else ""
 
 
-if __name__ == '__main__':
-    prog = os.path.basename(sys.argv[0])
-    if len(sys.argv) < 2:
-        print('Usage: {} app.apk'.format(prog))
-        sys.exit(1)
-    apk = os.path.abspath(sys.argv[1])
-    from apkinfo import APK
-    info = APK(apk)
-    try:
-        print('File: \t\t{}'.format(os.path.basename(apk)))
-        print('Package: \t{}'.format(info.get_package()))
-        print('Version: \t{}'.format(info.get_version_name()))
-        print('Build: \t\t{}'.format(info.get_version_code()))
-        channel = getChannel(apk)
-        print('Channel: \t{}'.format(channel))
-    except Exception as e:
-        print("Error:", e)
+def timeit(method):
+
+    def timed(*args, **kw):
+        ts = time.time() * 1000
+        result = method(*args, **kw)
+        te = time.time() * 1000
+
+        print('%s() executed in %.2f msec' % (method.__name__, te - ts))
+        return result
+
+    return timed
+
+#####################################################################
+
+
+class ZipFormatException(Exception):
+    pass
+
+
+class SignatureNotFoundException(Exception):
+    pass
+
+
+class MagicNotFoundException(Exception):
+    pass
+
+#####################################################################
+
+
+class ByteDecoder(object):
+    '''
+    byte array decoder
+    https://docs.python.org/2/library/struct.html
+    '''
+
+    def __init__(self, buf, littleEndian=True):
+        self.buf = buf
+        self.sign = '<' if littleEndian else '>'
+
+    def getShort(self, offset=0):
+        return struct.unpack('{}h'.format(self.sign), self.buf[offset:offset+2])[0]
+
+    def getUShort(self, offset=0):
+        return struct.unpack('{}H'.format(self.sign), self.buf[offset:offset+2])[0]
+
+    def getInt(self, offset=0):
+        return struct.unpack('{}i'.format(self.sign), self.buf[offset:offset+4])[0]
+
+    def getUInt(self, offset=0):
+        return struct.unpack('{}I'.format(self.sign), self.buf[offset:offset+4])[0]
+
+    def getLong(self, offset=0):
+        return struct.unpack('{}q'.format(self.sign), self.buf[offset:offset+8])[0]
+
+    def getULong(self, offset=0):
+        return struct.unpack('{}Q'.format(self.sign), self.buf[offset:offset+8])[0]
+
+    def getFloat(self, offset=0):
+        return struct.unpack('{}f'.format(self.sign), self.buf[offset:offset+4])[0]
+
+    def getDouble(self, offset=0):
+        return struct.unpack('{}d'.format(self.sign), self.buf[offset:offset+8])[0]
+
+    def getChars(self, offset=0, size=16):
+        return struct.unpack('{}{}'.format(self.sign, 's'*size), self.buf[offset:offset+size])
+
+#####################################################################
+
+
+class ZipSections(object):
+    '''
+    long centralDirectoryOffset,
+    long centralDirectorySizeBytes,
+    int centralDirectoryRecordCount,
+    long eocdOffset,
+    ByteBuffer eocd
+    '''
+
+    def __init__(self, cdStartOffset,
+                 cdSizeBytes,
+                 cdRecordCount,
+                 eocdOffset,
+                 eocd):
+        self.cdStartOffset = cdStartOffset
+        self.cdSizeBytes = cdSizeBytes
+        self.cdRecordCount = cdRecordCount
+        self.eocdOffset = eocdOffset
+        self.eocd = eocd
+
+#####################################################################
+
+
+# ref: https://android.googlesource.com/platform/tools/apksig/+/master
+# ref: https://source.android.com/security/apksigning/v2
+
+ZIP_EOCD_REC_MIN_SIZE = 22
+ZIP_EOCD_REC_SIG = 0x06054b50
+ZIP_EOCD_CENTRAL_DIR_TOTAL_RECORD_COUNT_OFFSET = 10
+ZIP_EOCD_CENTRAL_DIR_SIZE_FIELD_OFFSET = 12
+ZIP_EOCD_CENTRAL_DIR_OFFSET_FIELD_OFFSET = 16
+ZIP_EOCD_COMMENT_LENGTH_FIELD_OFFSET = 20
+ZIP_EOCD_COMMENT_MIN_LENGTH = 0
+
+UINT16_MAX_VALUE = 0xffff  # 65535
+
+APK_SIG_BLOCK_MAGIC = 'APK Sig Block 42'
+APK_SIG_BLOCK_MAGIC_HI = 0x3234206b636f6c42
+APK_SIG_BLOCK_MAGIC_LO = 0x20676953204b5041
+APK_SIG_BLOCK_MIN_SIZE = 32
+APK_SIGNATURE_SCHEME_V2_BLOCK_ID = 0x7109871a
+
+# plugin channel key
+PLUGIN_CHANNEL_KEY = 'CHANNEL'
+# plugin block id
+PLUGIN_BLOCK_ID = 0x7a786b21
+# plugin block magic
+PLUGIN_BLOCK_MAGIC = 'Packer Ng Sig V2'
+
+SEP_KV = '∘'
+SEP_LINE = '∙'
+
+#####################################################################
