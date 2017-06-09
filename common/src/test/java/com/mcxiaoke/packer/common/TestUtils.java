@@ -54,11 +54,11 @@ public class TestUtils {
     }
 
     public static File newTestFile() throws IOException {
-        File dir = new File("data");
+        File dir = new File("../tools/");
         File file = new File(dir, "test.apk");
-        File tempfile = new File(dir, System.currentTimeMillis() + "-test.apk");
-        FileUtils.copyFile(file, tempfile);
-        return tempfile;
+        File tf = new File(dir, System.currentTimeMillis() + "-test.apk");
+        FileUtils.copyFile(file, tf);
+        return tf;
     }
 
     private static int counter = 0;

@@ -52,12 +52,12 @@ public class PayloadTests extends TestCase {
     }
 
     public void testFileExists() {
-        File file = new File("data/test.apk");
+        File file = new File("../tools/test.apk");
         assertTrue(file.exists());
     }
 
     public void testFileCopy() throws IOException {
-        File f1 = new File("data/test.apk");
+        File f1 = new File("../tools/test.apk");
         File f2 = newTestFile();
         assertTrue(f2.exists());
         assertTrue(f2.getName().endsWith(".apk"));
@@ -224,6 +224,17 @@ public class PayloadTests extends TestCase {
         assertEquals("中文", PackerCommon.readChannel(f));
         PackerCommon.writeChannel(f, "中文 C");
         assertEquals("中文 C", PackerCommon.readChannel(f));
+        checkApkVerified(f);
+    }
+
+    public void testKMPReader() throws IOException {
+        File f = newTestFile();
+        PackerCommon.writeChannel(f, "Hello2");
+        assertEquals("Hello2", PackerCommon.readChannel2(f));
+        PackerCommon.writeChannel(f, "中文@#$222");
+        assertEquals("中文@#$222", PackerCommon.readChannel2(f));
+        PackerCommon.writeChannel(f, "中文 C2222");
+        assertEquals("中文 C2222", PackerCommon.readChannel2(f));
         checkApkVerified(f);
     }
 
