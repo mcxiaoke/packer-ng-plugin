@@ -2,7 +2,7 @@
 # @Author: mcxiaoke
 # @Date:   2017-06-06 14:03:18
 # @Last Modified by:   mcxiaoke
-# @Last Modified time: 2017-06-09 11:41:59
+# @Last Modified time: 2017-06-09 16:27:15
 from __future__ import print_function
 import os
 import sys
@@ -39,6 +39,8 @@ ZIP_EOCD_COMMENT_LENGTH_FIELD_OFFSET = 20
 ZIP_EOCD_COMMENT_MIN_LENGTH = 0
 
 UINT16_MAX_VALUE = 0xffff  # 65535
+
+BlOCK_MAX_SIZE = 0x100000  # 1m=1024k
 
 APK_SIG_BLOCK_MAGIC = 'APK Sig Block 42'
 APK_SIG_BLOCK_MAGIC_HI = 0x3234206b636f6c42
@@ -136,24 +138,7 @@ class ZipSections(object):
 #####################################################################
 
 
-def getChannel(apk):
-    apk = os.path.abspath(apk)
-    logger.debug('apk:%s', os.path.basename(apk))
-    try:
-        zp = zipfile.ZipFile(apk)
-        zp.testzip()
-        values = findValues(apk)
-        if values:
-            channel = values.get(PLUGIN_CHANNEL_KEY)
-            logger.debug('channel:%s', channel)
-            return channel
-        else:
-            logger.debug('channel not found')
-    except Exception as e:
-        logger.error('%s: %s', type(e).__name__, e.message)
-
-
-def findValues(apk):
+def parseValues(content):
     '''
       PLUGIN BLOCK LAYOUT
       OFFSET    DATA TYPE           DESCRIPTION
@@ -162,7 +147,6 @@ def findValues(apk):
       @+20      payload             payload data bytes
       @-4      payload length      same as @+16 4 bytes
     '''
-    content = findBlock1(apk)
     magicLen = len(PLUGIN_BLOCK_MAGIC)
     logger.debug('content:%s', content)
     if not content or len(content) < magicLen + 8:
@@ -224,7 +208,7 @@ def findBySigningMagic(apk):
         d = ByteDecoder(mm)
         size = mm.size()
         logger.debug('file size=%s', size)
-        offset = size - UINT16_MAX_VALUE
+        offset = size - BlOCK_MAX_SIZE
         logger.debug('file offset=%s', offset)
         index = mm.find(APK_SIG_BLOCK_MAGIC, offset)
         if index == -1:
@@ -487,14 +471,39 @@ def timeit(method):
     return timed
 
 
-@timeit
-def test(apk):
-    for i in range(500):
-        channel = getChannel(apk)
-
-
 def to_hex(s):
     return " ".join("{:02x}".format(ord(c)) for c in s) if s else ""
+
+
+def getChannel(apk):
+    apk = os.path.abspath(apk)
+    logger.debug('apk:%s', os.path.basename(apk))
+    try:
+        zp = zipfile.ZipFile(apk)
+        zp.testzip()
+        content = findBlock3(apk)
+        values = parseValues(content)
+        if values:
+            channel = values.get(PLUGIN_CHANNEL_KEY)
+            logger.debug('channel:%s', channel)
+            return channel
+        else:
+            logger.debug('channel not found')
+    except Exception as e:
+        logger.error('%s: %s', type(e).__name__, e.message)
+
+
+def showInfo(apk):
+    print('File: \t\t{}'.format(os.path.basename(apk)))
+    print('Size: \t\t{}'.format(os.path.getsize(apk)))
+    try:
+        from apkinfo import APK
+        info = APK(apk)
+        print('Package: \t{}'.format(info.get_package()))
+        print('Version: \t{}'.format(info.get_version_name()))
+        print('Build: \t\t{}'.format(info.get_version_code()))
+    except Exception as e:
+        pass
 
 
 def main():
@@ -505,15 +514,9 @@ def main():
         print('Usage: {} app.apk'.format(prog))
         sys.exit(1)
     apk = os.path.abspath(sys.argv[1])
-    from apkinfo import APK
-    info = APK(apk)
-    print('File: \t\t{}'.format(os.path.basename(apk)))
-    print('Package: \t{}'.format(info.get_package()))
-    print('Version: \t{}'.format(info.get_version_name()))
-    print('Build: \t\t{}'.format(info.get_version_code()))
     channel = getChannel(apk)
     print('Channel: \t{}'.format(channel))
-    # test(apk)
+    showInfo(apk)
 
 if __name__ == '__main__':
     main()
