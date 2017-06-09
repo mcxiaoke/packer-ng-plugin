@@ -135,14 +135,19 @@ public class PackerCommon {
         if (buffer == null) {
             return null;
         }
-        byte[] expected = BLOCK_MAGIC.getBytes(UTF8);
-        byte[] actual = new byte[expected.length];
+        byte[] magic = BLOCK_MAGIC.getBytes(UTF8);
+        byte[] actual = new byte[magic.length];
         buffer.get(actual);
-        if (Arrays.equals(expected, actual)) {
-            int payloadLen = buffer.getInt();
-            byte[] payload = new byte[payloadLen];
-            buffer.get(payload);
-            return payload;
+        if (Arrays.equals(magic, actual)) {
+            int payloadLength1 = buffer.getInt();
+            if (payloadLength1 > 0) {
+                byte[] payload = new byte[payloadLength1];
+                buffer.get(payload);
+                int payloadLength2 = buffer.getInt();
+                if (payloadLength2 == payloadLength1) {
+                    return payload;
+                }
+            }
         }
         return null;
     }
@@ -151,15 +156,12 @@ public class PackerCommon {
     static ByteBuffer wrapPayload(byte[] payload)
             throws UnsupportedEncodingException {
         /*
-
           PLUGIN BLOCK LAYOUT
           OFFSET    DATA TYPE           DESCRIPTION
           @+0       magic string        magic string 16 bytes
           @+16      payload length      payload length int 4 bytes
           @+20      payload             payload data bytes
-          @-20      payload length      same as @+16 4 bytes
-          @-16      magic string        same as @+0 16 bytes
-
+          @-4      payload length      same as @+16 4 bytes
          */
         byte[] magic = BLOCK_MAGIC.getBytes(UTF8);
         int magicLen = magic.length;
@@ -171,7 +173,6 @@ public class PackerCommon {
         buffer.putInt(payloadLen); //4 payload length
         buffer.put(payload); // payload
         buffer.putInt(payloadLen); // 4
-        buffer.put(magic); //16
         buffer.flip();
         return buffer;
     }

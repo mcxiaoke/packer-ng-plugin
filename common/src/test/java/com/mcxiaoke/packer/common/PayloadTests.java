@@ -171,7 +171,7 @@ public class PayloadTests extends TestCase {
         buf.putDouble(3.14159265);
         buf.put((byte) 5);
         buf.flip(); // important
-        TestUtils.showBuffer(buf);
+//        TestUtils.showBuffer(buf);
         assertEquals(123, buf.getInt());
         assertEquals('z', buf.getChar());
         assertEquals(2017, buf.getShort());
@@ -198,11 +198,11 @@ public class PayloadTests extends TestCase {
         in.put((byte) 5);
         in.put(string);
         in.flip(); // important
-        TestUtils.showBuffer(in);
+//        TestUtils.showBuffer(in);
         PayloadWriter.writeBlock(f, 0x123456, in);
         ByteBuffer out = PayloadReader.readBlockBuffer(f, 0x123456);
         assertNotNull(out);
-        TestUtils.showBuffer(out);
+//        TestUtils.showBuffer(out);
         assertEquals(123, out.getInt());
         assertEquals('z', out.getChar());
         assertEquals(2017, out.getShort());
