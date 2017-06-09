@@ -5,6 +5,7 @@ import android.content.pm.ApplicationInfo;
 import com.mcxiaoke.packer.common.PackerCommon;
 
 import java.io.File;
+import java.io.IOException;
 
 /**
  * User: mcxiaoke
@@ -15,6 +16,14 @@ public final class PackerNg {
     private static final String TAG = "PackerNg";
     private static final String EMPTY_STRING = "";
     private static String sCachedChannel;
+
+    public static String readChannel(final File file) {
+        try {
+            return PackerCommon.readChannel(file);
+        } catch (IOException e) {
+            return EMPTY_STRING;
+        }
+    }
 
     public static String getChannel(final Context context) {
         return getChannel(context, EMPTY_STRING);
