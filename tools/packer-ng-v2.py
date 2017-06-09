@@ -2,7 +2,7 @@
 # @Author: mcxiaoke
 # @Date:   2017-06-06 14:03:18
 # @Last Modified by:   mcxiaoke
-# @Last Modified time: 2017-06-09 16:27:15
+# @Last Modified time: 2017-06-09 17:19:52
 from __future__ import print_function
 import os
 import sys
@@ -149,42 +149,49 @@ def parseValues(content):
     '''
     magicLen = len(PLUGIN_BLOCK_MAGIC)
     logger.debug('content:%s', content)
-    if not content or len(content) < magicLen + 8:
+    if not content or len(content) < magicLen + 4 * 2:
         return None
-    content = content[magicLen+4:-4]
+    content = content[magicLen + 4: -4]
     values = dict(line.split(SEP_KV)
                   for line in content.split(SEP_LINE) if line.strip())
     logger.debug('values:%s', values)
     return values
 
 
+def createMap(apk):
+    with open(apk, "rb") as f:
+        size = os.path.getsize(apk)
+        offset = max(0, size - BlOCK_MAX_SIZE)
+        offset = offset - offset % mmap.PAGESIZE
+        logger.debug('file size=%s', size)
+        logger.debug('file offset=%s', offset)
+        return mmap.mmap(f.fileno(),
+                         length=BlOCK_MAX_SIZE,
+                         offset=offset,
+                         access=mmap.ACCESS_READ)
+
+
 def findBlock1(apk):
     # # search Plugin Magic words
-    with open(apk, "rb") as f:
-        mm = mmap.mmap(f.fileno(), 0, access=mmap.ACCESS_READ)
-        d = ByteDecoder(mm)
-        size = mm.size()
-        logger.debug('file size=%s', size)
-        magicLen = len(PLUGIN_BLOCK_MAGIC)
-        start = mm.rfind(PLUGIN_BLOCK_MAGIC)
-        # if start == -1:
-        #     raise MagicNotFoundException(
-        #         'Packer Ng Magic words not found')
-        if start == -1:
-            return None
-        logger.debug('magic start offset=%s', start)
-        magic = ''.join(d.getChars(start, magicLen))
-        logger.debug('magic start string=%s', magic)
-        payloadLen = d.getInt(start + magicLen)
-        logger.debug('magic payloadLen1=%s', payloadLen)
+    mm = createMap(apk)
+    magicLen = len(PLUGIN_BLOCK_MAGIC)
+    start = mm.rfind(PLUGIN_BLOCK_MAGIC)
+    if start == -1:
+        return None
+    d = ByteDecoder(mm)
+    logger.debug('magic start offset=%s', start)
+    magic = ''.join(d.getChars(start, magicLen))
+    logger.debug('magic start string=%s', magic)
+    payloadLen = d.getInt(start + magicLen)
+    logger.debug('magic payloadLen1=%s', payloadLen)
 
-        end = start + magicLen + 4 + payloadLen + 4
-        logger.debug('magic end offset=%s', end)
-        logger.debug('magic payloadLen2=%s', d.getInt(end-4))
+    end = start + magicLen + 4 + payloadLen + 4
+    logger.debug('magic end offset=%s', end)
+    logger.debug('magic payloadLen2=%s', d.getInt(end-4))
 
-        block = mm[start:end]
-        mm.close()
-        return block
+    block = mm[start:end]
+    mm.close()
+    return block
 
 
 def findBlock2(apk):
@@ -203,28 +210,23 @@ def findBlock3(apk):
 
 def findBySigningMagic(apk):
     # findApkSigningBlockUsingSigningMagic
-    with open(apk, "rb") as f:
-        mm = mmap.mmap(f.fileno(), 0, access=mmap.ACCESS_READ)
-        d = ByteDecoder(mm)
-        size = mm.size()
-        logger.debug('file size=%s', size)
-        offset = size - BlOCK_MAX_SIZE
-        logger.debug('file offset=%s', offset)
-        index = mm.find(APK_SIG_BLOCK_MAGIC, offset)
-        if index == -1:
-            raise MagicNotFoundException(
-                'APK Signing Block Magic not found')
-        logger.debug('magic index=%s', index)
-        logger.debug('magic string=%s', ''.join(d.getChars(index, 16)))
-        bEnd = index + 16
-        logger.debug('block end=%s', bEnd)
-        bSize = d.getLong(bEnd-24)+8
-        logger.debug('block size=%s', bSize)
-        bStart = bEnd - bSize
-        logger.debug('block start=%s', bStart)
-        block = mm[bStart:bEnd]
-        mm.close()
-        return block
+    mm = createMap(apk)
+    index = mm.rfind(APK_SIG_BLOCK_MAGIC)
+    if index == -1:
+        raise MagicNotFoundException(
+            'APK Signing Block Magic not found')
+    d = ByteDecoder(mm)
+    logger.debug('magic index=%s', index)
+    logger.debug('magic string=%s', ''.join(d.getChars(index, 16)))
+    bEnd = index + 16
+    logger.debug('block end=%s', bEnd)
+    bSize = d.getLong(bEnd-24)+8
+    logger.debug('block size=%s', bSize)
+    bStart = bEnd - bSize
+    logger.debug('block start=%s', bStart)
+    block = mm[bStart:bEnd]
+    mm.close()
+    return block
 
 
 def findByZipSections(apk):
@@ -260,7 +262,7 @@ def findByZipSections(apk):
         # logger.debug('footer:%s',to_hex(footer))
         fd = ByteDecoder(footer)
         magic = ''.join(fd.getChars(8, 16))
-        logger.debug('magic str:%s', magic)
+        # logger.debug('magic str:%s', magic)
         lo = fd.getLong(8)
         hi = fd.getLong(16)
         logger.debug('magic lo:%s', hex(lo))
@@ -477,7 +479,7 @@ def to_hex(s):
 
 def getChannel(apk):
     apk = os.path.abspath(apk)
-    logger.debug('apk:%s', os.path.basename(apk))
+    logger.debug('apk:%s', apk)
     try:
         zp = zipfile.ZipFile(apk)
         zp.testzip()
@@ -490,18 +492,18 @@ def getChannel(apk):
         else:
             logger.debug('channel not found')
     except Exception as e:
-        logger.error('%s: %s', type(e).__name__, e.message)
+        logger.error('%s: %s', type(e).__name__, e)
 
 
 def showInfo(apk):
-    print('File: \t\t{}'.format(os.path.basename(apk)))
-    print('Size: \t\t{}'.format(os.path.getsize(apk)))
     try:
         from apkinfo import APK
         info = APK(apk)
         print('Package: \t{}'.format(info.get_package()))
         print('Version: \t{}'.format(info.get_version_name()))
         print('Build: \t\t{}'.format(info.get_version_code()))
+        print('File: \t\t{}'.format(os.path.basename(apk)))
+        print('Size: \t\t{}'.format(os.path.getsize(apk)))
     except Exception as e:
         pass
 
