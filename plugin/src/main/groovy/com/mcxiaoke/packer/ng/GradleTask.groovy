@@ -2,7 +2,7 @@ package com.mcxiaoke.packer.ng
 
 import com.android.build.gradle.api.BaseVariant
 import com.mcxiaoke.packer.cli.Bridge
-import groovy.io.FileType
+import com.mcxiaoke.packer.cli.Helper
 import groovy.text.SimpleTemplateEngine
 import groovy.text.Template
 import org.gradle.api.DefaultTask
@@ -10,7 +10,6 @@ import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.TaskAction
 
 import java.text.SimpleDateFormat
-import java.util.regex.Pattern
 
 /**
  * User: mcxiaoke
@@ -83,12 +82,7 @@ class GradleTask extends DefaultTask {
             outputDir.mkdirs()
         } else {
             logger.info(":${name} delete old APKs in ${outputDir.absolutePath}")
-            // delete old APKs
-            outputDir.eachFile(FileType.FILES) { file ->
-                if (file.getName().endsWith(".apk")) {
-                    file.delete()
-                }
-            }
+            Helper.deleteAPKs(outputDir)
         }
         return outputDir
     }
@@ -98,7 +92,7 @@ class GradleTask extends DefaultTask {
         // -P channels=@channels.txt
         // channelList = [ch1,ch2,ch3]
         // channelFile = project.file("channels.txt")
-        List<String> channels = []
+        Collection<String> channels = []
         // check command line property
         def propValue = project.findProperty(Const.PROP_CHANNELS)
         if (propValue != null) {
@@ -111,20 +105,20 @@ class GradleTask extends DefaultTask {
                     if (!f.isFile() || !f.canRead()) {
                         throw new PluginException("channel file not exists: '${f.absolutePath}'")
                     }
-                    channels = readChannels(f)
+                    channels = Helper.parseChannels(f)
                 } else {
                     throw new PluginException("invalid channels property: '${prop}'")
                 }
             } else {
-                channels = prop.split(",")
+                channels = Helper.parseChannels(prop);
             }
             if (channels == null || channels.isEmpty()) {
                 throw new PluginException("invalid channels property: '${prop}'")
             }
-            return escape(channels)
+            return channels
         }
         if (extension.channelList != null) {
-            channels = extension.channelList
+            channels = Helper.escape(extension.channelList)
             logger.info(":${project.name} ext.channelList: ${channels}")
         } else if (extension.channelMap != null) {
             String flavorName = variant.flavorName
@@ -134,7 +128,7 @@ class GradleTask extends DefaultTask {
                 throw new PluginException("channel file not exists: '${f.absolutePath}'")
             }
             if (f != null && f.isFile()) {
-                channels = readChannels(f)
+                channels = Helper.parseChannels(f)
             }
         } else if (extension.channelFile != null) {
             File f = extension.channelFile
@@ -142,12 +136,12 @@ class GradleTask extends DefaultTask {
             if (!f.isFile()) {
                 throw new PluginException("channel file not exists: '${f.absolutePath}'")
             }
-            channels = readChannels(f)
+            channels = Helper.parseChannels(f)
         }
         if (channels == null || channels.isEmpty()) {
             throw new PluginException("No channels found")
         }
-        return escape(channels)
+        return channels
     }
 
 
@@ -175,16 +169,16 @@ class GradleTask extends DefaultTask {
         println("Variant: ${variant.name}")
         println("Input: ${apkFile.path}")
         println("Output: ${outputDir.path}")
-        println("Channels: [${channels.join('/')}]")
+        println("Channels: [${channels.join(' ')}]")
         for (String channel : channels) {
             File tempFile = new File(outputDir, "tmp-${channel}.apk")
-            copyTo(apkFile, tempFile)
             try {
+                Helper.copyFile(apkFile, tempFile)
                 Bridge.writeChannel(tempFile, channel)
                 String apkName = buildApkName(channel, tempFile, template)
                 File finalFile = new File(outputDir, apkName)
                 if (Bridge.verifyChannel(tempFile, channel)) {
-                    println("--> Generating: ${apkName}")
+                    println("Generating: ${apkName}")
                     tempFile.renameTo(finalFile)
                     logger.info("Generated: ${finalFile}")
                 } else {
@@ -219,31 +213,11 @@ class GradleTask extends DefaultTask {
         return template.make(nameMap).toString() + '.apk'
     }
 
+    /*
     static Set<String> escape(Collection<String> cs) {
         // filter invalid chars for filename
         Pattern pattern = ~/[\/:*?"'<>|]/
         return cs.collect { it.replaceAll(pattern, "_") }.toSet()
     }
-
-    static List<String> readChannels(File file) {
-        List<String> channels = []
-        file.eachLine { line, number ->
-            String[] parts = line.split('#')
-            if (parts && parts[0]) {
-                def c = parts[0].trim()
-                if (c) {
-                    channels.add(c)
-                }
-            }
-        }
-        return channels
-    }
-
-    static void copyTo(File src, File dest) {
-        def input = src.newInputStream()
-        def output = dest.newOutputStream()
-        output << input
-        input.close()
-        output.close()
-    }
+     */
 }

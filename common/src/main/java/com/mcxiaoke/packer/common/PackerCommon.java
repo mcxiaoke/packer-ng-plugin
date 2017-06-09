@@ -43,7 +43,7 @@ public class PackerCommon {
         return readValue(file, CHANNEL_KEY, CHANNEL_BLOCK_ID);
     }
 
-    public static String readChannel2(File file) throws IOException {
+    static String readChannel2(File file) throws IOException {
         return KMPReader.readChannel(file);
     }
 

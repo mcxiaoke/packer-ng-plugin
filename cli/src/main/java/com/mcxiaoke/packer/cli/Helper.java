@@ -11,7 +11,11 @@ import java.io.InputStreamReader;
 import java.nio.channels.FileChannel;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+import java.util.regex.Pattern;
 
 /**
  * User: mcxiaoke
@@ -19,24 +23,55 @@ import java.util.List;
  * Time: 16:52
  */
 
-class Helper {
-    public static List<String> readChannels(final File file) throws IOException {
-        final List<String> markets = new ArrayList<String>();
+public class Helper {
+
+    public static Set<String> readChannels(String value) throws IOException {
+        if (value.startsWith("@")) {
+            return parseChannels(new File(value.substring(1)));
+        } else {
+            return parseChannels(value);
+        }
+    }
+
+    public static Set<String> parseChannels(final File file) throws IOException {
+        final List<String> channels = new ArrayList<>();
         FileReader fr = new FileReader(file);
         BufferedReader br = new BufferedReader(fr);
         String line;
         while ((line = br.readLine()) != null) {
             String parts[] = line.split("#");
             if (parts.length > 0) {
-                final String market = parts[0].trim();
-                if (market.length() > 0) {
-                    markets.add(market);
+                final String ch = parts[0].trim();
+                if (ch.length() > 0) {
+                    channels.add(ch);
                 }
             }
         }
         br.close();
         fr.close();
-        return markets;
+        return escape(channels);
+    }
+
+    public static Set<String> parseChannels(String text) {
+        String[] lines = text.split(",");
+        List<String> channels = new ArrayList<>();
+        for (String line : lines) {
+            String ch = line.trim();
+            if (ch.length() > 0) {
+                channels.add(ch);
+            }
+        }
+        return escape(channels);
+    }
+
+    public static Set<String> escape(Collection<String> cs) {
+        // filter invalid chars for filename
+        Pattern p = Pattern.compile("[\\\\/:*?\"'<>|]");
+        Set<String> set = new HashSet<>();
+        for (String s : cs) {
+            set.add(p.matcher(s).replaceAll("_"));
+        }
+        return set;
     }
 
     public static void copyFile(File src, File dest) throws IOException {

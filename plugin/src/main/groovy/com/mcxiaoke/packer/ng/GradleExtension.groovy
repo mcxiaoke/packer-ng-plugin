@@ -3,7 +3,7 @@ package com.mcxiaoke.packer.ng
 class GradleExtension {
     File archiveOutput
     String archiveNameFormat
-    List<String> channelList;
+    Set<String> channelList;
     File channelFile;
     Map<String, File> channelMap;
 

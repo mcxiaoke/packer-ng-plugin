@@ -65,7 +65,7 @@ public class MainActivity extends AppCompatActivity {
             StringBuilder builder = new StringBuilder();
             builder.append("[AppInfo]\n");
             builder.append("SourceDir: ").append(getSourceDir(this)).append("\n");
-            builder.append("Market: ").append(PackerNg.getChannel(this)).append("\n");
+            builder.append("Channel: ").append(PackerNg.getChannel(this)).append("\n");
             builder.append("Name: ").append(getString(info.labelRes)).append("\n");
             builder.append("Package: ").append(BuildConfig.APPLICATION_ID).append("\n");
             builder.append("VersionCode: ").append(BuildConfig.VERSION_CODE).append("\n");

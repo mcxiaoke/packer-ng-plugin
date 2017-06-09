@@ -5,6 +5,7 @@ import com.mcxiaoke.packer.cli.Options.OptionsException;
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 import java.util.Locale;
 
@@ -60,7 +61,7 @@ public class Main {
         System.out.println("========== APK Packer ==========");
         // --channels=a,b,c, -c (list mode)
         // --channels=@list.txt -c (file mode)
-        List<String> channels = null;
+        Collection<String> channels = null;
         // --input, -i (input apk file)
         File apkFile = null;
         // --output, -o (output directory)
@@ -77,10 +78,9 @@ public class Main {
                     || "c".equals(name)) {
                 String value = optionsParser.getRequiredValue("Channels file(@) or list(,).");
                 if (value.startsWith("@")) {
-                    value = value.substring(1);
-                    channels = Helper.readChannels(new File(value));
+                    channels = Helper.parseChannels(new File(value.substring(1)));
                 } else {
-                    channels = Arrays.asList(value.split(","));
+                    channels = Helper.parseChannels(value);
                 }
             } else if ("input".equals(name)
                     || "i".equals(name)) {
@@ -109,7 +109,7 @@ public class Main {
         doGenerate(apkFile, channels, outputDir);
     }
 
-    private static void doGenerate(File apkFile, List<String> channels, File outputDir)
+    private static void doGenerate(File apkFile, Collection<String> channels, File outputDir)
             throws IOException {
         if (apkFile == null
                 || !apkFile.exists()
