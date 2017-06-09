@@ -65,7 +65,7 @@ class GradleTask extends DefaultTask {
             outputDir = extension.archiveOutput
         }
         if (outputDir == null) {
-            outputDir = new File(project.buildDir, Const.DEFAULT_OUTPUT)
+            outputDir = new File(project.rootProject.buildDir, Const.DEFAULT_OUTPUT)
         }
         if (!outputDir.exists()) {
             outputDir.mkdirs()
