@@ -36,15 +36,9 @@ public class PackerCommon {
     public static final int CHANNEL_BLOCK_ID = 0x7a786b21; // "zxk!"
     // channel info key
     public static final String CHANNEL_KEY = "CHANNEL";
-    // zip block size max
-    public static final int BLOCK_SIZE_MAX = 0x100000;
 
     public static String readChannel(File file) throws IOException {
         return readValue(file, CHANNEL_KEY, CHANNEL_BLOCK_ID);
-    }
-
-    static String readChannel2(File file) throws IOException {
-        return KMPReader.readChannel(file);
     }
 
     public static void writeChannel(File file, String channel)

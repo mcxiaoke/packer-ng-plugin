@@ -2,7 +2,7 @@
 # @Author: mcxiaoke
 # @Date:   2017-06-06 14:03:18
 # @Last Modified by:   mcxiaoke
-# @Last Modified time: 2017-06-09 17:19:52
+# @Last Modified time: 2017-06-12 15:06:25
 from __future__ import print_function
 import os
 import sys
@@ -17,12 +17,12 @@ logging.basicConfig(format='%(levelname)s:%(lineno)s: %(funcName)s() %(message)s
 logger = logging.getLogger(__name__)
 
 AUTHOR = 'mcxiaoke'
-VERSION = '1.0.0'
+VERSION = '2.0.0'
 try:
     props = dict(line.strip().split('=') for line in open('../gradle.properties') if line.strip())
     VERSION = props.get('VERSION_NAME')
 except Exception as e:
-    VERSION = '1.0.0'
+    VERSION = '2.0.0'
 
 #####################################################################
 
@@ -171,8 +171,7 @@ def createMap(apk):
                          access=mmap.ACCESS_READ)
 
 
-def findBlock1(apk):
-    # # search Plugin Magic words
+def findBlockByPluginMagic(apk):
     mm = createMap(apk)
     magicLen = len(PLUGIN_BLOCK_MAGIC)
     start = mm.rfind(PLUGIN_BLOCK_MAGIC)
@@ -194,14 +193,14 @@ def findBlock1(apk):
     return block
 
 
-def findBlock2(apk):
+def findBlockBySigningMagic(apk):
     # search APK Signing Block Magic words
     signingBlock = findBySigningMagic(apk)
     if signingBlock:
         return parseApkSigningBlock(signingBlock, PLUGIN_BLOCK_ID)
 
 
-def findBlock3(apk):
+def findBlockByZipSections(apk):
     # find zip centralDirectory, then find apkSigningBlock
     signingBlock = findByZipSections(apk)
     if signingBlock:
@@ -483,7 +482,7 @@ def getChannel(apk):
     try:
         zp = zipfile.ZipFile(apk)
         zp.testzip()
-        content = findBlock3(apk)
+        content = findBlockByZipSections(apk)
         values = parseValues(content)
         if values:
             channel = values.get(PLUGIN_CHANNEL_KEY)

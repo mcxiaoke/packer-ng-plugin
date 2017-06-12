@@ -17,6 +17,9 @@ import java.util.Map;
 
 class KMPReader {
 
+    // zip block size max
+    public static final int BLOCK_SIZE_MAX = 0x100000; // 1M
+
     public static String readChannel(File file) throws IOException {
         String payload = readPayload(file);
         Map<String, String> values = PackerCommon.mapFromString(payload);
@@ -28,7 +31,7 @@ class KMPReader {
         FileChannel fc = null;
         try {
             long fileSize = file.length();
-            long blockSize = PackerCommon.BLOCK_SIZE_MAX;
+            long blockSize = BLOCK_SIZE_MAX;
             long offset = Math.max(0, fileSize - blockSize);
             raf = new RandomAccessFile(file, "r");
             fc = raf.getChannel();
