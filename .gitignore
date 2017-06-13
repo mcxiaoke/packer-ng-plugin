@@ -11,6 +11,7 @@ channels/
 *.pyc
 *.class
 .DS_Store
+a.out
 .classpath
 .project
 .settings/
