@@ -34,7 +34,7 @@ public class MainActivity extends Activity {
         for (ApplicationInfo app : apps) {
             if (app.packageName.startsWith("com.douban.")) {
                 Log.d("TAG", "app=" + app.packageName + ", channel="
-                        + PackerNg.readChannel(new File(app.sourceDir)));
+                        + PackerNg.getChannel(new File(app.sourceDir)));
             }
         }
 
