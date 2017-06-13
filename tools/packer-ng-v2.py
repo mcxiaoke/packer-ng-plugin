@@ -62,14 +62,17 @@ SEP_LINE = '∙'
 
 
 class ZipFormatException(Exception):
+    '''ZipFormatException'''
     pass
 
 
 class SignatureNotFoundException(Exception):
+    '''SignatureNotFoundException'''
     pass
 
 
 class MagicNotFoundException(Exception):
+    '''MagicNotFoundException'''
     pass
 
 #####################################################################

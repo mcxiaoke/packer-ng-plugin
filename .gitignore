@@ -9,4 +9,8 @@ channels/
 *.iml
 *.apk
 *.pyc
+*.class
 .DS_Store
+.classpath
+.project
+.settings/
