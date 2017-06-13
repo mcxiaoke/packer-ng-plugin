@@ -5,8 +5,7 @@ import com.android.apksig.ApkVerifier.Builder;
 import com.android.apksig.ApkVerifier.IssueWithParams;
 import com.android.apksig.ApkVerifier.Result;
 import com.android.apksig.apk.ApkFormatException;
-import com.mcxiaoke.packer.support.walle.PayloadReader;
-import com.mcxiaoke.packer.support.walle.PayloadWriter;
+import com.mcxiaoke.packer.support.walle.Support;
 import junit.framework.TestCase;
 
 import java.io.File;
@@ -96,8 +95,8 @@ public class PayloadTests extends TestCase {
     public void testBytesWrite1() throws IOException {
         File f = newTestFile();
         byte[] in = "Hello".getBytes();
-        PayloadWriter.writeBlock(f, 0x12345, in);
-        byte[] out = PayloadReader.readBlock(f, 0x12345);
+        Support.writeBlock(f, 0x12345, in);
+        byte[] out = Support.readBytes(f, 0x12345);
         assertTrue(TestUtils.sameBytes(in, out));
         checkApkVerified(f);
     }
@@ -105,8 +104,8 @@ public class PayloadTests extends TestCase {
     public void testBytesWrite2() throws IOException {
         File f = newTestFile();
         byte[] in = "中文和特殊符号测试！@#¥%……*（）《》？：【】、".getBytes("UTF-8");
-        PayloadWriter.writeBlock(f, 0x12345, in);
-        byte[] out = PayloadReader.readBlock(f, 0x12345);
+        Support.writeBlock(f, 0x12345, in);
+        byte[] out = Support.readBytes(f, 0x12345);
         assertTrue(TestUtils.sameBytes(in, out));
         checkApkVerified(f);
     }
@@ -199,8 +198,8 @@ public class PayloadTests extends TestCase {
         in.put(string);
         in.flip(); // important
 //        TestUtils.showBuffer(in);
-        PayloadWriter.writeBlock(f, 0x123456, in);
-        ByteBuffer out = PayloadReader.readBlockBuffer(f, 0x123456);
+        Support.writeBlock(f, 0x123456, in);
+        ByteBuffer out = Support.readBlock(f, 0x123456);
         assertNotNull(out);
 //        TestUtils.showBuffer(out);
         assertEquals(123, out.getInt());
@@ -226,17 +225,5 @@ public class PayloadTests extends TestCase {
         assertEquals("中文 C", PackerCommon.readChannel(f));
         checkApkVerified(f);
     }
-
-    public void testKMPReader() throws IOException {
-        File f = newTestFile();
-        PackerCommon.writeChannel(f, "Hello2");
-        assertEquals("Hello2", PackerCommon.readChannel2(f));
-        PackerCommon.writeChannel(f, "中文@#$222");
-        assertEquals("中文@#$222", PackerCommon.readChannel2(f));
-        PackerCommon.writeChannel(f, "中文 C2222");
-        assertEquals("中文 C2222", PackerCommon.readChannel2(f));
-        checkApkVerified(f);
-    }
-
 
 }

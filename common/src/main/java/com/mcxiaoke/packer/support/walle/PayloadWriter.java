@@ -11,7 +11,7 @@ import java.util.Map;
 import java.util.Set;
 
 
-public final class PayloadWriter {
+final class PayloadWriter {
     private PayloadWriter() {
         super();
     }

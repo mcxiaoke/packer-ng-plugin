@@ -7,18 +7,18 @@ import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.util.Map;
 
-public final class PayloadReader {
+final class PayloadReader {
     private PayloadReader() {
         super();
     }
 
-    public static byte[] readBlock(final File apkFile, final int id)
+    public static byte[] readBytes(final File apkFile, final int id)
             throws IOException {
-        final ByteBuffer buf = readBlockBuffer(apkFile, id);
+        final ByteBuffer buf = readBlock(apkFile, id);
         return buf == null ? null : V2Utils.getBytes(buf);
     }
 
-    public static ByteBuffer readBlockBuffer(final File apkFile, final int id)
+    public static ByteBuffer readBlock(final File apkFile, final int id)
             throws IOException {
         final Map<Integer, ByteBuffer> blocks = readAllBlocks(apkFile);
         if (blocks == null) {

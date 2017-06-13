@@ -1,19 +1,14 @@
 package com.mcxiaoke.packer.common;
 
-import com.mcxiaoke.packer.support.walle.PayloadReader;
-import com.mcxiaoke.packer.support.walle.PayloadWriter;
+import com.mcxiaoke.packer.support.walle.Support;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.util.Arrays;
-import java.util.Date;
 import java.util.HashMap;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
 
@@ -27,8 +22,6 @@ public class PackerCommon {
     public static final String SEP_LINE = "∙";//\u2219
     // charset utf8
     public static final String UTF8 = "UTF-8";
-    // date string format
-    private static final String DATE_FORMAT = "yyyy/MM/dd HH:mm:ss Z";
     // plugin block magic
     public static final String BLOCK_MAGIC = "Packer Ng Sig V2"; // magic
 
@@ -125,13 +118,13 @@ public class PackerCommon {
                                  int blockId)
             throws IOException {
         ByteBuffer buffer = wrapPayload(payload);
-        PayloadWriter.writeBlock(file, blockId, buffer);
+        Support.writeBlock(file, blockId, buffer);
     }
 
     // package visible for test
     static byte[] readPayloadImpl(File file, int blockId)
             throws IOException {
-        ByteBuffer buffer = PayloadReader.readBlockBuffer(file, blockId);
+        ByteBuffer buffer = Support.readBlock(file, blockId);
         if (buffer == null) {
             return null;
         }
@@ -202,9 +195,4 @@ public class PackerCommon {
         return map;
     }
 
-    // package visible for test
-    static String getDateString() {
-        final DateFormat df = new SimpleDateFormat(DATE_FORMAT, Locale.US);
-        return df.format(new Date());
-    }
 }
