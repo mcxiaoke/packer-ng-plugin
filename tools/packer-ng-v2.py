@@ -13,13 +13,14 @@ import logging
 import time
 
 logging.basicConfig(format='%(levelname)s:%(lineno)s: %(funcName)s() %(message)s',
-                    level=logging.ERROR)
+                    level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
 AUTHOR = 'mcxiaoke'
 VERSION = '2.0.0'
 try:
-    props = dict(line.strip().split('=') for line in open('../gradle.properties') if line.strip())
+    props = dict(line.strip().split('=') for line in
+                 open('../gradle.properties') if line.strip())
     VERSION = props.get('VERSION_NAME')
 except Exception as e:
     VERSION = '2.0.0'
@@ -89,31 +90,31 @@ class ByteDecoder(object):
         self.sign = '<' if littleEndian else '>'
 
     def getShort(self, offset=0):
-        return struct.unpack('{}h'.format(self.sign), self.buf[offset:offset+2])[0]
+        return struct.unpack('{}h'.format(self.sign), self.buf[offset:offset + 2])[0]
 
     def getUShort(self, offset=0):
-        return struct.unpack('{}H'.format(self.sign), self.buf[offset:offset+2])[0]
+        return struct.unpack('{}H'.format(self.sign), self.buf[offset:offset + 2])[0]
 
     def getInt(self, offset=0):
-        return struct.unpack('{}i'.format(self.sign), self.buf[offset:offset+4])[0]
+        return struct.unpack('{}i'.format(self.sign), self.buf[offset:offset + 4])[0]
 
     def getUInt(self, offset=0):
-        return struct.unpack('{}I'.format(self.sign), self.buf[offset:offset+4])[0]
+        return struct.unpack('{}I'.format(self.sign), self.buf[offset:offset + 4])[0]
 
     def getLong(self, offset=0):
-        return struct.unpack('{}q'.format(self.sign), self.buf[offset:offset+8])[0]
+        return struct.unpack('{}q'.format(self.sign), self.buf[offset:offset + 8])[0]
 
     def getULong(self, offset=0):
-        return struct.unpack('{}Q'.format(self.sign), self.buf[offset:offset+8])[0]
+        return struct.unpack('{}Q'.format(self.sign), self.buf[offset:offset + 8])[0]
 
     def getFloat(self, offset=0):
-        return struct.unpack('{}f'.format(self.sign), self.buf[offset:offset+4])[0]
+        return struct.unpack('{}f'.format(self.sign), self.buf[offset:offset + 4])[0]
 
     def getDouble(self, offset=0):
-        return struct.unpack('{}d'.format(self.sign), self.buf[offset:offset+8])[0]
+        return struct.unpack('{}d'.format(self.sign), self.buf[offset:offset + 8])[0]
 
     def getChars(self, offset=0, size=16):
-        return struct.unpack('{}{}'.format(self.sign, 's'*size), self.buf[offset:offset+size])
+        return struct.unpack('{}{}'.format(self.sign, 's' * size), self.buf[offset:offset + size])
 
 #####################################################################
 
@@ -189,7 +190,7 @@ def findBlockByPluginMagic(apk):
 
     end = start + magicLen + 4 + payloadLen + 4
     logger.debug('magic end offset=%s', end)
-    logger.debug('magic payloadLen2=%s', d.getInt(end-4))
+    logger.debug('magic payloadLen2=%s', d.getInt(end - 4))
 
     block = mm[start:end]
     mm.close()
@@ -222,7 +223,7 @@ def findBySigningMagic(apk):
     logger.debug('magic string=%s', ''.join(d.getChars(index, 16)))
     bEnd = index + 16
     logger.debug('block end=%s', bEnd)
-    bSize = d.getLong(bEnd-24)+8
+    bSize = d.getLong(bEnd - 24) + 8
     logger.debug('block size=%s', bSize)
     bStart = bEnd - bSize
     logger.debug('block start=%s', bStart)
@@ -253,7 +254,7 @@ def findByZipSections(apk):
                 "APK too small for APK Signing Block. ZIP Central Directory offset: "
                 + centralDirStartOffset)
 
-        fStart = centralDirStartOffset-24
+        fStart = centralDirStartOffset - 24
         mStart = centralDirStartOffset - 16
         fEnd = centralDirStartOffset
         logger.debug('fStart:%s', fStart)
@@ -294,7 +295,7 @@ def findByZipSections(apk):
             raise SignatureNotFoundException(
                 "APK Signing Block offset out of range: " + apkSigBlockOffset)
 
-        apkSigBlock = mm[apkSigBlockOffset:apkSigBlockOffset+8]
+        apkSigBlock = mm[apkSigBlockOffset:apkSigBlockOffset + 8]
         # logger.debug('apkSigBlock:%s', to_hex(apkSigBlock))
         apkSigBlockSizeInHeader = ByteDecoder(apkSigBlock).getLong(0)
         logger.debug('apkSigBlockSizeInHeader:%s', apkSigBlockSizeInHeader)
@@ -304,7 +305,7 @@ def findByZipSections(apk):
                 "APK Signing Block sizes in header and footer do not match: "
                 + apkSigBlockSizeInHeader + " vs " + apkSigBlockSizeInFooter)
 
-        block = mm[apkSigBlockOffset:apkSigBlockOffset+totalSize]
+        block = mm[apkSigBlockOffset:apkSigBlockOffset + totalSize]
         mm.close()
         return block
 
@@ -326,7 +327,7 @@ def parseApkSigningBlock(block, blockId):
     bd0 = ByteDecoder(block)
     blockSizeInHeader = bd0.getULong(0)
     logger.debug('blockSizeInHeader:%s', blockSizeInHeader)
-    blockSizeInFooter = bd0.getULong(totalSize-24)
+    blockSizeInFooter = bd0.getULong(totalSize - 24)
     logger.debug('blockSizeInFooter:%s', blockSizeInFooter)
     # slice only payload
     block = block[8:-24]
@@ -362,13 +363,13 @@ def parseApkSigningBlock(block, blockId):
         position += 4
         if sid == APK_SIGNATURE_SCHEME_V2_BLOCK_ID:
             logger.debug('found signingBlock')
-            signingBlock = block[position:position+lenLong-4]
+            signingBlock = block[position:position + lenLong - 4]
             signingBlockSize = len(signingBlock)
             logger.debug('signingBlockSize:%s', signingBlockSize)
             # logger.debug('signingBlockHex:%s', to_hex(signingBlock[0:32]))
         elif sid == blockId:
             logger.debug('found pluginBlock')
-            pluginBlock = block[position:position+lenLong-4]
+            pluginBlock = block[position:position + lenLong - 4]
             pluginBlockSize = len(pluginBlock)
             logger.debug('pluginBlockSize:%s', pluginBlockSize)
             logger.debug('pluginBlock:%s', pluginBlock)
@@ -402,7 +403,8 @@ def findZipSections(mm):
             "ZIP Central Directory overlaps with End of Central Directory"
             + ". CD end: " + cdEndOffset
             + ", EoCD start: " + eocdOffset)
-    cdRecordCount = ed.getUShort(ZIP_EOCD_CENTRAL_DIR_TOTAL_RECORD_COUNT_OFFSET)
+    cdRecordCount = ed.getUShort(
+        ZIP_EOCD_CENTRAL_DIR_TOTAL_RECORD_COUNT_OFFSET)
     logger.debug('cdRecordCount:%s', cdRecordCount)
     sections = ZipSections(cdStartOffset,
                            cdSizeBytes,
@@ -425,21 +427,23 @@ def findEocdRecord(mm):
     logger.debug('maxEocdSize:%s', maxEocdSize)
     bufOffsetInFile = fileSize - maxEocdSize
     logger.debug('bufOffsetInFile:%s', bufOffsetInFile)
-    buf = mm[bufOffsetInFile:bufOffsetInFile+maxEocdSize]
+    buf = mm[bufOffsetInFile:bufOffsetInFile + maxEocdSize]
     # logger.debug('buf:%s',to_hex(buf))
     eocdOffsetInBuf = findEocdStartOffset(buf)
     logger.debug('eocdOffsetInBuf:%s', eocdOffsetInBuf)
     if eocdOffsetInBuf != -1:
-        return bufOffsetInFile+eocdOffsetInBuf, buf[eocdOffsetInBuf:]
+        return bufOffsetInFile + eocdOffsetInBuf, buf[eocdOffsetInBuf:]
 
 
 def findEocdStartOffset(buf):
     archiveSize = len(buf)
     logger.debug('archiveSize:%s', archiveSize)
-    maxCommentLength = min(archiveSize - ZIP_EOCD_REC_MIN_SIZE, UINT16_MAX_VALUE)
+    maxCommentLength = min(
+        archiveSize - ZIP_EOCD_REC_MIN_SIZE, UINT16_MAX_VALUE)
     logger.debug('maxCommentLength:%s', maxCommentLength)
     eocdWithEmptyCommentStartPosition = archiveSize - ZIP_EOCD_REC_MIN_SIZE
-    logger.debug('eocdWithEmptyCommentStartPosition:%s', eocdWithEmptyCommentStartPosition)
+    logger.debug('eocdWithEmptyCommentStartPosition:%s',
+                 eocdWithEmptyCommentStartPosition)
     expectedCommentLength = 0
     eocdOffsetInBuf = -1
     while expectedCommentLength <= maxCommentLength:
@@ -450,7 +454,8 @@ def findEocdStartOffset(buf):
         seg = ByteDecoder(buf).getInt(eocdStartPos)
         logger.debug('seg:%s', hex(seg))
         if seg == ZIP_EOCD_REC_SIG:
-            actualCommentLength = ByteDecoder(buf).getUShort(eocdStartPos + ZIP_EOCD_COMMENT_LENGTH_FIELD_OFFSET)
+            actualCommentLength = ByteDecoder(buf).getUShort(
+                eocdStartPos + ZIP_EOCD_COMMENT_LENGTH_FIELD_OFFSET)
             logger.debug('actualCommentLength:%s', actualCommentLength)
             if actualCommentLength == expectedCommentLength:
                 logger.debug('found eocdStartPos:%s', eocdStartPos)
@@ -485,7 +490,7 @@ def getChannel(apk):
     try:
         zp = zipfile.ZipFile(apk)
         zp.testzip()
-        content = findBlockByZipSections(apk)
+        content = findBlockByPluginMagic(apk)
         values = parseValues(content)
         if values:
             channel = values.get(PLUGIN_CHANNEL_KEY)
@@ -521,6 +526,7 @@ def main():
     channel = getChannel(apk)
     print('Channel: \t{}'.format(channel))
     showInfo(apk)
+
 
 if __name__ == '__main__':
     main()
