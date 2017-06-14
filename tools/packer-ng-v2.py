@@ -13,7 +13,7 @@ import logging
 import time
 
 logging.basicConfig(format='%(levelname)s:%(lineno)s: %(funcName)s() %(message)s',
-                    level=logging.DEBUG)
+                    level=logging.ERROR)
 logger = logging.getLogger(__name__)
 
 AUTHOR = 'mcxiaoke'
