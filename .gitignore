@@ -9,6 +9,8 @@ channels/
 *.iml
 *.apk
 *.pyc
+*.d
+*.o
 *.class
 .DS_Store
 a.out
