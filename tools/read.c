@@ -17,11 +17,11 @@
  * https://en.wikipedia.org/wiki/Mmap
  */
 
-static const size_t block_size = 0x100000;
+static const off_t block_size = 0x100000;
 static const char *sep_kv = "∘";
 static const char *sep_line = "∙";
 static const char *magic = "Packer Ng Sig V2";
-static const char *key = "CHANNEL";
+// static const char *key = "CHANNEL";
 
 #define handle_error(msg)                                                      \
   do {                                                                         \
@@ -31,7 +31,7 @@ static const char *key = "CHANNEL";
 
 #define handle_not_found()                                                     \
   do {                                                                         \
-    printf("\n");                                                              \
+    printf("Channel not found.\n");                                            \
     exit(EXIT_FAILURE);                                                        \
   } while (0)
 
@@ -60,8 +60,7 @@ void find_overlap(const char *word, size_t wlen, int *ptr) {
 * finds the position of the pattern in the given target string
 * target - str, patter - word
 */
-int32_t kmp_search(const char *str, size_t slen, const char *word,
-                   size_t wlen) {
+int32_t kmp_search(const char *str, int slen, const char *word, int wlen) {
   //   printf("kmp_search() slen=%zu, wlen=%zu\n", slen, wlen);
   int *ptr = (int *)calloc(1, sizeof(int) * (strlen(magic)));
   find_overlap(magic, strlen(magic), ptr);
@@ -93,10 +92,10 @@ int main(int argc, char *argv[]) {
   struct stat sb;
   off_t offset, pa_offset;
   size_t length;
-  ssize_t s;
 
   if (argc < 2) {
-    fprintf(stderr, "%s file\n", argv[0]);
+    fprintf(stderr, "Usage: %s app.apk - show channel of provided apk\n",
+            argv[0]);
     exit(EXIT_FAILURE);
   }
   fd = open(argv[1], O_RDONLY);
@@ -148,7 +147,7 @@ int main(int argc, char *argv[]) {
   // printf("n1=%zu, n2=%zu, clen=%zu\n", n1, n2, clen);
   char *channel = malloc(clen);
   strncpy(channel, &payload[n1], clen);
-  printf("%s\n", channel);
+  printf("Channel: %s\n", channel);
   free(payload);
   free(channel);
   munmap(addr, pa_length);
