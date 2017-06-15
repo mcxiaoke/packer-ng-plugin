@@ -2,17 +2,15 @@ PackerNg V2
 ========
 极速渠道打包工具
 
+- **v2.0.0 - 2017.06.30** - 全新发布，支持V2签名模式，包含多项优化
+
 ## 特别提示
 
 V2版只支持`APK Signature Scheme v2`，要求在 `signingConfigs` 里 `v2SigningEnabled true` 启用新版签名模式，并使用`2.2.0`以上版本的Gradle插件，如果你需要使用旧版本，看这里 [v1.0.9](https://github.com/mcxiaoke/packer-ng-plugin/tree/v1.0.9)。
 
-## 最新版本
-
-- **v2.0.0 - 2017.06.30** - 全新发布，支持V2签名模式，包含多项优化
-
 ## 项目介绍
 
-[**packer-ng-plugin**](https://github.com/mcxiaoke/packer-ng-plugin) 是下一代Android渠道打包工具Gradle插件，支持极速打包，**100**个渠道包只需要**10**秒钟，速度是 [**gradle-packer-plugin**](https://github.com/mcxiaoke/gradle-packer-plugin) 的**300**倍以上，可方便的用于CI系统集成。
+[**packer-ng-plugin**](https://github.com/mcxiaoke/packer-ng-plugin) 是下一代Android渠道打包工具Gradle插件，支持极速打包，**100**个渠道包只需要**10**秒钟，速度是 [**gradle-packer-plugin**](https://github.com/mcxiaoke/gradle-packer-plugin) 的**300**倍以上，可方便的用于CI系统集成，同时提供命令行打包脚本，渠道读取提供Python和C语言的实现。
 
 ## 使用指南
 
@@ -140,32 +138,39 @@ packer-ng generate --channels=ch1,ch2,ch3 --output=build/archives app.apk
 packer-ng generate --channels=@channels.txt --output=build/archives app.apk
 ```
 
-* 验证渠道包的渠道信息：
+* 验证渠道信息：
 
 ```shell
 packer-ng verify app.apk
 ```
 
-* 其它参数可以运行命令查看帮助
+* 运行命令查看帮助
 
 ```shell
 java -jar tools/packer-ng-2.0.0.jar --help
 ```
 
-* 还可以使用Python脚本读取渠道：
+* Python脚本读取渠道：
 
 ```shell
 python tools/packer-ng-v2.py app.apk
 ```
 
+* C程序读取渠道：
+
+```shell
+cd tools
+make
+make install
+packer app.apk
+```
+
 ### 代码中读取渠道
 
-`PackerNg.getMarket(Context)`内部缓存了结果，不会重复解析
-
 ```java
-// 如果没有找到渠道信息，默认返回的是""
+// 如果没有找到渠道信息或遇到错误，默认返回的是""
 // com.mcxiaoke.packer.helper.PackerNg
-String market = PackerNg.getMarket(Context)
+String channel = PackerNg.getChannel(Context)
 ```
 
 ### 文件名格式模版
@@ -186,6 +191,13 @@ String market = PackerNg.getMarket(Context)
   * *versionCode* - `versionCode` (内部版本号)
   * *buildTime* - `buildTime` (编译构建日期时间) 
   * *fileSHA1* - `fileSHA1 ` (最终APK文件的SHA1哈希值)
+
+------
+
+## 其它说明
+
+渠道读取C语言实现使用 [GenericMakefile](https://github.com/mbcrawfo/GenericMakefile) 构建，[APK Signing Block](https://source.android.com/security/apksigning/v2) 读取和写入Java实现修改自 [apksig](https://android.googlesource.com/platform/tools/apksig/+/master) 和 [walle](https://github.com/Meituan-Dianping/walle/tree/master/payload_writer) ，特此致谢。
+
 
 ------
 
