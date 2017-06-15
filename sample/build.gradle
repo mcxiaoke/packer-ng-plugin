@@ -1,5 +1,5 @@
 buildscript {
-    ext.packer_version = '1.9.2-SNAPSHOT'
+    ext.packer_version = '1.9.2'
 
     repositories {
         maven { url '/tmp/repo/' }
@@ -8,7 +8,7 @@ buildscript {
     }
 
     dependencies {
-        classpath "com.android.tools.build:gradle:2.2.2"
+        classpath "com.android.tools.build:gradle:2.2.3"
         classpath "com.mcxiaoke.packer-ng:plugin:$packer_version"
     }
 }
@@ -33,11 +33,11 @@ packer {
     archiveOutput = new File(project.rootProject.buildDir, "apks")
 //    channelList = ['*Douban*', 'Google/', '中文/@#市场', 'Hello@World',
 //                   'GradleTest', '20070601!@#$%^&*(){}:"<>?-=[];\',./']
-//    channelFile = new File(project.rootDir, "markets.txt")
+//    channelFile = new File(project.rootDir, "channels.txt")
     channelMap = [
-            "Cat" : project.rootProject.file("channels/cat.txt"),
-            "Dog" : project.rootProject.file("channels/dog.txt"),
-            "Fish": project.rootProject.file("channels/channels.txt")
+            "free" : project.rootProject.file("channels/free.txt"),
+            "paid" : project.rootProject.file("channels/paid.txt"),
+            "other": project.rootProject.file("channels/channels.txt")
     ]
 }
 //packer-end
@@ -97,11 +97,11 @@ android {
     }
 
     productFlavors {
-        Dog {}
+        free {}
 
-        Cat {}
+        paid {}
 
-        Fish {}
+        other {}
     }
 
     lintOptions {

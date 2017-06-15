@@ -1,0 +1,16 @@
+Google_Market#Google电子市场
+Hiapk_Market#安卓市场
+Yingyonghui_Market#应用汇市场
+ali_market#阿里云商店
+Xiaomi_Market#小米市场
+Yingyongbao_Market#腾讯应用宝市场
+Samsung_Market#三星市场
+OPPO_Market#OPPO市场
+Huawei_Market#华为市场
+amazon_market#亚马逊市场
+Meizu_Market#魅族市场
+3G_market#3G安卓市场
+WanDouJia_Parter#豌豆荚
+Baidu_Market#百度应用中心
+360_Market#360手机助手
+Taobao_Market#淘宝应用市场
