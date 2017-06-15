@@ -10,6 +10,7 @@
 #include <string.h>
 #include <sys/mman.h>
 #include <sys/stat.h>
+#include <time.h>
 #include <unistd.h>
 
 /*
@@ -17,21 +18,23 @@
  * https://en.wikipedia.org/wiki/Mmap
  */
 
+static const char *apk_ext = ".apk";
 static const off_t block_size = 0x100000;
 static const char *sep_kv = "∘";
 static const char *sep_line = "∙";
 static const char *magic = "Packer Ng Sig V2";
 // static const char *key = "CHANNEL";
+// static const char *version = "v2.0.0";
 
 #define handle_error(msg)                                                      \
   do {                                                                         \
-    perror(msg);                                                               \
+    printf(msg);                                                               \
     exit(EXIT_FAILURE);                                                        \
   } while (0)
 
 #define handle_not_found()                                                     \
   do {                                                                         \
-    printf("Channel not found.\n");                                            \
+    printf("Channel not found\n");                                             \
     exit(EXIT_FAILURE);                                                        \
   } while (0)
 
@@ -86,6 +89,24 @@ int32_t kmp_search(const char *str, int slen, const char *word, int wlen) {
   return -1;
 }
 
+int str_has_suffix(const char *str, const char *suf) {
+  const char *a = str + strlen(str);
+  const char *b = suf + strlen(suf);
+  while (a != str && b != suf) {
+    if (*--a != *--b)
+      break;
+  }
+  return b == suf && *a == *b;
+}
+
+// ensure write '\0' at end
+// http://en.cppreference.com/w/c/string/byte/strncpy
+char *strncpy_2(char *dest, const char *src, size_t count) {
+  char *ret = strncpy(dest, src, count);
+  dest[count] = '\0';
+  return ret;
+}
+
 int main(int argc, char *argv[]) {
   char *addr;
   int fd;
@@ -94,16 +115,25 @@ int main(int argc, char *argv[]) {
   size_t length;
 
   if (argc < 2) {
-    fprintf(stderr, "Usage: %s app.apk - show channel of provided apk\n",
-            argv[0]);
+    printf("Usage: %s app.apk    (show apk channel)\n", argv[0]);
     exit(EXIT_FAILURE);
   }
-  fd = open(argv[1], O_RDONLY);
-  if (fd == -1)
-    handle_error("open");
-
-  if (fstat(fd, &sb) == -1) /* To obtain file siclearze */
-    handle_error("fstat");
+  char *fn = argv[1];
+  // printf("file name: %s\n", fn);
+  if (!str_has_suffix(fn, apk_ext)) {
+    handle_error("Not apk file\n");
+  }
+  fd = open(fn, O_RDONLY);
+  if (fd == -1) {
+    handle_error("No such file\n");
+  }
+  if (fstat(fd, &sb) == -1) {
+    handle_error("Can not read");
+  }
+  // printf("file mode=%d\n", sb.st_mode);
+  if (!S_ISREG(sb.st_mode)) {
+    handle_error("Not regular file\n");
+  }
   if (sb.st_size < block_size) {
     offset = 0;
   } else {
@@ -117,8 +147,9 @@ int main(int argc, char *argv[]) {
   // printf("mmap real size=%zu\n", pa_length);
   // printf("mmap real offset=%lld\n", pa_offset);
   addr = mmap(NULL, pa_length, PROT_READ, MAP_PRIVATE, fd, pa_offset);
-  if (addr == MAP_FAILED)
-    handle_error("mmap");
+  if (addr == MAP_FAILED) {
+    handle_error("Can not mmap\n");
+  }
 
   int32_t index = kmp_search(addr, pa_length, magic, strlen(magic));
   if (index == -1) {
@@ -133,25 +164,28 @@ int main(int argc, char *argv[]) {
   if (payload_len < 0 || payload_len > block_size) {
     handle_not_found();
   }
-  char *payload = malloc(payload_len + 1);
-  strncpy(payload, &addr[li + 4], payload_len);
+  // char *payload = malloc(payload_len + 1);
+  char payload[payload_len + 1];
+  strncpy_2(payload, &addr[li + 4], payload_len);
+  // payload[payload_len] = '\0';
   //   printf("payload=%s\n", payload);
-  char *pos1 = strstr(payload, sep_kv);
-  char *pos2 = strstr(payload, sep_line);
-  if (pos1 == NULL || pos2 == NULL) {
+  char *pos_start = strstr(payload, sep_kv);
+  char *pos_end = strstr(payload, sep_line);
+  if (pos_start == NULL || pos_end == NULL) {
     handle_not_found();
   }
-  size_t n1 = pos1 - payload + strlen(sep_kv);
-  size_t n2 = pos2 - payload;
-  size_t clen = n2 - n1;
-  // printf("n1=%zu, n2=%zu, clen=%zu\n", n1, n2, clen);
-  char *channel = malloc(clen);
-  strncpy(channel, &payload[n1], clen);
-  printf("Channel: %s\n", channel);
-  free(payload);
-  free(channel);
+  size_t c_start = pos_start - payload + strlen(sep_kv);
+  size_t c_end = pos_end - payload;
+  size_t c_len = c_end - c_start;
+  // printf("c_start=%zu, c_end=%zu, clen=%zu\n", c_start, c_end, clen);
+  // char *channel = malloc(clen + 1);
+  char channel[c_len + 1];
+  strncpy_2(channel, &payload[c_start], c_len);
+  // channel[c_len] = '\0';
+  printf("%s\n", channel);
+  // free(payload);
+  // free(channel);
   munmap(addr, pa_length);
   close(fd);
-
   exit(EXIT_SUCCESS);
 }
