@@ -4,7 +4,9 @@
  * @Last Modified by: mcxiaoke
  * @Last Modified time: 2017-06-13 18:23:41
  */
+//#include "config.h"
 #include <fcntl.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -115,6 +117,7 @@ int main(int argc, char *argv[]) {
   size_t length;
 
   if (argc < 2) {
+    // printf("Version: %d.%d.%d\n", VER_MAJOR, VER_MINOR, VER_PATCH);
     printf("Usage: %s app.apk    (show apk channel)\n", argv[0]);
     exit(EXIT_FAILURE);
   }
