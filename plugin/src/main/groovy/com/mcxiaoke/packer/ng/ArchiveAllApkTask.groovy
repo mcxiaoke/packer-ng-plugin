@@ -67,13 +67,13 @@ class ArchiveAllApkTask extends DefaultTask {
         }
 
         // ensure APK Signature Scheme v2 disabled.
-        if (signingConfig.hasProperty("v2SigningEnabled") &&
-                signingConfig.v2SigningEnabled == true) {
-            throw new GradleException("Please add 'v2SigningEnabled false' " +
-                    "to signingConfig to disable APK Signature Scheme v2, " +
-                    "as it's not compatible with packer-ng plugin, more details at " +
-                    "https://github.com/mcxiaoke/packer-ng-plugin/blob/master/compatibility.md.")
-        }
+//        if (signingConfig.hasProperty("v2SigningEnabled") &&
+//                signingConfig.v2SigningEnabled == true) {
+//            throw new GradleException("Please add 'v2SigningEnabled false' " +
+//                    "to signingConfig to disable APK Signature Scheme v2, " +
+//                    "as it's not compatible with packer-ng plugin, more details at " +
+//                    "https://github.com/mcxiaoke/packer-ng-plugin/blob/master/compatibility.md.")
+//        }
     }
 
     void checkApkSignature(File file) throws GradleException {
@@ -89,6 +89,10 @@ class ArchiveAllApkTask extends DefaultTask {
 
     @TaskAction
     void modify() {
+        Properties properties = new Properties()
+        properties.load(new FileInputStream(new File(project.rootDir, "local.properties")))
+        String sdkDir = properties.getProperty("sdk.dir")
+        String signfile = new File(sdkDir, "build-tools/${project.android.buildToolsVersion}/lib/apksigner.jar")
         logger.info("====================PACKER APK TASK BEGIN====================")
         checkMarkets()
         checkSigningConfig()
@@ -120,6 +124,15 @@ class ArchiveAllApkTask extends DefaultTask {
                 if (PackerNg.Helper.verifyMarket(tempFile, market)) {
                     println(":${project.name}:${name} Generating apk for ${market}")
                     tempFile.renameTo(finalFile)
+                    def signingConfig = getSigningConfig()
+                    def keyAlias = signingConfig.keyAlias
+                    def keyPassword = signingConfig.keyPassword
+                    def storePassword = signingConfig.storePassword
+                    def storeFile = signingConfig.storeFile
+                    if (signingConfig.v2SigningEnabled && new File(signfile).exists()) {
+                        logger.info("java -jar ${signfile} sign --ks ${project.projectDir}/android.keystore --ks-key-alias android --ks-pass pass:android --key-pass pass:android --out ${finalFile} ${finalFile}")
+                        Runtime.getRuntime().exec("java -jar ${signfile} sign --ks ${storeFile} --ks-key-alias ${keyAlias} --ks-pass pass:${storePassword} --key-pass pass:${keyPassword} --out ${finalFile} ${finalFile}")
+                    }
                 } else {
                     throw new GradleException(":${name} ${market} apk verify failed.")
                 }
