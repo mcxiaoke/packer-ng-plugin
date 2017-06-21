@@ -89,10 +89,6 @@ class ArchiveAllApkTask extends DefaultTask {
 
     @TaskAction
     void modify() {
-        Properties properties = new Properties()
-        properties.load(new FileInputStream(new File(project.rootDir, "local.properties")))
-        String sdkDir = properties.getProperty("sdk.dir")
-        String signfile = new File(sdkDir, "build-tools/${project.android.buildToolsVersion}/lib/apksigner.jar")
         logger.info("====================PACKER APK TASK BEGIN====================")
         checkMarkets()
         checkSigningConfig()
@@ -114,11 +110,20 @@ class ArchiveAllApkTask extends DefaultTask {
             }
         }
         logger.info(":${project.name}:${name} markets:[${theMarkets.join(', ')}]")
+
+        //获取sdk路径，以及签名工具的文件地址
+        Properties properties = new Properties()
+        properties.load(new FileInputStream(new File(project.rootDir, "local.properties")))
+        String sdkDir = properties.getProperty("sdk.dir")
+        String signfile = new File(sdkDir, "build-tools/${project.android.buildToolsVersion}/lib/apksigner.jar")
+
+        //获取签名信息
         def signingConfig = getSigningConfig()
         def keyAlias = signingConfig.keyAlias
         def keyPassword = signingConfig.keyPassword
         def storePassword = signingConfig.storePassword
         def storeFile = signingConfig.storeFile
+
         for (String market : theMarkets) {
             File tempFile = new File(outputDir, market + ".tmp")
             copyTo(originalFile, tempFile)
@@ -129,6 +134,7 @@ class ArchiveAllApkTask extends DefaultTask {
                 if (PackerNg.Helper.verifyMarket(tempFile, market)) {
                     println(":${project.name}:${name} Generating apk for ${market}")
                     tempFile.renameTo(finalFile)
+                    //如果没有关闭v2签名，并且apksigner.jar签名工具存在，进行v2签名
                     if (signingConfig.v2SigningEnabled && new File(signfile).exists()) {
                         logger.info("java -jar ${signfile} sign --ks ${project.projectDir}/android.keystore --ks-key-alias android --ks-pass pass:android --key-pass pass:android --out ${finalFile} ${finalFile}")
                         Runtime.getRuntime().exec("java -jar ${signfile} sign --ks ${storeFile} --ks-key-alias ${keyAlias} --ks-pass pass:${storePassword} --key-pass pass:${keyPassword} --out ${finalFile} ${finalFile}")
