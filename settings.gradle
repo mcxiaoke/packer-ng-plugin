@@ -1,3 +1,5 @@
+include ':common'
 include ':plugin'
+include ':cli'
 include ':helper'
-include ':sample'
+include ':app'

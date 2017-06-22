@@ -1,0 +1,9 @@
+ext {
+    compileSdkVersion = 25
+    buildToolsVersion = "25.0.3"
+    minSdkVersion = 14
+    targetSdkVersion = 22
+}
+
+group = GROUP
+version = VERSION_NAME

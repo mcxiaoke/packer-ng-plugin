@@ -3,6 +3,7 @@ buildscript {
         jcenter()
     }
     dependencies {
+        classpath "com.android.tools.build:gradle:2.2.2"
     }
 }
 
@@ -10,25 +11,33 @@ repositories {
     jcenter()
 }
 
-apply plugin: 'java'
-
-sourceCompatibility = 1.6
-targetCompatibility = 1.6
+apply plugin: 'com.android.library'
 
 dependencies {
+    compile project(":common")
 }
 
-task fatJar(type: Jar) {
-    manifest {
-        attributes 'Implementation-Title': 'PackerNg Executable Jar',
-                'Implementation-Version': VERSION_NAME,
-                'Main-Class': 'com.mcxiaoke.packer.helper.PackerNg',
-                'Description': 'This is PackerNg executable Jar.'
+android {
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_7
+        targetCompatibility JavaVersion.VERSION_1_7
+        encoding "UTF-8"
     }
-    baseName = 'PackerNg'
-    from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
-    with jar
-}
 
-// apply from: '../jar.gradle'
+    compileSdkVersion project.compileSdkVersion
+    buildToolsVersion project.buildToolsVersion
+
+    defaultConfig {
+        versionName project.VERSION_NAME
+        versionCode Integer.parseInt(project.VERSION_CODE)
+        minSdkVersion project.minSdkVersion
+        targetSdkVersion project.targetSdkVersion
+    }
+
+    lintOptions {
+        abortOnError false
+        htmlReport true
+    }
+}
 apply from: '../gradle-mvn-push.gradle'

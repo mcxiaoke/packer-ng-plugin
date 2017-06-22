@@ -1,0 +1,4 @@
+Dog1
+Dog2#d1
+Dog3#d5
+金毛# it is a dog

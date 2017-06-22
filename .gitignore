@@ -3,8 +3,16 @@
 build/
 apks/
 repo/
+dist/
+tmp/
 *.iml
 *.apk
 *.pyc
+*.d
+*.o
+*.class
 .DS_Store
-packer.properties
+a.out
+.classpath
+.project
+.settings/

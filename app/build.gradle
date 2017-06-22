@@ -1,0 +1,117 @@
+buildscript {
+    ext.packer_version = '2.0.0-SNAPSHOT'
+
+    repositories {
+        maven { url '/tmp/repo/' }
+        jcenter()
+        maven { url 'https://oss.sonatype.org/content/repositories/snapshots' }
+    }
+
+    dependencies {
+        classpath "com.android.tools.build:gradle:2.2.3"
+        classpath "com.mcxiaoke.packer-ng:plugin:$packer_version"
+    }
+}
+
+repositories {
+    maven { url '/tmp/repo/' }
+    jcenter()
+    maven { url 'https://oss.sonatype.org/content/repositories/snapshots' }
+}
+
+apply plugin: 'com.android.application'
+apply plugin: 'packer'
+
+// https://code.google.com/p/android/issues/detail?id=171089
+dependencies {
+    compile "com.mcxiaoke.packer-ng:helper:$packer_version"
+}
+
+//packer-begin
+packer {
+    archiveNameFormat = '${appPkg}-${buildType}-v${versionName}-${channel}'
+    archiveOutput = new File(project.rootProject.buildDir, "apks")
+//    channelList = ['*Douban*', 'Google/', '中文/@#市场', 'Hello@World',
+//                   'GradleTest', '20070601!@#$%^&*(){}:"<>?-=[];\',./']
+//    channelFile = new File(project.rootDir, "channels.txt")
+    channelMap = [
+            "free" : project.rootProject.file("channels/free.txt"),
+            "paid" : project.rootProject.file("channels/paid.txt"),
+            "other": project.rootProject.file("channels/channels.txt")
+    ]
+}
+//packer-end
+
+android {
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_7
+        targetCompatibility JavaVersion.VERSION_1_7
+        encoding "UTF-8"
+    }
+
+    compileSdkVersion project.compileSdkVersion
+    buildToolsVersion project.buildToolsVersion
+
+    defaultConfig {
+        versionName project.VERSION_NAME
+        versionCode Integer.parseInt(project.VERSION_CODE)
+        minSdkVersion project.minSdkVersion
+        targetSdkVersion project.targetSdkVersion
+    }
+
+    signingConfigs {
+        v2 {
+            storeFile file("android.keystore")
+            storePassword "android"
+            keyAlias "android"
+            keyPassword "android"
+            v2SigningEnabled true
+        }
+
+        v1 {
+            storeFile file("android.keystore")
+            storePassword "android"
+            keyAlias "android"
+            keyPassword "android"
+            v2SigningEnabled false
+        }
+
+    }
+
+    buildTypes {
+        release {
+            signingConfig signingConfigs.v2
+            minifyEnabled false
+        }
+
+        beta {
+            signingConfig signingConfigs.v1
+            minifyEnabled false
+        }
+
+        alpha {
+            minifyEnabled false
+        }
+
+    }
+
+    productFlavors {
+        free {}
+
+        paid {}
+
+        other {}
+    }
+
+    lintOptions {
+        abortOnError false
+        htmlReport true
+    }
+
+    packagingOptions {
+        exclude 'LICENSE.txt'
+        exclude 'META-INF/services/javax.annotation.processing.Processor'
+    }
+
+}

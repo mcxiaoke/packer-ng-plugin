@@ -1,0 +1,49 @@
+buildscript {
+    repositories {
+        jcenter()
+    }
+    dependencies {
+    }
+}
+
+repositories {
+    jcenter()
+}
+
+apply plugin: 'java'
+//apply plugin: 'application'
+
+sourceCompatibility = 1.7
+targetCompatibility = 1.7
+
+dependencies {
+    compile project(":common")
+    compile 'com.android.tools.build:apksig:2.3.2'
+}
+
+//mainClassName = 'com.mcxiaoke.packer.cli.Main'
+
+task fatJar(type: Jar) {
+    with jar
+    from {
+        configurations.compile.collect { it.isDirectory() ? it : zipTree(it) }
+    }
+    manifest {
+        attributes('Implementation-Title': 'PackerNg 2 Executable Jar',
+                'Implementation-Version': VERSION_NAME,
+                'Main-Class': 'com.mcxiaoke.packer.cli.Main',
+                'Description': 'This is PackerNg 2 executable Jar.',
+                'Owner': 'packer-ng-plugin@mcxiaoke.com',
+                'Project': 'https://github.com/mcxiaoke/packer-ng-plugin')
+    }
+    baseName = 'packer-ng'
+
+}
+
+task distJar(type: Copy, dependsOn: fatJar) {
+    from fatJar.outputs.files
+    into project.rootProject.file('tools')
+}
+
+// apply from: '../jar.gradle'
+apply from: '../gradle-mvn-push.gradle'

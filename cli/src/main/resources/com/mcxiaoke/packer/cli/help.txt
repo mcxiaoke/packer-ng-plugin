@@ -1,0 +1,32 @@
+
+INTRODUCTION
+
+    PackerNg is a tool for add channel information to Android APK files.
+
+PROJECT
+
+    URL: https://github.com/mcxiaoke/packer-ng-plugin
+    Email: packer-ng-plugin@mcxiaoke.com
+
+USAGE
+
+    packer-ng <command> [options]
+    packer-ng --help [-h]
+    packer-ng generate --channels --output apk
+    packer-ng verify apk
+
+EXAMPLE
+
+generate    Add channel info to the provided APK
+
+    packer-ng generate --channels=ch1,ch2,ch3 --output=archives app.apk
+    packer-ng generate --channels=@file.txt --output=archives app.apk
+
+    --channels=@file.txt - using channels from the provided file.
+    --channels=ch1,ch2,ch3 - using channels from the provided list.
+    --output=archives - output directory for save final APK files.
+    --input=file - base APK file for add channel information.
+
+verify    Check whether signatures and channel of the provided APK is valid.
+
+       packer-ng verify app.apk
