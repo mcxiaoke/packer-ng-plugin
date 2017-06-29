@@ -124,7 +124,16 @@ packer {
     
 ### 脚本打包
 
-除了使用Gradle集成以外，还可以使用项目提供的Java脚本打包，Jar位于本项目的 `tools` 目录，请使用最新版，以下用 `packer-ng` 指代 `java -jar tools/packer-ng-2.0.0.jar`，示例：
+除了使用Gradle集成以外，还可以使用项目提供的Java脚本打包，Jar位于本项目的 `tools` 目录，请使用最新版，以下用 `packer-ng` 指代 `java -jar tools/packer-ng-2.0.0.jar`，下面是几个示例。
+
+* 参数说明：
+
+```
+packer-ng - 表示 java -jar packer-ng-2.0.0.jar
+channels.txt - 替换成你的渠道列表文件的实际路径
+build/archives - 替换成你指定的渠道包的输出路径
+app.apk - 替换成你要打渠道包的APK文件的实际路径
+```
 
 * 直接指定渠道列表打包：
 
