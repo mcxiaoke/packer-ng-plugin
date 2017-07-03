@@ -1,0 +1,8 @@
+title: Packer-ng-plugin
+description: 下一代Android打包工具，1000个渠道包只需要5秒钟
+google_analytics: 
+show_downloads: true
+theme: jekyll-theme-slate
+
+gems:
+  - jekyll-mentions
