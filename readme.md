@@ -195,7 +195,7 @@ String channel = PackerNg.getChannel(Context)
   * *appPkg* - `applicationId` (App包名packageName)
   * *channel* - 打包时指定的渠道名
   * *buildType* - `buildType` (release/debug/beta等)
-  * *flavorName* - `flavorName` (flavor名字，如paid/free等)
+  * *flavor* - `flavor` (flavor名字，如paid/free等)
   * *versionName* - `versionName` (显示用的版本号)
   * *versionCode* - `versionCode` (内部版本号)
   * *buildTime* - `buildTime` (编译构建日期时间) 
