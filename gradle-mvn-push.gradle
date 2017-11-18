@@ -46,18 +46,19 @@ afterEvaluate { project ->
     uploadArchives {
         repositories {
             mavenDeployer {
-                beforeDeployment { MavenDeployment deployment -> signing.signPom(deployment) }
+//                beforeDeployment { MavenDeployment deployment -> signing.signPom(deployment) }
 
                 pom.groupId = GROUP
                 pom.artifactId = POM_ARTIFACT_ID
                 pom.version = VERSION_NAME
 
-                repository(url: getReleaseRepositoryUrl()) {
-                    authentication(userName: getRepositoryUsername(), password: getRepositoryPassword())
-                }
-                snapshotRepository(url: getSnapshotRepositoryUrl()) {
-                    authentication(userName: getRepositoryUsername(), password: getRepositoryPassword())
-                }
+//                repository(url: getReleaseRepositoryUrl()) {
+//                    authentication(userName: getRepositoryUsername(), password: getRepositoryPassword())
+//                }
+//                snapshotRepository(url: getSnapshotRepositoryUrl()) {
+//                    authentication(userName: getRepositoryUsername(), password: getRepositoryPassword())
+//                }
+                repository(url: uri('../tmp/repo/'))
 
                 pom.project {
                     name POM_NAME
