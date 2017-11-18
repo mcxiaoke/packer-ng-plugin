@@ -6,7 +6,7 @@ class GradleExtension {
     Set<String> channelList;
     File channelFile;
     Map<String, File> channelMap;
-
+    Map<String,String[]>flavorMapChannel;
     @Override
     String toString() {
         return "{" +
@@ -15,6 +15,7 @@ class GradleExtension {
                 "\nchannelList=" + channelList +
                 "\nchannelFile=" + channelFile +
                 "\nchannelMap=" + channelMap +
+                "\nflavorMapChannel=" + flavorMapChannel +
                 '}';
     }
 }

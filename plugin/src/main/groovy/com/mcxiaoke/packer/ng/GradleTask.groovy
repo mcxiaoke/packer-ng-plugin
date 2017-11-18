@@ -130,7 +130,15 @@ class GradleTask extends DefaultTask {
             if (f != null && f.isFile()) {
                 channels = Helper.parseChannels(f)
             }
-        } else if (extension.channelFile != null) {
+        } else if (extension.flavorMapChannel!=null){
+            String flavorName = variant.flavorName
+            String[] flavorChannels = extension.flavorMapChannel.get(flavorName)
+            logger.info(":${project.name} extension.flavorMapChannel channels: ${flavorChannels}")
+            if (flavorChannels == null || flavorChannels.length==0) {
+                throw new PluginException("channels is empty")
+            }
+            channels=new HashSet<String>(Arrays.asList(flavorChannels))
+        }else if (extension.channelFile != null) {
             File f = extension.channelFile
             logger.info(":${project.name} extension.channelFile: ${f}")
             if (!f.isFile()) {
