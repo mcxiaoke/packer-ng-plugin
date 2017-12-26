@@ -4,6 +4,27 @@ PackerNg V2
 
 - **v2.0.0 - 2017.06.23** - 全新发布，支持V2签名模式，包含多项优化
 
+<!-- TOC -->
+
+- [特别提示](#特别提示)
+- [项目介绍](#项目介绍)
+- [使用指南](#使用指南)
+    - [修改项目配置](#修改项目配置)
+    - [修改模块配置](#修改模块配置)
+    - [插件配置示例](#插件配置示例)
+    - [渠道列表格式](#渠道列表格式)
+    - [集成打包](#集成打包)
+    - [脚本打包](#脚本打包)
+    - [代码中读取渠道](#代码中读取渠道)
+    - [文件名格式模版](#文件名格式模版)
+- [其它说明](#其它说明)
+- [关于作者](#关于作者)
+    - [联系方式](#联系方式)
+    - [开源项目](#开源项目)
+- [License](#license)
+
+<!-- /TOC -->
+
 ## 特别提示
 
 V2版只支持`APK Signature Scheme v2`，要求在 `signingConfigs` 里 `v2SigningEnabled true` 启用新版签名模式，并使用`2.2.0`以上版本的Gradle插件，如果你需要使用旧版本，看这里 [v1.0.9](https://github.com/mcxiaoke/packer-ng-plugin/tree/v1.0.9)。
@@ -16,10 +37,10 @@ V2版只支持`APK Signature Scheme v2`，要求在 `signingConfigs` 里 `v2Sign
 
 [`Maven Central`](http://search.maven.org/#search%7Cga%7C1%7Ca%3A%22packer-ng%22)
 
-### 修改项目根目录的 `build.gradle`
+### 修改项目配置
 
 ```groovy
-
+// build.gradle
 buildscript {
     dependencies{
         classpath 'com.mcxiaoke.packer-ng:plugin:2.0.0'
@@ -27,11 +48,11 @@ buildscript {
 }  
 ```
 
-### 修改Android模块的 `build.gradle`
+### 修改模块配置
 
 ```groovy
 apply plugin: 'packer' 
-
+// build.gradle
 dependencies {
     compile 'com.mcxiaoke.packer-ng:helper:2.0.0'
 } 
@@ -212,12 +233,12 @@ String channel = PackerNg.getChannel(Context)
 
 ## 关于作者
 
-#### 联系方式
+### 联系方式
 * Blog: <http://blog.mcxiaoke.com>
 * Github: <https://github.com/mcxiaoke>
 * Email: [packer-ng-plugin@mcxiaoke.com](mailto:packer-ng-plugin@mcxiaoke.com)
 
-#### 开源项目
+### 开源项目
 
 * Rx文档中文翻译: <https://github.com/mcxiaoke/RxDocs>
 * MQTT协议中文版: <https://github.com/mcxiaoke/mqtt>

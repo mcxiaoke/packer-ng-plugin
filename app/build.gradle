@@ -1,14 +1,15 @@
 buildscript {
-    ext.packer_version = '2.0.0-SNAPSHOT'
+    ext.packer_version = '2.0.0'
 
     repositories {
         maven { url '/tmp/repo/' }
         jcenter()
+        google()
         maven { url 'https://oss.sonatype.org/content/repositories/snapshots' }
     }
 
     dependencies {
-        classpath "com.android.tools.build:gradle:2.2.3"
+        classpath "com.android.tools.build:gradle:3.0.1"
         classpath "com.mcxiaoke.packer-ng:plugin:$packer_version"
     }
 }
@@ -16,6 +17,7 @@ buildscript {
 repositories {
     maven { url '/tmp/repo/' }
     jcenter()
+    google()
     maven { url 'https://oss.sonatype.org/content/repositories/snapshots' }
 }
 
@@ -24,7 +26,7 @@ apply plugin: 'packer'
 
 // https://code.google.com/p/android/issues/detail?id=171089
 dependencies {
-    compile "com.mcxiaoke.packer-ng:helper:$packer_version"
+    implementation "com.mcxiaoke.packer-ng:helper:$packer_version"
 }
 
 //packer-begin
@@ -33,12 +35,12 @@ packer {
     archiveOutput = new File(project.rootProject.buildDir, "apks")
 //    channelList = ['*Douban*', 'Google/', '中文/@#市场', 'Hello@World',
 //                   'GradleTest', '20070601!@#$%^&*(){}:"<>?-=[];\',./']
-//    channelFile = new File(project.rootDir, "channels.txt")
-    channelMap = [
-            "free" : project.rootProject.file("channels/free.txt"),
-            "paid" : project.rootProject.file("channels/paid.txt"),
-            "other": project.rootProject.file("channels/channels.txt")
-    ]
+    channelFile = project.rootProject.file("channels/channels.txt")
+    // channelMap = [
+    //         "free" : project.rootProject.file("channels/free.txt"),
+    //         "paid" : project.rootProject.file("channels/paid.txt"),
+    //         "other": project.rootProject.file("channels/channels.txt")
+    // ]
 }
 //packer-end
 
@@ -95,6 +97,8 @@ android {
         }
 
     }
+
+    flavorDimensions "tier"
 
     productFlavors {
         free {}
