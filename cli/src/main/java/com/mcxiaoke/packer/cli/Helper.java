@@ -4,17 +4,13 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
-import java.io.FileReader;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.channels.FileChannel;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.regex.Pattern;
 
 /**
@@ -25,7 +21,7 @@ import java.util.regex.Pattern;
 
 public class Helper {
 
-    public static Set<String> readChannels(String value) throws IOException {
+    public static Map<String, String> readChannels(String value) throws IOException {
         if (value.startsWith("@")) {
             return parseChannels(new File(value.substring(1)));
         } else {
@@ -33,45 +29,58 @@ public class Helper {
         }
     }
 
-    public static Set<String> parseChannels(final File file) throws IOException {
-        final List<String> channels = new ArrayList<>();
-        FileReader fr = new FileReader(file);
+    public static Map<String, String> parseChannels(final File file) throws IOException {
+        final Map<String, String> channels = new LinkedHashMap<>();
+        InputStreamReader fr=new InputStreamReader(new FileInputStream(file),"UTF-8");
         BufferedReader br = new BufferedReader(fr);
         String line;
         while ((line = br.readLine()) != null) {
             String parts[] = line.split("#");
             if (parts.length > 0) {
-                final String ch = parts[0].trim();
+                final String ch = escape(parts[0].trim());
+                String name = null;
+                if (parts.length > 1) {
+                    name = parts[1].trim();
+                }
+                if (name == null || name.length() == 0) {
+                    name = ch;
+                }
                 if (ch.length() > 0) {
-                    channels.add(ch);
+                    channels.put(ch, name);
                 }
             }
         }
         br.close();
         fr.close();
-        return escape(channels);
+        return channels;
     }
 
-    public static Set<String> parseChannels(String text) {
+    public static Map<String, String> parseChannels(String text) {
         String[] lines = text.split(",");
-        List<String> channels = new ArrayList<>();
+        Map<String, String> channels = new LinkedHashMap<>();
         for (String line : lines) {
-            String ch = line.trim();
-            if (ch.length() > 0) {
-                channels.add(ch);
+            String parts[] = line.split("#");
+            if (parts.length > 0) {
+                final String ch = escape(parts[0].trim());
+                String name = null;
+                if (parts.length > 1) {
+                    name = parts[1].trim();
+                }
+                if (name == null || name.length() == 0) {
+                    name = ch;
+                }
+                if (ch.length() > 0) {
+                    channels.put(ch, name);
+                }
             }
         }
-        return escape(channels);
+        return channels;
     }
 
-    public static Set<String> escape(Collection<String> cs) {
+    public static String escape(String key) {
         // filter invalid chars for filename
         Pattern p = Pattern.compile("[\\\\/:*?\"'<>|]");
-        Set<String> set = new HashSet<>();
-        for (String s : cs) {
-            set.add(p.matcher(s).replaceAll("_"));
-        }
-        return set;
+        return p.matcher(key).replaceAll("_");
     }
 
     public static void copyFile(File src, File dest) throws IOException {

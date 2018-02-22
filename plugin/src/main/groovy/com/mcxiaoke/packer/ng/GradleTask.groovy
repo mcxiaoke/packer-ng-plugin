@@ -87,12 +87,12 @@ class GradleTask extends DefaultTask {
         return outputDir
     }
 
-    Set<String> getChannels() {
+    Map<String, String> getChannels() {
         // -P channels=ch1,ch2,ch3
         // -P channels=@channels.txt
         // channelList = [ch1,ch2,ch3]
         // channelFile = project.file("channels.txt")
-        Collection<String> channels = []
+        Map<String, String> channels = [:]
         // check command line property
         def propValue = project.findProperty(Const.PROP_CHANNELS)
         if (propValue != null) {
@@ -110,7 +110,7 @@ class GradleTask extends DefaultTask {
                     throw new PluginException("invalid channels property: '${prop}'")
                 }
             } else {
-                channels = Helper.parseChannels(prop);
+                channels = Helper.parseChannels(prop)
             }
             if (channels == null || channels.isEmpty()) {
                 throw new PluginException("invalid channels property: '${prop}'")
@@ -164,19 +164,25 @@ class GradleTask extends DefaultTask {
         File apkFile = getOriginalApk()
         File rootDir = getOutputRoot()
         File outputDir = getVariantOutput()
-        Collection<String> channels = getChannels()
+        Map<String,String> channels = getChannels()
         Template template = getNameTemplate()
         println("Variant: ${variant.name}")
         println("Input: ${apkFile.path}")
         println("Output: ${outputDir.path}")
-        println("Channels: [${channels.join(' ')}]")
-        for (String channel : channels) {
+        println("Channels: [${channels.keySet().join(' ')}]")
+        println("ChannelNames: [${channels.values().join(' ')}]")
+
+        for (String channel : channels.keySet()) {
             File tempFile = new File(outputDir, "tmp-${channel}.apk")
             try {
                 Helper.copyFile(apkFile, tempFile)
                 Bridge.writeChannel(tempFile, channel)
-                String apkName = buildApkName(channel, tempFile, template)
+                String apkName = buildApkName(channel, channels.get(channel), tempFile, template)
                 File finalFile = new File(outputDir, apkName)
+                File finalFilePath = finalFile.parentFile
+                if (finalFilePath != null && !finalFilePath.exists()) {
+                    finalFilePath.mkdirs()
+                }
                 if (Bridge.verifyChannel(tempFile, channel)) {
                     println("Generating: ${apkName}")
                     tempFile.renameTo(finalFile)
@@ -194,7 +200,7 @@ class GradleTask extends DefaultTask {
         println("============================================================")
     }
 
-    String buildApkName(channel, file, template) {
+    String buildApkName(channel, channelName, file, template) {
         def buildTime = new SimpleDateFormat('yyyyMMdd-HHmmss').format(new Date())
         def fileSHA1 = HASH.sha1(file)
         def nameMap = [
@@ -207,7 +213,8 @@ class GradleTask extends DefaultTask {
                 'versionName': variant.versionName,
                 'versionCode': variant.versionCode,
                 'appPkg'     : variant.applicationId,
-                'buildTime'  : buildTime
+                'buildTime'  : buildTime,
+                'channelName': channelName
         ]
         logger.info("nameMap: ${nameMap}")
         return template.make(nameMap).toString() + '.apk'

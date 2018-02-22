@@ -6,7 +6,6 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.List;
 import java.util.Locale;
 
 /**
@@ -78,9 +77,9 @@ public class Main {
                     || "c".equals(name)) {
                 String value = optionsParser.getRequiredValue("Channels file(@) or list(,).");
                 if (value.startsWith("@")) {
-                    channels = Helper.parseChannels(new File(value.substring(1)));
+                    channels = Helper.parseChannels(new File(value.substring(1))).keySet();
                 } else {
-                    channels = Helper.parseChannels(value);
+                    channels = Helper.parseChannels(value).keySet();
                 }
             } else if ("input".equals(name)
                     || "i".equals(name)) {
