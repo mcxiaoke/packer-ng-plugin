@@ -1,7 +1,6 @@
 package com.mcxiaoke.packer.ng
 
 import com.android.build.gradle.api.BaseVariant
-import com.android.builder.Version
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 
@@ -18,11 +17,6 @@ class GradlePlugin implements Plugin<Project> {
         if (!project.plugins.hasPlugin("com.android.application")) {
             throw new PluginException(
                     "'com.android.application' plugin must be applied", null)
-        }
-        if (new StringVersion(Version.ANDROID_GRADLE_PLUGIN_VERSION)
-                < new StringVersion("2.2.0")) {
-            throw new PluginException(
-                    "'com.android.tools.build:gradle' must be v2.2.0 or above", null)
         }
         project.configurations.create(PLUGIN_NAME).extendsFrom(project.configurations.compile)
         project.extensions.create(PLUGIN_NAME, GradleExtension)
