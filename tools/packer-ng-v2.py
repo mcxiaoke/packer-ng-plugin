@@ -2,7 +2,7 @@
 # @Author: mcxiaoke
 # @Date:   2017-06-06 14:03:18
 # @Last Modified by:   mcxiaoke
-# @Last Modified time: 2017-06-22 17:26:29
+# @Last Modified time: 2018-03-23 15:36:57
 from __future__ import print_function
 import os
 import sys
@@ -17,13 +17,13 @@ logging.basicConfig(format='%(levelname)s:%(lineno)s: %(funcName)s() %(message)s
 logger = logging.getLogger(__name__)
 
 AUTHOR = 'mcxiaoke'
-VERSION = '2.0.0'
+VERSION = '2.0.1'
 try:
     props = dict(line.strip().split('=') for line in
                  open('../gradle.properties') if line.strip())
     VERSION = props.get('VERSION_NAME')
 except Exception as e:
-    VERSION = '2.0.0'
+    VERSION = '2.0.1'
 
 #####################################################################
 
