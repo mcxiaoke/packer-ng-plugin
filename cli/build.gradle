@@ -1,13 +1,8 @@
-buildscript {
-    repositories {
-        jcenter()
-    }
-    dependencies {
-    }
-}
 
 repositories {
-    jcenter()
+        mavenCentral()
+        jcenter()
+        google()
 }
 
 apply plugin: 'java'
@@ -18,7 +13,7 @@ targetCompatibility = 1.7
 
 dependencies {
     compile project(":common")
-    compile 'com.android.tools.build:apksig:2.3.2'
+    compile 'com.android.tools.build:apksig:2.3.3'
 }
 
 //mainClassName = 'com.mcxiaoke.packer.cli.Main'
