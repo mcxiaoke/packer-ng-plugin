@@ -2,6 +2,7 @@ PackerNg V2
 ========
 极速渠道打包工具
 
+- **v2.0.1 - 2018.03.23** - 支持Android Plugin 3.x和Gradle 4.x
 - **v2.0.0 - 2017.06.23** - 全新发布，支持V2签名模式，包含多项优化
 
 <!-- TOC -->
@@ -27,7 +28,7 @@ PackerNg V2
 
 ## 特别提示
 
-V2版只支持`APK Signature Scheme v2`，要求在 `signingConfigs` 里 `v2SigningEnabled true` 启用新版签名模式，并使用`2.2.0`以上版本的Gradle插件，如果你需要使用旧版本，看这里 [v1.0.9](https://github.com/mcxiaoke/packer-ng-plugin/tree/v1.0.9)。
+V2版只支持`APK Signature Scheme v2`，要求在 `signingConfigs` 里 `v2SigningEnabled true` 启用新版签名模式，如果你需要使用旧版本，看这里 [v1.0.9](https://github.com/mcxiaoke/packer-ng-plugin/tree/v1.0.9)。
 
 ## 项目介绍
 
@@ -43,19 +44,19 @@ V2版只支持`APK Signature Scheme v2`，要求在 `signingConfigs` 里 `v2Sign
 // build.gradle
 buildscript {
     dependencies{
-        classpath 'com.mcxiaoke.packer-ng:plugin:2.0.0'
+        classpath 'com.mcxiaoke.packer-ng:plugin:2.0.1'
     }
-}  
+}
 ```
 
 ### 修改模块配置
 
 ```groovy
-apply plugin: 'packer' 
+apply plugin: 'packer'
 // build.gradle
 dependencies {
-    compile 'com.mcxiaoke.packer-ng:helper:2.0.0'
-} 
+    compile 'com.mcxiaoke.packer-ng:helper:2.0.1'
+}
 ```
 
 **注意：`plugin` 和 `helper` 的版本号需要保持一致**
@@ -92,14 +93,14 @@ packer {
 渠道名建议尽量使用规范的**中英文和数字**，不要使用特殊字符和不可见字符。示例：[channels.txt](blob/v2dev/channels/channels.txt)
 
 ### 集成打包
- 
+
 * 项目中没有使用 `productFlavors`
 
     ```shell
-    ./gradlew clean apkRelease 
+    ./gradlew clean apkRelease
     ```
 
-* 项目中使用了 `productFlavors` 
+* 项目中使用了 `productFlavors`
 
     如果项目中指定了多个 `flavor` ，需要指定需要打渠道包的 `flavor` 名字，假设你有 `Paid` `Free` 两个 `flavor` ，打包的时候命令如下：
 
@@ -107,7 +108,7 @@ packer {
     ./gradlew clean apkPaidRelease
     ./gradlew clean apkFreeRelease
     ```
-    
+
     直接使用 `./gradlew clean apkRelease` 会输出所有 `flavor` 的渠道包。
 
 * 通过参数直接指定渠道列表(会覆盖`build.gradle`中的属性)：
@@ -115,7 +116,7 @@ packer {
     ```shell
     ./gradlew clean apkRelease -Pchannels=ch1,ch2,douban,google
     ```
-    
+
     渠道数目很少时可以使用此种方式。
 
 * 通过参数指定渠道列表文件的位置(会覆盖`build.gradle`中的属性)：
@@ -123,34 +124,34 @@ packer {
     ```shell
     ./gradlew clean apkRelease -Pchannels=@channels.txt
     ```
-    
+
     使用@符号指定渠道列表文件的位置，使用相对于项目根目录的相对路径。
 
 * 还可以指定输出目录和文件名格式模版：
 
     ```shell
-    ./gradlew clean apkRelease -Poutput=build/apks 
+    ./gradlew clean apkRelease -Poutput=build/apks
     ./gradlew clean apkRelease -Pformat=${versionName}-${channel}
     ```
-    
+
     这些参数 `channels` `output` `format` 可以组合使用，命令行参数会覆盖 `build.gradle` 对应的属性。
 
 * Gradle打包命令说明
 
     渠道打包的Task名字是 `apk${flavor}${buildType}` buildType一般是release，也可以是你自己指定的beta或者someOtherType，如果没有 `flavor` 可以忽略，使用时首字母需要大写，假设 `flavor` 是 `Paid`，`release`类型对应的任务名是 `apkPaidRelease`，`beta`类型对应的任务名是 `apkPaidBetaBeta`，其它的以此类推。
-    
+
 * 特别提示
 
     如果你同时使用其它的资源压缩工具或应用加固功能，请使用命令行脚本打包增加渠道信息，增加渠道信息需要放在APK处理过程的最后一步。
-    
+
 ### 脚本打包
 
-除了使用Gradle集成以外，还可以使用项目提供的Java脚本打包，Jar位于本项目的 `tools` 目录，请使用最新版，以下用 `packer-ng` 指代 `java -jar tools/packer-ng-2.0.0.jar`，下面是几个示例。
+除了使用Gradle集成以外，还可以使用项目提供的Java脚本打包，Jar位于本项目的 `tools` 目录，请使用最新版，以下用 `packer-ng` 指代 `java -jar tools/packer-ng-2.0.1.jar`，下面是几个示例。
 
 * 参数说明：
 
 ```
-packer-ng - 表示 java -jar packer-ng-2.0.0.jar
+packer-ng - 表示 java -jar packer-ng-2.0.1.jar
 channels.txt - 替换成你的渠道列表文件的实际路径
 build/archives - 替换成你指定的渠道包的输出路径
 app.apk - 替换成你要打渠道包的APK文件的实际路径
@@ -177,7 +178,7 @@ packer-ng verify app.apk
 * 运行命令查看帮助
 
 ```shell
-java -jar tools/packer-ng-2.0.0.jar --help
+java -jar tools/packer-ng-2.0.1.jar --help
 ```
 
 * Python脚本读取渠道：
@@ -209,8 +210,8 @@ String channel = PackerNg.getChannel(Context)
 
 假如你的App包名是  `com.your.company` ，渠道名是 `Google_Play` ，`buildType` 是 `release` ，`versionName` 是 `2.1.15` ，`versionCode` 是 `200115` ，那么生成的默认APK的文件名是 `com.your.company-Google_Player-release-2.1.15-20015.apk` 。
 
-可使用以下变量:  
-  
+可使用以下变量:
+
   * *projectName* - 项目名字
   * *appName* - App模块名字
   * *appPkg* - `applicationId` (App包名packageName)
@@ -219,7 +220,7 @@ String channel = PackerNg.getChannel(Context)
   * *flavor* - `flavor` (flavor名字，如paid/free等)
   * *versionName* - `versionName` (显示用的版本号)
   * *versionCode* - `versionCode` (内部版本号)
-  * *buildTime* - `buildTime` (编译构建日期时间) 
+  * *buildTime* - `buildTime` (编译构建日期时间)
   * *fileSHA1* - `fileSHA1 ` (最终APK文件的SHA1哈希值)
 
 ------
@@ -255,7 +256,7 @@ String channel = PackerNg.getChannel(Context)
 
 ## License
 
-    Copyright 2014 - 2017 Xiaoke Zhang
+    Copyright 2014 - 2018 Xiaoke Zhang
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
