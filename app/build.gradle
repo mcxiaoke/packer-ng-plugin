@@ -1,8 +1,8 @@
 buildscript {
-    ext.packer_version = '2.0.0'
+    ext.packer_version = '2.0.1'
 
     repositories {
-        maven { url '/tmp/repo/' }
+        maven { url '../tmp/repo/' }
         jcenter()
         google()
         maven { url 'https://oss.sonatype.org/content/repositories/snapshots' }
@@ -26,12 +26,12 @@ apply plugin: 'packer'
 
 // https://code.google.com/p/android/issues/detail?id=171089
 dependencies {
-    implementation "com.mcxiaoke.packer-ng:helper:$packer_version"
+    implementation "com.mcxiaoke.packer-ng:helper:2.0.0"
 }
 
 //packer-begin
 packer {
-    archiveNameFormat = '${appPkg}-${buildType}-v${versionName}-${channel}'
+    archiveNameFormat = '${channelName}/${appPkg}-${buildType}-v${versionName}-${channel}'
     archiveOutput = new File(project.rootProject.buildDir, "apks")
 //    channelList = ['*Douban*', 'Google/', '中文/@#市场', 'Hello@World',
 //                   'GradleTest', '20070601!@#$%^&*(){}:"<>?-=[];\',./']
