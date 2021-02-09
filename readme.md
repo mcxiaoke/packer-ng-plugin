@@ -249,14 +249,12 @@ String channel = PackerNg.getChannel(Context)
 * Gradle渠道打包: <https://github.com/mcxiaoke/gradle-packer-plugin>
 * EventBus实现xBus: <https://github.com/mcxiaoke/xBus>
 * 蘑菇饭App: <https://github.com/mcxiaoke/minicat>
-* 饭否客户端: <https://github.com/mcxiaoke/fanfouapp-opensource>
-* Volley镜像: <https://github.com/mcxiaoke/android-volley>
 
 ------
 
 ## License
 
-    Copyright 2014 - 2018 Xiaoke Zhang
+    Copyright 2014 - 2021 Xiaoke Zhang
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
