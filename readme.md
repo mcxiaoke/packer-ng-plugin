@@ -1,5 +1,7 @@
 PackerNg V2
 ========
+[![Maintainability](https://cloud.quality-gate.com/dashboard/api/badge?projectName=mcxiaoke_packer-ng-plugin&branchName=master)](https://cloud.quality-gate.com/dashboard/branches/315018#overview)
+
 极速渠道打包工具
 
 - **v2.0.1 - 2018.03.23** - 支持Android Plugin 3.x和Gradle 4.x
