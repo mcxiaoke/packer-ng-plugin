@@ -1,5 +1,7 @@
-PackerNg V2
-========
+# PackerNg V2
+
+<h2>对Gradle 7.x的支持，欢迎提PR，或者Fork自己修改（2022.03.02）</h2>
+
 极速渠道打包工具
 
 - **v2.0.1 - 2018.03.23** - 支持Android Plugin 3.x和Gradle 4.x
