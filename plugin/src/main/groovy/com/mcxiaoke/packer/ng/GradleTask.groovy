@@ -7,6 +7,7 @@ import groovy.text.SimpleTemplateEngine
 import groovy.text.Template
 import org.gradle.api.DefaultTask
 import org.gradle.api.tasks.Input
+import org.gradle.api.tasks.Internal
 import org.gradle.api.tasks.TaskAction
 
 import java.text.SimpleDateFormat
@@ -28,6 +29,7 @@ class GradleTask extends DefaultTask {
         description = 'generate APK with channel info'
     }
 
+    @Internal
     Template getNameTemplate() {
         String format
         String propValue = project.findProperty(Const.PROP_FORMAT)
@@ -43,6 +45,7 @@ class GradleTask extends DefaultTask {
         return engine.createTemplate(format)
     }
 
+    @Internal
     File getOriginalApk() {
         variant.outputs.each { ot ->
             logger.info("Output APK: ${ot.name},${ot.outputFile}")
@@ -54,6 +57,7 @@ class GradleTask extends DefaultTask {
         return file
     }
 
+    @Internal
     File getOutputRoot() {
         File outputDir
         String propValue = project.findProperty(Const.PROP_OUTPUT)
@@ -72,6 +76,7 @@ class GradleTask extends DefaultTask {
         return outputDir
     }
 
+    @Internal
     File getVariantOutput() {
         File outputDir = getOutputRoot()
         String flavorName = variant.flavorName
@@ -87,6 +92,7 @@ class GradleTask extends DefaultTask {
         return outputDir
     }
 
+    @Internal
     Set<String> getChannels() {
         // -P channels=ch1,ch2,ch3
         // -P channels=@channels.txt
