@@ -1,6 +1,10 @@
-# PackerNg V2
+# Packer-NG Gradle Plugin V2
 
-<h2>对Gradle 7.x的支持，欢迎提PR，或者Fork自己修改（2022.03.02）</h2>
+### 提示：本项目已停止新功能开发，有需要的请自行Fork修改
+
+```
+对Gradle 7.x的支持，欢迎提PR，或者Fork自己修改（2022.06.27）
+```
 
 极速渠道打包工具
 
