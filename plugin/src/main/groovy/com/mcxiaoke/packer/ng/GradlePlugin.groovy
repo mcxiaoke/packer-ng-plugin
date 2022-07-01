@@ -18,7 +18,7 @@ class GradlePlugin implements Plugin<Project> {
             throw new PluginException(
                     "'com.android.application' plugin must be applied", null)
         }
-        project.configurations.create(PLUGIN_NAME).extendsFrom(project.configurations.compile)
+        project.configurations.create(PLUGIN_NAME).extendsFrom(project.configurations.implementation)
         project.extensions.create(PLUGIN_NAME, GradleExtension)
         project.afterEvaluate {
             project.android.applicationVariants.all { BaseVariant variant ->

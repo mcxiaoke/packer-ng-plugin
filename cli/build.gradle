@@ -12,8 +12,8 @@ sourceCompatibility = 1.7
 targetCompatibility = 1.7
 
 dependencies {
-    compile project(":common")
-    compile 'com.android.tools.build:apksig:2.3.3'
+    implementation project(":common")
+    implementation 'com.android.tools.build:apksig:2.3.3'
 }
 
 //mainClassName = 'com.mcxiaoke.packer.cli.Main'
